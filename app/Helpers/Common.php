@@ -84,7 +84,7 @@ window.onerror = function(message, source, lineno){
 	public function smart_caching(string $file_path = '') : string {
 		
 		if($file_path){
-			return $file_path . '?' . @filemtime(realpath(null) . ($file_path{0} != '/' ? '/'.$file_path : $file_path));
+			return $file_path . '?' . @filemtime(realpath(null) . ($file_path[0] != '/' ? '/'.$file_path : $file_path));
 		}
 		
 	}
@@ -96,7 +96,7 @@ window.onerror = function(message, source, lineno){
 		
 		for($i = 0; $i < $si; $i++){
 			
-			$file = realpath(null) . ($arr[$i]{0} != '/' ? '/'.$arr[$i] : $arr[$i]);
+			$file = realpath(null) . ($arr[$i][0] != '/' ? '/'.$arr[$i] : $arr[$i]);
 			
 			if(file_exists($file)){
 				
