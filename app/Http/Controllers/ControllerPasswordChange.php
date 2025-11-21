@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Helpers\Common;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cookie;
+
+
+class ControllerPasswordChange extends Common {
+	
+    public function __invoke(Request $request) {
+			
+        parent::check_allowed_method('GET');
+				
+				$user_myid = ($_COOKIE['user_myid'] ?? '');
+				
+				try{
+					
+					$result = DB::select('SELECT `password_changed_from_1c` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+
+					foreach ($result as $row) {
+						if ($row->password_changed_from_1c) {
+							setcookie('user_myid', '', 0, '/');
+							exit(json_encode(['status' => 'true']));
+						}else{
+							exit(json_encode(['status' => 'false']));
+						} 
+					}
+					
+				} catch (QueryException $e) {
+					exit(json_encode(['status' => 'false']));
+				}
+				
+    }
+}

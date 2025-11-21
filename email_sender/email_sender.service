@@ -1,0 +1,8 @@
+[Unit]
+Description=Email sender
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3.9 /var/www/default/email_sender/email_sender.py
+[Install]
+WantedBy=multi-user.target

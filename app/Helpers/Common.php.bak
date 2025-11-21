@@ -1,0 +1,4588 @@
+<?php
+/*
+████████████████████████████████████████
+████████████▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█████████
+█████▀▀░░░░░░░░░░░░░░░░░░░░░░░░░▀███████
+████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████
+███▀░░░░░▄▄▄░░░░░░░░▄▄▀███▄▄░░░░░░░█████
+██░░░░░░▀▀▀███▄▄░░░█▄▄█▀█▀▀▀▀░▀░▄▄░▀▀███
+█░░▄▄░▄▄░▄░░░█▀░░░░░░░░░░▀▄▄▄█▀▀▄░▀█░░▀█
+█░░░░▄░▀▀░░▄█▀░░░░░░▄▄░░░░░░░▄▄▀██▄░█░░█
+██░░░██░░░▀▀█▄░░░▀▀▀▄▀░▄▄▄███▀░▄█░░░▀░▄█
+██▄░██▀█▀▄▄▄▄▄█▄▄▄▄▄▀▀█▀░░▄███▀█▀░░░▄▄██
+███░████▄█▄░░█░░▄█░░▄▄███▀▀▀█▄▀░░░░▄████
+███░▀██████████████▀▀▀▀█░░░▄▀▀░░░░▄█████
+███░░██▀█▀██▀█▀░░▀█░░░░█▄█▀░░░░░▄███████
+███░░░░▀▀▀██▄██▄▄██▀▀▀▀▀░░░░░▄▄█████████
+██▀░░░░░░░░░░░░░░░░░░░░░░▄▄▄████████████
+██▄░░░░░░░░░░░░░░░░░░▄▄█████████████████
+████▄░░░░░░░░░▄▄▄▄▄█████████████████████
+████████████████████████████████████████
+*/
+namespace App\Helpers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
+
+class Common {
+	
+	protected $config_app;
+	protected $ip = '';
+	protected $time = '';
+	protected $document_root = '';
+	protected $date = '';
+	protected $user_agent = '';
+	protected $rnd = '';
+	protected $encoding = 'UTF-8';
+	protected $charset = 'utf-8';
+		
+	public function __construct(){
+		
+		//date_default_timezone_set('UTC');
+		
+		$this->config_project = config('project');
+		$this->aes_key = config('aes_key');
+		$this->ip = $_SERVER['REMOTE_ADDR'] ?? '';
+		$this->time = $_SERVER['REQUEST_TIME'] ?? time();
+		$this->document_root = $_SERVER['DOCUMENT_ROOT'] ?? '';
+		$this->date = date('H i s d m Y');
+		$this->user_agent = mb_substr(htmlspecialchars($_SERVER['HTTP_USER_AGENT'] ?? '', ENT_QUOTES, $this->encoding), 0, 250);
+		$this->rnd = mt_rand(100000,999000).mt_rand(100000,999000);
+		
+	}
+	
+	public function __get($name){
+		return $this->$name;
+	}
+	
+	public function get_meta_tags_() : string {
+		
+		$result = '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+<link rel="shortcut icon" href="favicon.png?1" type="image/png">
+<meta name="description" content="'.($this->config_project['descriptions']['home']).'">';
+		return $result;
+		
+	}
+	
+	public function get_detect_js_errors_script() : string {
+		
+		$result = '<script type="text/javascript">
+var last_message_error = \'\';
+window.onerror = function(message, source, lineno){
+  if(last_message_error != message){
+    last_message_error = message;
+    (new Image).src=\'/api/v1/js_error?m=\'+message+\'&p=\'+document.location.host+document.location.pathname+\'&f=\'+source+\'&l=\'+lineno+\'&\'+Math.random();
+  }
+};
+</script>';
+		return $result;
+		
+	}
+	
+	public function smart_caching(string $file_path = '') : string {
+		
+		if($file_path){
+			return $file_path . '?' . @filemtime(realpath(null) . ($file_path{0} != '/' ? '/'.$file_path : $file_path));
+		}
+		
+	}
+	
+	public function get_js_scripts_and_css_styles(array $arr = []) : string {
+		
+		$result = '';
+		$si = sizeof($arr);
+		
+		for($i = 0; $i < $si; $i++){
+			
+			$file = realpath(null) . ($arr[$i]{0} != '/' ? '/'.$arr[$i] : $arr[$i]);
+			
+			if(file_exists($file)){
+				
+				preg_match('/\.(css|js)$/', $arr[$i], $matches);
+				$extension = $matches[1];
+				
+				if($extension){
+					if($extension == 'css'){
+						$result .= '<link rel="stylesheet" href="'.$this->smart_caching($arr[$i]).'" type="text/css">';
+					}else{
+						$result .= '<script type="text/javascript" src="'.$this->smart_caching($arr[$i]).'"></script>';
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return $result;
+		
+	}
+	
+	public function convert_format_date(string $d ) : string {
+		
+		$ex = explode(' ',$d);
+		$month = str_replace(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'], $ex[4]);
+		$number = preg_replace('/^0/','',$ex[3]);
+		$year = $ex[5];
+		$hour = $ex[0];
+		if($hour == '0'){$hour = '00';}
+		$minute = $ex[1];
+		$seconds = $ex[2];
+		$date = $number.' '.$month.' '.$year.' в '.$hour.':'.$minute.':'.$seconds;
+		return $date;
+		
+	}
+	
+	protected function convert_format_date2(string $d ) : string {
+
+		 $date = $d;
+		 preg_match('/([0-9]{4})\-([0-9]{2})\-([0-9]{2})T[0-9]{2}:[0-9]{2}:[0-9]{2}/', $d, $matches);
+		 if($matches){
+			 $number = $matches[3];
+			 $month = str_replace(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'], $matches[2]);
+			 $year = $matches[1];
+			 $date = $number.' '.$month.' '.$year;
+		 }
+		 return $date;
+		 
+	}
+
+	protected function convert_format_date_month_en_to_ru(string $date) {
+		return str_replace(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'], $date);
+	}
+	
+	protected function convert_format_date3(string $d ) : string {
+
+		 $date = $d;
+		 preg_match('/([0-9]{4})\-([0-9]{2})\-([0-9]{2})T([0-9]{2}:[0-9]{2}):[0-9]{2}/', $d, $matches);
+		 if($matches){
+			 $number = $matches[3];
+			 $month = str_replace(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'], $matches[2]);
+			 $year = $matches[1];
+			 $date = $number.' '.$month.' '.$year.' '.$matches[4];
+		 }
+		 return $date;
+		 
+	}
+	
+	public function log_er_flock(string $script_filename, int $line) : void {
+
+		$text = date('D M j G:i:s T Y').' '.$this->time.' ('.$this->ip.') script_filename:'.$script_filename.' line:'.$line . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		$f = @fopen($this->document_root.'/../storage/logs/errors_flock.log', 'a+');
+		if(@flock($f,LOCK_EX)){
+			@stream_set_write_buffer($f,0);
+			@fwrite($f,$text);
+			@fflush($f);
+			@flock($f,LOCK_UN);
+		}
+		@fclose($f);
+		
+	}
+
+	public function log_er_js() : void {
+
+		$mes = htmlspecialchars($_GET['m'] ?? '', ENT_COMPAT, $this->encoding);
+		$page = htmlspecialchars($_GET['p'] ?? '', ENT_COMPAT, $this->encoding);
+		$file = htmlspecialchars($_GET['f'] ?? '', ENT_COMPAT, $this->encoding);
+		$line = htmlspecialchars($_GET['l'] ?? '', ENT_COMPAT, $this->encoding);
+		
+		$a = (strpos($this->config_project['ignor_error_mes'], '|'.$mes.'|') !== false);
+		$b = false;
+		$ex = explode('|', $this->config_project['ignor_error_mes']);
+		$si = sizeof($ex) - 1;
+		for ($i = 0; $i < $si; $i++) {
+			
+			if ($ex[$i]) {
+				
+				if (strpos($this->user_agent, $ex[$i]) !== false) {
+					$b = true;
+					break;
+				}
+				
+			}
+			
+		}
+		if (!$a && !$b) {
+			
+			$file_path = $this->document_root.'/../storage/logs/errors_js.log';
+			$text = date('D M j G:i:s T Y').' '.$this->time.' ('.$this->ip.') mess:'.$mes.' page:'.$page.' file:'.$file.' line:'.$line.' '.$this->user_agent . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+			
+			$f = @fopen($file_path, 'a+');
+			if (@flock($f, LOCK_EX)) {
+				
+				@clearstatcache(true, $file_path);
+				$siz = @filesize($file_path);
+				if ($siz != 0) {
+
+					$data = @fread($f, $siz);
+					$ex = @explode(PHP_EOL, $data);
+					$si = @sizeof($ex) - 1;
+					if($si > 99000){
+						@ftruncate($f, 0);
+					}
+					
+				}
+		
+				@stream_set_write_buffer($f, 0);
+				@fwrite($f, $text);
+				@fflush($f);
+				@flock($f, LOCK_UN);
+				
+			}
+			else {
+				$this->log_er_flock(__FILE__, __LINE__);
+			}
+			@fclose($f);
+		
+		}
+	
+	}
+	
+	protected function log_er_mysql(string $mess) : void {
+		
+		$f = @fopen($this->document_root.'/../storage/logs/errors_mysql.log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' '.	trim($mess) . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+			
+	}
+	
+	protected function check_allowed_method(string $method) : void {
+		
+		if(getenv('REQUEST_METHOD') != $method){
+			header($_SERVER['SERVER_PROTOCOL'].' 405 Method Not Allowed', true, 405);
+			if(strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false){
+				exit('{"message":"Method Not Allowed"}');
+			}else{
+				exit('<html>
+<head><title>405 Method Not Allowed</title></head>
+<body bgcolor="white">
+<center><h1>405 Method Not Allowed</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->');
+			}
+		}
+		
+	}
+
+	private function log_er_post_request_to_api_1c(string $mess) : void {
+
+		$f = @fopen($this->document_root.'/../storage/logs/errors_post_request_to_api_1c.log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' '. trim($mess) . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+		
+	}
+	
+	protected function post_request_to_api_1c(string $act, array $data) : array {
+		
+		set_time_limit(120); // ~ 2 мин.
+		
+		$url = $this->config_project['url_1с'];
+		$path = $this->config_project['path_1с'];
+		$port = $this->config_project['port_1с'];
+		$result = '';
+		$err = '';
+		$headers = [
+			'Accept: */*',
+			'Connection: Close',
+			'Content-Type: application/json',
+			'Authorization: Basic '.$this->config_project['authorization_basic'],
+			'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:64.0) Gecko/20100101 Firefox/64.0'
+		];
+		$payload = json_encode([]);
+		
+		switch($act){
+			
+			case 'auth':
+			
+				$path = '/unf/hs/Shop/Authentication';
+				$payload = json_encode(['Логин' => $data['login'], 'Пароль' => $data['pass']]);
+				
+				break;
+				
+			case 'user_info':
+			
+				$path = '/unf/hs/Shop/Users';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьИнформациюОПользователе', 'ПользовательИД' => $data['user_myid']]);
+				
+				break;
+				
+			case 'recovery_pass':
+			
+				$path = '/unf/hs/Shop/PasswordRecovery';
+				$payload = json_encode(['Логин' => $data['login'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2']]);
+				
+				break;
+				
+			case 'update_email':
+			
+				$path = '/unf/hs/Shop/Users';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ОбновитьАдресЭлектроннойПочты', 'NewEmail' => $data['email']]);
+				
+				break;
+							
+			case 'add_new_employee':
+			
+				$path = '/unf/hs/Shop/Users';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'СоздатьПользователя', 'Логин' => $data['phone'], 'Пароль' => $data['pass'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2'], 'Email' => $data['email'], 'Роль' => $data['status'], 'Заблокирован' => false]);
+				
+				break;
+							
+			case 'edit_employee':
+			
+				$path = '/unf/hs/Shop/Users';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ИзменитьИнформациюОПользователе', 'ПользовательИД' => $data['user_myid_employee'], 'НовыйЛогин' => $data['new_phone'], 'НовыйПароль' => $data['new_pass'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2'], 'Заблокирован' => $data['is_banned'], 'Email' => $data['email']]);
+				
+				break;
+			
+			case 'get_delivery_addresses':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьАдресаДоставки']);
+				
+				break;
+				
+			case 'add_new_delivery_addresses':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ДобавитьАдресДоставки', 'АдресДоставки' => $data['address_str'],  'Регион' => $data['region'], 'Район' => $data['area'], 'Индекс' => $data['index'],  'Город' => $data['city'],  'Улица' => $data['street'],  'Дом' => $data['house'],  'Корпус' => $data['frame'],  'Литер' => $data['letters'],  'Склад' => $data['stock'],  'Офис' => $data['apartment'],  'КонтактноеЛицоФИО' => $data['fio'],  'КонтактноеЛицоНомерТелефона' => $data['phone']]);
+				
+				break;
+
+			case 'edit_delivery_addresses':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ИзменитьАдресДоставки', 'АдресДоставкиИД' => $data['id'], 'АдресДоставки' => $data['address_str'], 'Регион' => $data['region'], 'Район' => $data['area'], 'Индекс' => $data['index'],  'Город' => $data['city'],  'Улица' => $data['street'],  'Дом' => $data['house'],  'Корпус' => $data['frame'],  'Литер' => $data['letters'],  'Склад' => $data['stock'],  'Офис' => $data['apartment'],  'КонтактноеЛицоФИО' => $data['fio'],  'КонтактноеЛицоНомерТелефона' => $data['phone']]);
+				
+				break;
+							
+			case 'delete_delivery_addresses':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'УдалитьАдресДоставки', 'АдресДоставкиИД' => $data['id']]);
+				
+				break;
+				
+			case 'get_counterparties':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьСписокКонтрагентов']);
+				
+				break;
+
+			case 'add_new_counterparty':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'СоздатьКонтрагента', 'НаименованиеПолное' => $data['fullname'], 'ИНН' => $data['inn'], 'КПП' => $data['kpp'], 'ОГРН' => $data['ogrn'], 'ОсновнойАдресДоставкиИД' => $data['id_delivery_addresses'], 'ЮрАдресКонтрагента' => $data['legal_address'], 'ФактАдресКонтрагента' => $data['actual_address'], 'КоррСчет' => $data['corr_account'], 'БикБанка' => $data['bank_bik'], 'НаименованиеБанка' => $data['bank_name'], 'РасчетныйСчет' => $data['checking_account'], 'ФактическийАдресСовпадаетСЮридическим' => $data['addresses_match']]);
+				
+				break;
+
+			case 'delete_counterparty':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'УдалитьЗаявкуНаСозданияКонтрагента', 'ЗаявкаИД' => $data['id']]);
+				
+				break;
+
+			case 'get_transport':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьСписокТранспортыхСредств']);
+				
+				break;
+
+			case 'add_new_transport':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ДобавитьТранспортноеСредство', 'Марка' => $data['brand'], 'Номер' => $data['license_plate'], 'ТипТранспортногоСредства' => $data['vehicle_type']]);
+				
+				break;
+				
+			case 'edit_transport':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ИзменитьТранспортноеСредство', 'ТранспортноеСредствоИД' => $data['id'], 'Марка' => $data['brand'], 'Номер' => $data['license_plate'], 'ТипТранспортногоСредства' => $data['vehicle_type']]);
+				
+				break;
+				
+			case 'delete_transport':
+			
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'УдалитьТранспортноеСредство', 'ТранспортноеСредствоИД' => $data['id']]);
+				
+				break;
+
+			case 'weight_calculation':
+			
+				$path = '/unf/hs/Shop/Service';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'РассчитатьВес', 'Данные' => $data['data']]);
+				
+				break;
+
+			case 'post_mess_for_manager':
+				
+				$path = '/unf/hs/Shop/Users';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ОтправитьСообщение', 'ТемаСообщения' => $data['subject'], 'ТекстСообщения' => $data['mess'], 'ПрикрепленныйФайл' => $data['atach']]);
+				
+				break;
+				
+			case 'order_creation':
+				
+				$path = '/unf/hs/Shop/Orders';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'СоздатьЗаказПокупателя', 'ЗаказЛКИД' => $data['id'], 'КонтрагентИД' => $data['counterparty_id'], 'НаличнаяОплата' => $data['is_cash_payment'], 'ДатаОтгрузки' => $data['shipping_date'], 'СкладОтгрузкиИД' => $data['shipping_warehouse_id'], 'Доставка' => $data['is_shipping'], 'АдресДоставки' => $data['delivery_address'], 'АдресДоставкиИД' => $data['delivery_address_id'], 'Комментарий' => $data['comment'], 'Запасы' => $data['goods'], 'НестандартнаяДоборка' => $data['goods_non_standard_addition'], 'НестандартнаяДоборкаПрикрепленныеФайлы' => $data['files_non_standard_addition'], 'НаОснованииОтчета' => $data['based_on_cart']]);				
+				
+				break;
+			
+			case 'download_price_list':
+				
+				$path = '/unf/hs/Shop/Directory';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьПрайсЛист']);
+				
+				break;
+			
+			case 'order_confirm':
+				
+				$path = '/unf/hs/Shop/Orders';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПодтвердитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
+				
+				break;
+				
+			case 'order_cancel':
+				
+				$path = '/unf/hs/Shop/Orders';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ОтменитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
+				
+				break;
+				
+			case 'get_nearest_available_delivery_date':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьДоступнуюДатуДляДоставки']);
+				
+				break;
+			
+			case 'get_nearest_available_pick_up_date':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьДоступнуюДатуДляСамовывоза']);
+				
+				break;
+			
+			case 'get_shipping_calendar':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьКалендарьОтгрузок']);
+				
+				break;
+			
+			case 'get_pickup_intervals':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьИнтервалыСамовывоз']);
+				
+				break;
+			
+			case 'get_delivery_intervals':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьИнтервалыДоставка']);
+				
+				break;
+				
+			case 'get_orders_for_shipment':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьЗаказыПокупателяКОтгрузке', 'ДатаОтгрузки' => $data['shipping_date']]);
+				
+				break;
+			
+			case 'shipment_creation':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'СоздатьЗаявкуНаОтгрузку', 'ДатаОтгрузки' => $data['delivery_shipping_date'], 'Доставка' => $data['is_delivery'], 'ИнтервалИД' => $data['interval_id'], 'ТранспортноеСредствоИД' => $data['vehicle_id'], 'Комментарий' => $data['comment'], 'ПользовательИД' => $data['user_myid'], 'Заказы' => $data['orders']]);
+				
+				break;
+				
+			case 'get_shipment_details':
+				
+				$path = '/unf/hs/Shop/Shipment';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьЗаявкуНаОтгрузку', 'ЗаявкаНаОтгрузкуИД' => $data['shipment_id']]);
+				
+				break;
+				
+			case 'get_order_details':
+				
+				$path = '/unf/hs/Shop/Orders';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
+				
+				break;
+				
+			case 'download_order_details':
+				
+				$path = '/unf/hs/Shop/Orders';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьПечатнуюФормуСчетНаОплату', 'ЗаказПокупателяИД' => $data['order_id']]);
+				
+				break;
+				
+			case 'get_invoices':
+				
+				$path = '/unf/hs/Shop/Invoices';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьСписокРасходныхНакладных', 'ДатаНачала' => $data['invoices_date1'], 'ДатаОкончания' => $data['invoices_date2']]);
+				
+				break;
+				
+			case 'download_invoice':
+				
+				$path = '/unf/hs/Shop/Invoices';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьПечатнуюФормуУПД', 'РасходнаяНакладнаяИД' => $data['invoice_id']]);
+				
+				break;
+				
+			case 'download_mutual_settlements':
+				
+				$path = '/unf/hs/Shop/Counteragents';
+				$headers[] = 'access_token: '.$data['token'];
+				$payload = json_encode(['Метод' => 'ПолучитьВзаиморасчеты', 'КонтрагентИД' => $data['counterparty_id'], 'ДатаНачала' => $data['period_date1'], 'ДатаОкончания' => $data['period_date2'], 'ФорматФайла' => $data['file_format']]);
+				
+				break;
+				
+		}
+		
+		$cl = curl_init();
+		if($cl){
+			
+			for($i = 0; $i < 3; $i++){
+					
+				$start_time = time();
+				
+				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
+					
+					fclose($socket);
+					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
+					curl_setopt($cl, CURLOPT_POST, true);
+					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
+					curl_setopt($cl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYPEER, false);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYHOST, 2);
+					curl_setopt($cl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($cl, CURLOPT_FORBID_REUSE, TRUE);
+					curl_setopt($cl, CURLOPT_CONNECTTIMEOUT, $this->config_project['connect_process_timeout2']); 
+					curl_setopt($cl, CURLOPT_TIMEOUT, $this->config_project['connect_process_timeout2']); 
+					$result = curl_exec($cl);
+					
+					$end_time = time();
+					$json = '';
+					
+					switch($act){
+						
+						case 'auth':
+						
+							if(strpos($result, '"Токен":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'user_info':
+						
+							if(strpos($result, '"Фамилия":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'recovery_pass':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'update_email':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'add_new_employee':
+						
+							if(strpos($result, '"ПользовательИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'edit_employee':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_delivery_addresses':
+						
+							if(strpos($result, '"АдресДоставкиИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+							
+						case 'add_new_delivery_addresses':
+						
+							if(strpos($result, '"АдресДоставкиИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'edit_delivery_addresses':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+
+						case 'delete_delivery_addresses':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_counterparties':
+						
+							if(strpos($result, '"КонтрагентИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'add_new_counterparty':
+						
+							if(strpos($result, '"ЗаявкаИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+										
+						case 'delete_counterparty':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_transport':
+						
+							if(strpos($result, '"ТранспортноеСредствоИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'add_new_transport':
+						
+							if(strpos($result, '"ТранспортноеСредствоИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'edit_transport':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+							
+						case 'delete_transport':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'weight_calculation':
+						
+							if(strpos($result, '"Вес":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'post_mess_for_manager':
+						
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'order_creation':
+						
+							if(strpos($result, '"ЗаказПокупателяИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'download_price_list':
+							
+							if(strpos($result, '"Данные":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'order_confirm':
+							
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'order_cancel':
+							
+							if(strpos($result, '"Сообщение":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+							
+						case 'get_nearest_available_delivery_date':
+							
+							if(strpos($result, '"Дата":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_nearest_available_pick_up_date':
+							
+							if(strpos($result, '"Дата":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_shipping_calendar':
+							
+							if( preg_match('/[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}/', $result) || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_pickup_intervals':
+							
+							if(strpos($result, '"ИнтервалИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_delivery_intervals':
+							
+							if(strpos($result, '"ИнтервалИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_orders_for_shipment':
+							
+							if(strpos($result, '"ЗаказПокупателяИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'shipment_creation':
+							
+							if(strpos($result, '"ЗаявкаНаОтгрузкуИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_shipment_details':
+							
+							if(strpos($result, '"ЗаявкаНаОтгрузкуИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_order_details':
+							
+							if(strpos($result, '"ЗаказПокупателяИД":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'download_order_details':
+							
+							if(strpos($result, '"Данные":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'get_invoices':
+							
+							if(strpos($result, '"РасходнаяНакладнаяИД":') !== false || strpos($result, '"Ошибка":') !== false || strpos($result, '[]') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'download_invoice':
+							
+							if(strpos($result, '"Данные":') !== false || strpos($result, '"Ошибка":') !== false ){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+						
+						case 'download_mutual_settlements':
+							
+							if(strpos($result, '"Данные":') !== false || strpos($result, '"Ошибка":') !== false){
+								$json = json_decode($result, true);
+							}
+							
+							break;
+							
+					}
+					
+					if($json != ''){
+						
+						$result = $json;
+						
+					}else{
+						
+						$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+						$err = preg_replace('/\r?\n/', '', $err);
+						
+						if($err == ''){
+							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
+								$err = 'CONNECTION_TIMEOUT';
+							}else{
+								$err = 'RESULT_IS_EMPTY';
+							}
+							$this->log_er_post_request_to_api_1c($err);
+							continue;
+						}
+						$this->log_er_post_request_to_api_1c($err);
+						
+					}
+					
+				}else{
+					$err = 'FAIL_SOCKET_CONNECT';
+					$this->log_er_post_request_to_api_1c($err);
+					continue;
+				}
+				
+				curl_close($cl);
+				unset($cl);
+				
+				break;
+				
+			}
+		
+		}else{
+			$err = 'FAIL_CURL_INIT';
+			$this->log_er_post_request_to_api_1c($err);
+		}
+		
+		return [$result, $err];
+			
+	}
+	
+	protected function control_fail_auth_and_set_ban() : void {
+		
+		$ip_hash = md5($this->ip.'ip_hash');
+		
+		$result = DB::select('SELECT `timestamp_fail_auth`, `count_fail_auth` FROM `ban_list` WHERE `ip_hash` = :ip_hash LIMIT 1', ['ip_hash' => $ip_hash]);
+		
+		if(sizeof($result) == 0){
+			DB::insert('INSERT INTO `ban_list` (`ip_hash`, `count_fail_auth`, `timestamp_fail_auth`) values (:ip_hash, :count_fail_auth, :timestamp_fail_auth)', ['ip_hash' => $ip_hash, 'count_fail_auth' => 1, 'timestamp_fail_auth' => $this->time]);
+			return;
+		}
+		
+		foreach ($result as $row) {
+			
+			if($this->time - $row->timestamp_fail_auth <= $this->config_project['find_time_fail_auth']){
+				
+				$count_fail_auth = $row->count_fail_auth;
+				$count_fail_auth++;
+				DB::update('UPDATE `ban_list` SET `count_fail_auth` = :count_fail_auth WHERE `ip_hash` = :ip_hash LIMIT 1', ['count_fail_auth' => $count_fail_auth, 'ip_hash' => $ip_hash]);
+				if($count_fail_auth >= $this->config_project['max_count_fail_auth']){
+					DB::update('UPDATE `ban_list` SET `count_fail_auth` = 0, `timestamp_fail_auth` = 0, `timestamp_set_ban` = :timestamp_set_ban WHERE `ip_hash` = :ip_hash LIMIT 1', ['timestamp_set_ban' => $this->time, 'ip_hash' => $ip_hash]);
+					$this->prepare_response(['error'=>'BANNED', 'seconds_left' => $this->config_project['time_ban_if_fail_auth']]);
+				}
+				
+			}else{
+				
+				DB::update('UPDATE `ban_list` SET `count_fail_auth` = 1, `timestamp_fail_auth` = :timestamp_fail_auth, `timestamp_set_ban` = 0 WHERE `ip_hash` = :ip_hash LIMIT 1', ['timestamp_fail_auth' => $this->time, 'ip_hash' => $ip_hash]);
+				
+			}
+			
+		}
+		
+	}
+	
+	protected function check_is_auth() : bool {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$token = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['token'] ?? '');
+		$token_hash = md5($token . 'token_hash');
+		$is_auth = false;
+		
+		if($this->check_valid_cookies() != ''){
+			return $is_auth;
+		}
+		
+		if($user_myid != ''){
+			
+			try{
+				
+				$result = DB::select('SELECT `id` FROM `users` WHERE (`user_myid` = :user_myid) AND (`token_hash` = :token_hash) AND (:time - `expires_token` < 0) LIMIT 1', ['user_myid' => $user_myid, 'token_hash' => $token_hash, 'time' => $this->time]);
+				if(sizeof($result) > 0){
+					$is_auth = true;
+				}
+				
+			} catch (QueryException $e) {
+				$this->log_er_mysql(mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8'));
+			}
+			
+		}
+		
+		return $is_auth;
+		
+	}
+	
+	protected function check_valid_cookies() : string {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$uid = preg_replace('/[^a-f0-9 ]/', '', $_COOKIE['uid'] ?? '');
+
+		if(md5($user_myid . $this->config_project['auth_salt']) != $uid){
+			return 'FAIL_USER_MYID';
+		}
+		
+		return '';
+		
+	}
+	
+	protected function get_other_user_data() : array {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$phone = '';
+		$email = '';
+		$status = '';
+		$fio = '';
+		$photo = '';
+		$manager_fio = '';
+		$manager_email = '';
+		$manager_id = '';
+		$is_not_enter_verify_code = false;
+		$client_user_myid = '';
+		$delegation_fio = '';
+		$delegation_user_myid = '';
+		$csrf_token = csrf_token();
+		$server_rsa_pubkey = '';
+		
+		list($rsa_pubkey, $rsa_privkey, $err) = $this->get_common_rsa_keys();
+		if($rsa_pubkey){
+			$server_rsa_pubkey = $rsa_pubkey;
+		}
+		
+		if($user_myid != ''){
+				
+			try{
+				
+				$result = DB::select('SELECT CONVERT(AES_DECRYPT(`phone`, :aes_key) USING utf8mb4) AS `phone`, `user_myid`, CONVERT(AES_DECRYPT(`email`, :aes_key2) USING utf8mb4) AS `email`, `status`, CONVERT(AES_DECRYPT(`fio`, :aes_key3) USING utf8mb4) AS `fio`, `photo`, CONVERT(AES_DECRYPT(`manager_fio`, :aes_key4) USING utf8mb4) AS `manager_fio`, CONVERT(AES_DECRYPT(`manager_email`, :aes_key5) USING utf8mb4) AS `manager_email`, `manager_id`, `verify_code_email`, `client_user_myid` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'aes_key3' => $this->aes_key[0], 'aes_key4' => $this->aes_key[0], 'aes_key5' => $this->aes_key[0], 'user_myid' => $user_myid]);
+				
+				foreach ($result as $row) {
+					
+					$phone = '+7'.$row->phone;
+					$email = $row->email;
+					$status = $row->status;
+					$fio = $row->fio;
+					$photo = $row->photo;
+					if($row->photo != ''){
+						$photo = '/user_files/'.$user_myid.'/photo/'.$row->photo;
+					}
+					$manager_fio = $row->manager_fio;
+					$manager_email = $row->manager_email;
+					$manager_id = $row->manager_id;
+					$is_not_enter_verify_code = ($row->verify_code_email != '');
+					$client_user_myid = $row->client_user_myid;
+					
+				}
+							
+			} catch (QueryException $e) {	
+				$this->log_er_mysql(mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8'));
+			}
+			
+			if($status == 'Сотрудник'){
+				
+				try{
+					
+					$result = DB::select('SELECT `delegation_user_myid` FROM `employees_'.$client_user_myid.'` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+					foreach ($result as $row) {
+						$delegation_user_myid = $row->delegation_user_myid;
+					}
+					if($delegation_user_myid != ''){
+						$result = DB::select('SELECT CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio` FROM `users` WHERE `user_myid` = :delegation_user_myid LIMIT 1', ['aes_key' => $this->aes_key[0], 'delegation_user_myid' => $delegation_user_myid]);
+						foreach ($result as $row) {
+							if($row->fio != ''){
+								preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->fio, $matches);
+								if($matches){
+									$delegation_fio = mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255)) . ' ' . mb_strtoupper(mb_substr($matches[2], 0, 1)) . '.' . mb_strtoupper(mb_substr($matches[3], 0, 1)) . '.';
+								}
+							}
+						}
+					}
+					
+				} catch (QueryException $e) {	
+					$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+					if(strpos($err, 'Base table or view not found') === false){
+						$this->log_er_mysql($err);
+					}
+				}
+				
+			}
+			
+		}
+		
+		return [$phone, $user_myid, $email, $status, $fio, $photo, $manager_fio, $manager_email, $manager_id, $is_not_enter_verify_code, $delegation_fio, $delegation_user_myid, $csrf_token, $server_rsa_pubkey];
+		
+	}
+	
+	protected function create_guid() : string {
+		
+		$uuid = '';
+
+		if (function_exists('com_create_guid')){
+			$uuid = trim(com_create_guid(), '{}');
+		}else{
+			$uuid = sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+		}
+
+		return strtolower($uuid);
+
+	}
+	
+	protected function get_news(int $page, int $limit) : array {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		
+		$arr_news = [];
+		$user_id = '';
+		$pagination_max_page = 1;
+		
+		try{
+			
+			$result = DB::select('SELECT `id` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+			
+			foreach ($result as $row) {
+				$user_id = (string) $row->id;
+			}
+			
+			$count = DB::table('news')->count('id');
+			$max_id = DB::table('news')->max('id');
+			$max_id++;
+			$pagination_max_page = ceil($count / $limit);
+			$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+			
+			if($page == 1){
+				$result = DB::select('SELECT * FROM `news` ORDER BY `id` DESC LIMIT :limit', ['limit' => $limit]);
+			}else{
+				$result = DB::select('SELECT * FROM `news` WHERE `id` < :last_id ORDER BY `id` DESC LIMIT :limit', ['last_id' => ($max_id - ($limit * ($page - 1))), 'limit' => $limit]); 
+			}
+			
+			foreach ($result as $row) {
+				$is_unread = (strpos($row->user_ids_is_read, $user_id.' ') === false ? '1' : '');
+				$arr_news[] = ['id' => $row->id, 'date' => $row->date, 'header' => $row->header, 'text' => $row->text, 'is_unread' => $is_unread];
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}
+		
+		return array('data' => $arr_news, 'pagination_max_page' => $pagination_max_page);
+		
+	}
+	
+	protected function get_orders(string $main_counterparty_id, int $page, int $limit, string $order_date1 = '', string $order_date2 = '',  string $statuses = 'in_processing,needs_confirmation,in_work,ready_for_shipment,shipped,in_shipment,canceled', string $responsible_id = '', string $counterparty_id = '', string $payment = '', string $shipping_warehouse_id = '', string $responsible_sokrof_id = '', string $sort = 'order_date_new_first') : array {
+		
+		$arr_orders = [];
+		$pagination_max_page = 1;
+		$result = [];
+		$result2 = [];
+		$id = 0;
+		
+		if($page < 1){$page = 1;}
+		
+		if($order_date1 != ''){
+			$timestamp_order1 = date('U', strtotime($order_date1));
+			$timestamp_order2 = date('U', strtotime($order_date2)) + 60;
+			if($timestamp_order1 < 0){$timestamp_order1 = 0;}
+			if($timestamp_order2 < 0){$timestamp_order2 = 0;}
+		}else{
+			$timestamp_order1 = 0;
+			$timestamp_order2 = 9999900000;
+		}
+		
+		if($statuses == ''){
+			$statuses = 'in_processing,needs_confirmation,in_work,ready_for_shipment,shipped,in_shipment,canceled';
+		}
+		if($statuses == 'everything_except_drafts'){
+			$statuses = 'in_processing,needs_confirmation,in_work,ready_for_shipment,shipped,in_shipment';
+		}
+		$statuses = preg_replace('/(.+)(,|$)/U', '"$1",', $statuses);
+		$statuses = preg_replace('/,$/', '', $statuses);
+		
+		$op0 = ($statuses == '"draft"' ? '=' : '!=');
+		$op1 = ($responsible_id != '' ? '=' : '!=');
+		$op2 = ($counterparty_id != '' ? '=' : '!=');
+		
+		switch($payment){
+			case '':
+				$payment = '-';
+				$op3 = '!=';
+				break;
+			case 'cash_on_delivery':
+				$payment = '1';
+				$op3 = '=';
+				break;
+			case 'prepayment':
+				$payment = '1';
+				$op3 = '!=';
+				break;
+		}
+		
+		$op4 = ($shipping_warehouse_id != '' ? '=' : '!=');
+		$op5 = ($responsible_sokrof_id != '' ? '=' : '!=');
+		
+		switch($sort){
+			case 'order_date_new_first':
+				$order = 'DESC';
+				$sign = '<';
+				break;
+			case 'order_date_old_first':
+			case 'shipping_date_is_earlier':
+			case 'shipping_date_later':
+				$order = 'ASC';
+				$sign = '>';
+				break;
+		}
+		
+		try{
+			
+			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
+				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
+				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
+				//
+			}
+			
+			switch($sort){
+				
+				case 'order_date_new_first':
+				
+					$result = DB::select('SELECT `id` FROM `orders_'.$main_counterparty_id.'` WHERE `timestamp_order` <= :timestamp_order2 ORDER BY `id` DESC LIMIT 1', ['timestamp_order2' => $timestamp_order2]);
+					foreach ($result as $row) {
+						$id = ($row->id - ($limit * ($page - 1))) + 1;
+					}
+				
+					break;
+					
+				case 'order_date_old_first':
+				case 'shipping_date_is_earlier':
+				case 'shipping_date_later':
+				
+					$result = DB::select('SELECT `id` FROM `orders_'.$main_counterparty_id.'` WHERE `timestamp_order` >= :timestamp_order1 ORDER BY `id` ASC LIMIT 1', ['timestamp_order1' => $timestamp_order1]);
+					foreach ($result as $row) {
+						$id = ($row->id + ($limit * ($page - 1))) - 1;
+					}
+				
+					break;
+											
+			}
+					
+			$result = DB::select('SELECT `timestamp_shipments`, `date`, `order_id`, `order_number`, `status`, `counterparty_id`, `sum`, `is_cash_payment`, `shipping_date`, `shipping_warehouse_id`, CONVERT(AES_DECRYPT(`responsible_sokrof`, :aes_key) USING utf8mb4) AS `responsible_sokrof`, `client_id` FROM `orders_'.$main_counterparty_id.'` WHERE `timestamp_order` >= :timestamp_order1 AND `timestamp_order` <= :timestamp_order2 AND `id` > 1 AND `id` '.$sign.' :id AND `status` '.$op0.' \'draft\' AND `status` IN ('.$statuses.') AND `client_id` '.$op1.' :client_id AND `counterparty_id` '.$op2.' :counterparty_id AND `is_cash_payment` '.$op3.' :payment AND `shipping_warehouse_id` '.$op4.' :shipping_warehouse_id  ORDER BY `date` '.$order.' LIMIT :limit', ['aes_key' => $this->aes_key[0], 'timestamp_order1' => $timestamp_order1, 'timestamp_order2' => $timestamp_order2, 'id' => $id, 'client_id' => $responsible_id, 'counterparty_id' => $counterparty_id, 'payment' => $payment, 'shipping_warehouse_id' => $shipping_warehouse_id, 'limit' => $limit]);
+			
+			$result2 = DB::select('SELECT `id` FROM `orders_'.$main_counterparty_id.'` WHERE `id` > 1 AND `timestamp_order` >= :timestamp_order1 AND `timestamp_order` <= :timestamp_order2 AND `status` '.$op0.' \'draft\' AND `status` IN ('.$statuses.') AND `client_id` '.$op1.' :client_id AND `counterparty_id` '.$op2.' :counterparty_id AND `is_cash_payment` '.$op3.' :payment AND `shipping_warehouse_id` '.$op4.' :shipping_warehouse_id  ORDER BY `date` '.$order, ['timestamp_order1' => $timestamp_order1, 'timestamp_order2' => $timestamp_order2, 'client_id' => $responsible_id, 'counterparty_id' => $counterparty_id, 'payment' => $payment, 'shipping_warehouse_id' => $shipping_warehouse_id]);
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+		}
+		
+		$pagination_max_page = ceil(sizeof($result2) / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		$client_ids = '';
+		$arr = [];
+		
+		foreach ($result as $row) {
+			
+			$arr[] = ['timestamp_shipments' => $row->timestamp_shipments, 'date' => $this->convert_format_date2($row->date), 'order_id' => $row->order_id, 'order_number' => $row->order_number, 'status' => $row->status, 'counterparty_id' => $row->counterparty_id, 'sum' => (float) $row->sum, 'is_cash_payment' => $row->is_cash_payment, 'shipping_date' => str_replace('01 янв 0001', '', $this->convert_format_date2($row->shipping_date)), 'shipping_warehouse_id' => $row->shipping_warehouse_id, 'responsible_sokrof' => $row->responsible_sokrof, 'client_id' => $row->client_id];
+			
+			if(strpos($client_ids, $row->client_id) === false){
+				$client_ids .= '"'.$row->client_id.'",';
+			}
+			
+		}
+		$client_ids = preg_replace('/,$/', '', $client_ids);
+		
+		if(sizeof($arr) > 0){
+			
+			if($sort == 'shipping_date_is_earlier' || $sort == 'shipping_date_later'){
+				
+				$obj = new \Timsort();
+				$arr = $obj->sort($arr, 'timestamp_shipments');
+				
+				if($sort == 'shipping_date_is_earlier'){
+					$arr = array_reverse($arr);
+				}
+				
+			}
+			
+			try{
+				$result = DB::select('SELECT `user_myid`, CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio` FROM `users` WHERE `user_myid` IN ('.$client_ids.')', ['aes_key' => $this->aes_key[0]]);
+			} catch (QueryException $e) {
+				$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+			$arr2 = [];
+			
+			foreach ($arr as $row) {
+				
+				if(array_key_exists($row['client_id'], $arr2)){
+					
+					$client_fio = $arr2[$row['client_id']]['client_fio'];
+					$arr_orders[] = ['date' => $row['date'], 'order_id' => $row['order_id'], 'order_number' => $row['order_number'], 'status' => $row['status'], 'counterparty_id' => $row['counterparty_id'], 'sum' => $row['sum'], 'is_cash_payment' => $row['is_cash_payment'], 'shipping_date' => $row['shipping_date'], 'shipping_warehouse_id' => $row['shipping_warehouse_id'], 'responsible_sokrof' => $row['responsible_sokrof'], 'client_fio' => $client_fio];
+					continue;
+					
+				}
+				
+				$client_fio = '';
+				
+				foreach ($result as $row2) {
+					
+					if($row['client_id'] == $row2->user_myid){
+						
+						preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row2->fio, $matches);
+						if($matches){
+							$client_fio = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+						}else{
+							$client_fio = '';
+						}
+						break;
+						
+					}			
+					
+				}
+				
+				$arr_orders[] = ['date' => $row['date'], 'order_id' => $row['order_id'], 'order_number' => $row['order_number'], 'status' => $row['status'], 'counterparty_id' => $row['counterparty_id'], 'sum' => $row['sum'], 'is_cash_payment' => $row['is_cash_payment'], 'shipping_date' => $row['shipping_date'], 'shipping_warehouse_id' => $row['shipping_warehouse_id'], 'responsible_sokrof' => $row['responsible_sokrof'], 'client_fio' => $client_fio];						
+				$arr2[$row['client_id']] = ['client_fio' => $client_fio];
+				
+			}
+			
+		}
+		
+		return array('data' => $arr_orders, 'pagination_max_page' => $pagination_max_page);
+		
+	}
+
+	protected function get_shipments(string $main_counterparty_id, int $page, int $limit, string $planned_date1 = '', string $planned_date2 = '', string $statuses = 'in_processing,processed,canceled', string $shipment_type = '', string $responsible_id = '', string $counterparty_id = '', string $shipping_warehouse_id = '', string $responsible_sokrof_id = '', string $sort = 'shipping_date_is_earlier') : array {
+		
+		$pagination_max_page = 1;
+		$arr_shipments = [];
+		$result = [];
+		$result2 = [];
+		$id = 0;
+	
+		if($planned_date1 != ''){
+			$timestamp_planned1 = date('U', strtotime($planned_date1));
+			$timestamp_planned2 = date('U', strtotime($planned_date2)) + 60;
+			if($timestamp_planned1 < 0){$timestamp_planned1 = 0;}
+			if($timestamp_planned2 < 0){$timestamp_planned2 = 0;}
+		}else{
+			$timestamp_planned1 = 0;
+			$timestamp_planned2 = 9999900000;
+		}
+		
+		$op1 = ($responsible_id != '' ? '=' : '!=');
+		$op2 = ($counterparty_id != '' ? '=' : '!=');
+		$op4 = ($shipping_warehouse_id != '' ? '=' : '!=');
+		$op5 = ($responsible_sokrof_id != '' ? '=' : '!=');
+		$op6 = ($shipment_type == 'delivery' ? '!= \'\'' : ($shipment_type == 'pickup' ? '= \'\'' : '!= \'-\''));
+		
+		if($statuses == ''){
+			$statuses = 'in_processing,processed,canceled';
+		}
+		$statuses = preg_replace('/(.+)(,|$)/U', '"$1",', $statuses);
+		$statuses = preg_replace('/,$/', '', $statuses);
+		$result = [];
+		$result2 = [];
+		
+		try{
+
+			$result = DB::select('SELECT `id` FROM `shipments_'.$main_counterparty_id.'` WHERE `timestamp_shipments` <= :timestamp_planned2 ORDER BY `id` DESC LIMIT 1', ['timestamp_planned2' => $timestamp_planned2]);
+			foreach ($result as $row) {
+				$id = ($row->id - ($limit * ($page - 1))) + 1;
+			}
+
+			$result = DB::select('SELECT `timestamp_shipments`, `shipping_date`, `shipment_id`, `shipment_number`, `status`, `delivery_address_id`, `shipping_warehouse_id`, `counterparty_id`, `sum`, `weight`, CONVERT(AES_DECRYPT(`responsible_sokrof`, :aes_key) USING utf8mb4) AS `responsible_sokrof`, `client_id` FROM `shipments_'.$main_counterparty_id.'` WHERE `timestamp_shipments` >= :timestamp_planned1 AND `timestamp_shipments` <= :timestamp_planned2 AND `id` > 1 AND `id` < :id AND `status` IN ('.$statuses.') AND `client_id` '.$op1.' :client_id AND `counterparty_id` '.$op2.' :counterparty_id AND `shipping_warehouse_id` '.$op4.' :shipping_warehouse_id  AND `delivery_address_id` '.$op6.' ORDER BY `id` DESC LIMIT :limit', ['aes_key' => $this->aes_key[0], 'timestamp_planned1' => $timestamp_planned1, 'timestamp_planned2' => $timestamp_planned2, 'id' => $id, 'client_id' => $responsible_id, 'counterparty_id' => $counterparty_id, 'shipping_warehouse_id' => $shipping_warehouse_id,  'limit' => $limit]);
+
+			$result2 = DB::select('SELECT `id` FROM `shipments_'.$main_counterparty_id.'` WHERE `id` > 1 AND `timestamp_shipments` >= :timestamp_planned1 AND `timestamp_shipments` <= :timestamp_planned2 AND `status` IN ('.$statuses.') AND `client_id` '.$op1.' :client_id AND `counterparty_id` '.$op2.' :counterparty_id AND `shipping_warehouse_id` '.$op4.' :shipping_warehouse_id AND  `delivery_address_id` '.$op6.' ORDER BY `id` DESC', ['timestamp_planned1' => $timestamp_planned1, 'timestamp_planned2' => $timestamp_planned2, 'client_id' => $responsible_id, 'counterparty_id' => $counterparty_id, 'shipping_warehouse_id' => $shipping_warehouse_id]);
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+		}
+
+		$pagination_max_page = ceil(sizeof($result2) / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		$arr = [];
+		$client_ids = '';
+
+		foreach ($result as $row) {
+			
+			$arr[] = ['timestamp_shipments' => $row->timestamp_shipments, 'shipping_date' => str_replace('01 янв 0001', '', $this->convert_format_date2($row->shipping_date)), 'shipment_id' => $row->shipment_id, 'shipment_number' => $row->shipment_number, 'status' => $row->status, 'delivery_address_id' => $row->delivery_address_id, 'shipping_warehouse_id' => $row->shipping_warehouse_id, 'counterparty_id' => $row->counterparty_id, 'sum' => (int) $row->sum, 'weight' => (float) $row->weight, 'responsible_sokrof' => $row->responsible_sokrof, 'client_id' => $row->client_id];
+			
+			if(strpos($client_ids, $row->client_id) === false){
+				$client_ids .= '"'.$row->client_id.'",';
+			}
+			
+		}
+		$client_ids = preg_replace('/,$/', '', $client_ids);
+		
+		if(sizeof($arr) > 0){
+			
+			$obj = new \Timsort();
+			$arr = $obj->sort($arr, 'timestamp_shipments');
+			
+			if($sort == 'shipping_date_later'){
+				$arr = array_reverse($arr);
+			}
+				
+			try{
+				$result = DB::select('SELECT `user_myid`, CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio` FROM `users` WHERE `user_myid` IN ('.$client_ids.')', ['aes_key' => $this->aes_key[0]]);
+			} catch (QueryException $e) {
+				$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+			$arr2 = [];
+			
+			foreach ($arr as $row) {
+				
+				if(array_key_exists($row['client_id'], $arr2)){
+					
+					$client_fio = $arr2[$row['client_id']]['client_fio'];
+					$arr_shipments[] = ['shipping_date' => $row['shipping_date'], 'shipment_id' => $row['shipment_id'], 'shipment_number' => $row['shipment_number'], 'status' => $row['status'], 'delivery_address_id' => $row['delivery_address_id'], 'shipping_warehouse_id' => $row['shipping_warehouse_id'], 'counterparty_id' => $row['counterparty_id'], 'sum' => $row['sum'], 'weight' => $row['weight'], 'responsible_sokrof' => $row['responsible_sokrof'], 'client_fio' => $client_fio];
+					continue;
+					
+				}
+				
+				$client_fio = '';
+				
+				foreach ($result as $row2) {
+					
+					if($row['client_id'] == $row2->user_myid){
+						
+						preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row2->fio, $matches);
+						if($matches){
+							$client_fio = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+						}else{
+							$client_fio = '';
+						}
+						break;
+						
+					}
+					
+				}
+				
+				$arr_shipments[] = ['shipping_date' => $row['shipping_date'], 'shipment_id' => $row['shipment_id'], 'shipment_number' => $row['shipment_number'], 'status' => $row['status'], 'delivery_address_id' => $row['delivery_address_id'], 'shipping_warehouse_id' => $row['shipping_warehouse_id'], 'counterparty_id' => $row['counterparty_id'], 'sum' => $row['sum'], 'weight' => $row['weight'], 'responsible_sokrof' => $row['responsible_sokrof'], 'client_fio' => $client_fio];						
+				$arr2[$row['client_id']] = ['client_fio' => $client_fio];			
+				
+			}
+			
+		}
+		
+		return array('data' => $arr_shipments, 'pagination_max_page' => $pagination_max_page);
+		
+	}
+
+	protected function get_delivery_addresses(string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_delivery_addresses', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+
+		return array('data' => $result);
+		
+	}
+	
+	protected function get_counterparties(string $main_counterparty_id) : array {
+		
+		$data_ = [];
+		
+		try{
+			
+			if(Schema::hasTable('counterparties_'.$main_counterparty_id)){
+				
+				$result = DB::select('SELECT `counterparty_id`, `application_id`, CONVERT(AES_DECRYPT(`fullname`, :aes_key) USING utf8mb4) AS `fullname`, CONVERT(AES_DECRYPT(`inn`, :aes_key2) USING utf8mb4) AS `inn`, CONVERT(AES_DECRYPT(`kpp`, :aes_key3) USING utf8mb4) AS `kpp`, CONVERT(AES_DECRYPT(`ogrn`, :aes_key4) USING utf8mb4) AS `ogrn`, CONVERT(AES_DECRYPT(`legal_address`, :aes_key5) USING utf8mb4) AS `legal_address`, CONVERT(AES_DECRYPT(`actual_address`, :aes_key6) USING utf8mb4) AS `actual_address`, CONVERT(AES_DECRYPT(`corr_account`, :aes_key7) USING utf8mb4) AS `corr_account`, CONVERT(AES_DECRYPT(`bank_bik`, :aes_key8) USING utf8mb4) AS `bank_bik`, CONVERT(AES_DECRYPT(`bank_name`, :aes_key9) USING utf8mb4) AS `bank_name`, CONVERT(AES_DECRYPT(`checking_account`, :aes_key10) USING utf8mb4) AS `checking_account`, `bonus_percentage`, `id_delivery_addresses`, `is_confirmed` FROM `counterparties_'.$main_counterparty_id.'` WHERE `id` > 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'aes_key3' => $this->aes_key[0], 'aes_key4' => $this->aes_key[0], 'aes_key5' => $this->aes_key[0], 'aes_key6' => $this->aes_key[0], 'aes_key7' => $this->aes_key[0], 'aes_key8' => $this->aes_key[0], 'aes_key9' => $this->aes_key[0], 'aes_key10' => $this->aes_key[0]]);
+		
+				foreach ($result as $row) {
+					$data_[] = ['counterparty_id' => $row->counterparty_id, 'application_id' => $row->application_id, 'fullname' => $row->fullname, 'inn' => $row->inn, 'kpp' => $row->kpp, 'ogrn' => $row->ogrn, 'legal_address' => $row->legal_address, 'actual_address' => $row->actual_address, 'corr_account' => $row->corr_account, 'bank_bik' => $row->bank_bik, 'bank_name' => $row->bank_name, 'checking_account' => $row->checking_account, 'bonus_percentage' => $row->bonus_percentage, 'id_delivery_addresses' => $row->id_delivery_addresses, 'is_confirmed' => $row->is_confirmed ];
+				}
+			
+			}
+			
+		} catch (QueryException $e) {
+			
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+			
+		}
+		
+		return array('data' => $data_);
+		
+	}
+	
+	protected function get_shipment_warehouses() : array {
+
+		$warehouses = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `warehouses` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$warehouses = json_decode($row->data, true);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+		
+		$arr = [];
+		foreach($warehouses as $c){
+			if($c['СкладНекондиции']){
+				$c['Наименование'] = $c['Наименование'].' (некодн.)';
+			}
+			$arr[] = $c;
+		}
+		$warehouses = $arr;
+		
+		return array('data' => $warehouses);
+		
+	}
+
+	protected function get_product_catalog($include_unavailable = false) : array {
+		
+		$product_catalog = [];
+		$arr = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `product_catalog` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$product_catalog = json_decode($row->data, true);
+			}
+			foreach($product_catalog as $c){
+				if(!$include_unavailable) {
+
+					$products = [];
+
+					if(!empty($c['Данные']))
+					{
+						foreach($c["Данные"] as $item) {
+							if(array_key_exists('НедоступноДляВыбора',$item) && !$item['НедоступноДляВыбора'])
+							{
+								$products[] = $item;
+							}
+						}
+					}
+
+					if(!empty($products))
+					{
+						$c['Данные'] = $products;
+						$arr[] = $c;
+					}
+
+				} else {
+					$arr[] = $c;
+				}
+			}
+			if(sizeof($arr) > 0){
+				$product_catalog = $arr;
+				$arr = [];
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+
+		return array('data' => $product_catalog);
+		
+	}
+	
+	protected function get_substandard_catalog() : array {
+		
+		$substandard_catalog = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `substandard_catalog` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$substandard_catalog = json_decode($row->data, true);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+		
+		return array('data' => $substandard_catalog);
+		
+	}
+
+	protected function get_prices_of_the_main_counterparty() : array {
+		
+		$prices_of_the_main_counterparty = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `prices_of_the_main_counterparty` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$prices_of_the_main_counterparty = json_decode($row->data, true);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+
+		return array('data' => $prices_of_the_main_counterparty);
+		
+	}
+	
+	protected function get_available_specifications() : array {
+
+		$available_characteristics = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `available_characteristics` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$available_characteristics = json_decode($row->data, true);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+
+		return array('data' => $available_characteristics);
+		
+	}
+	
+	protected function get_metal_residues() : array {
+
+		$metal_residues = [];
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `metal_residues` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$metal_residues = json_decode($row->data, true);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}	
+
+		return array('data' => $metal_residues);
+		
+	}
+
+	protected function get_new_news() : array {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		
+		$number_unread = 0;
+		$number_new_row_news = 0;
+		$arr_news = [];
+		
+		try{
+			
+			DB::beginTransaction();
+			
+			$result = DB::select('SELECT `number_of_unread_news`, `number_new_row_news` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1 FOR UPDATE', ['user_myid' => $user_myid]);
+			
+			foreach ($result as $row) {
+				$number_unread = $row->number_of_unread_news;
+				$number_new_row_news = $row->number_new_row_news;
+			}
+			
+			if($number_new_row_news > 0){
+				DB::update('UPDATE `users` SET `number_new_row_news` = 0 WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+			}
+			
+			DB::commit();
+			
+			if($number_new_row_news > 0){
+				$result = DB::select('SELECT * FROM `news` ORDER BY `id` DESC LIMIT :limit', ['limit' => $number_new_row_news]);
+				foreach ($result as $row) {
+					$arr_news[] = ['id' => $row->id, 'date' => $row->date, 'header' => $row->header, 'text' => $row->text, 'is_unread' => '1'];
+				}
+			}
+			
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+			
+		}	
+		
+		return array('number_unread' => $number_unread, 'data' => $arr_news);
+		
+	}
+	
+	protected function get_popular_statuses(string $main_counterparty_id) : array {
+		
+		$popular_statuses = '{"ready_for_shipment":0, "with_shipments":0, "needs_confirmation":0, "draft":0}';
+		
+		try{
+			
+			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
+				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
+				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
+				//
+			}
+			
+			$result = DB::select('SELECT `popular_statuses` FROM `orders_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+			
+			foreach ($result as $row) {
+				$popular_statuses = $row->popular_statuses;
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+		}
+		
+		return array('data' => json_decode($popular_statuses, true));
+		
+	}
+	
+	protected function get_update_orders(string $main_counterparty_id) : array {
+		
+		$update_orders = [];
+		
+		try{
+			
+			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
+				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
+				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
+				//
+			}
+			
+			$result = DB::select('SELECT `ids_row_update` FROM `orders_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+			
+			foreach ($result as $row) {
+				
+				$ids_row_update = '';
+				
+				if($row->ids_row_update != ''){
+					
+					DB::beginTransaction();
+
+						# блокируем всю таблицу в рамках транзакции
+						DB::select('SELECT COUNT(`id`) FROM `orders_'.$main_counterparty_id.'` FOR UPDATE');
+						
+						$result = DB::select('SELECT `ids_row_update` FROM `orders_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+						foreach ($result as $row) {
+							$ids_row_update = preg_replace('/(.+)(,|$)/U', '"$1",', $row->ids_row_update);
+							$ids_row_update = preg_replace('/,$/', '', $ids_row_update);
+						}
+						
+						DB::update('UPDATE `orders_'.$main_counterparty_id.'` SET `ids_row_update` = \'\' WHERE `id` = 1 LIMIT 1');
+						
+						if($ids_row_update != ''){
+							$result = DB::select('SELECT `order_id`, `status` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` IN ('.$ids_row_update.')');
+							foreach ($result as $row) {
+								$update_orders[] = ['order_id' => $row->order_id, 'status' => $row->status];
+							}
+						}
+						
+					DB::commit();
+					
+				}
+				
+			}
+			
+		} catch (QueryException $e) {
+							
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+		}
+		
+		return array('data' => $update_orders);
+		
+	}
+	
+	protected function get_update_shipments(string $main_counterparty_id) : array {
+		
+		$update_shipments = [];
+		$count = '';
+		
+		try{
+			
+			$result = DB::select('SELECT `ids_row_update` FROM `shipments_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+			
+			foreach ($result as $row) {
+				
+				$ids_row_update = '';
+				
+				if($row->ids_row_update != ''){
+					
+					DB::beginTransaction();
+
+						# блокируем всю таблицу в рамках транзакции
+						DB::select('SELECT COUNT(`id`) FROM `shipments_'.$main_counterparty_id.'` FOR UPDATE');
+						
+						$result = DB::select('SELECT `ids_row_update` FROM `shipments_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+						foreach ($result as $row) {
+							$ids_row_update = preg_replace('/(.+)(,|$)/U', '"$1",', $row->ids_row_update);
+							$ids_row_update = preg_replace('/,$/', '', $ids_row_update);
+						}
+						
+						DB::update('UPDATE `shipments_'.$main_counterparty_id.'` SET `ids_row_update` = \'\' WHERE `id` = 1 LIMIT 1');
+						
+						$result = DB::select('SELECT `shipment_id`, `status` FROM `shipments_'.$main_counterparty_id.'` WHERE `shipment_id` IN ('.$ids_row_update.')');
+						foreach ($result as $row) {
+							$update_shipments[] = ['shipment_id' => $row->shipment_id, 'status' => $row->status];
+						}
+					
+					DB::commit();
+					
+				}
+				
+			}
+		
+			$count = DB::table('shipments_'.$main_counterparty_id)->distinct()->count('shipment_number');
+			$count--;
+			if($count > 99){
+				$count = '99+';
+			}
+			$count = (string) $count;
+			
+		} catch (QueryException $e) {
+							
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+		}
+		
+		return array('total_shipments' => $count, 'data' => $update_shipments);
+		
+	}
+	
+	protected function get_new_notifications() : array {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$new_notifications = [];
+		$number_unread = 0;
+		
+		try{
+			
+			DB::beginTransaction();
+
+				# блокируем всю таблицу в рамках транзакции
+				DB::select('SELECT COUNT(`id`) FROM `notifications_'.$user_myid.'` FOR UPDATE');
+				
+				$result = DB::select('SELECT `number_unread_notifications`, `number_new_row` FROM `notifications_'.$user_myid.'` WHERE `id` = 1 LIMIT 1');
+				foreach ($result as $row) {
+					
+					$number_unread = $row->number_unread_notifications;
+					
+					if($row->number_new_row > 0){
+						
+						DB::update('UPDATE `notifications_'.$user_myid.'` SET `number_new_row` = 0 WHERE `id` = 1 LIMIT 1');
+						
+						$result = DB::select('SELECT `id`, `date`, `counterparty_id`, `document_id`, `category`, CONVERT(AES_DECRYPT(`subject`, :aes_key) USING utf8mb4) AS `subject`, CONVERT(AES_DECRYPT(`message`, :aes_key2) USING utf8mb4) AS `message`, `is_unread` FROM `notifications_'.$user_myid.'` WHERE `id` > 1 ORDER BY `id` DESC LIMIT :limit', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'limit' => $row->number_new_row]);
+						foreach ($result as $row) {
+							$new_notifications[] = ['id' => $row->id, 'date' => $row->date, 'counterparty_id' => $row->counterparty_id, 'document_id' => $row->document_id, 'category' => $row->category, 'subject' => $row->subject, 'message' => $row->message, 'is_unread' => $row->is_unread];
+						}
+						
+					}
+					
+				}
+			
+			DB::commit();
+		
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+		}	
+		
+		return array('number_unread' => $number_unread, 'data' => $new_notifications);
+		
+	}
+	
+	protected function get_update_counterparties(string $main_counterparty_id) : array {
+		
+		$update_counterparties = [];
+		
+		try{
+
+			if(!Schema::hasTable('counterparties_'.$main_counterparty_id)){
+				return ['error'=>'COULD_NOT_FIND_THE_TABLE_WITH_THE_COUNTERPARTY_DATA', 'comment'=>$main_counterparty_id];
+			}
+			
+			$result = DB::select('SELECT `ids_row_update` FROM `counterparties_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+			
+			foreach ($result as $row) {
+				
+				$ids_row_update = '';
+				
+				if($row->ids_row_update != ''){
+					
+					DB::beginTransaction();
+
+						# блокируем всю таблицу в рамках транзакции
+						DB::select('SELECT COUNT(`id`) FROM `counterparties_'.$main_counterparty_id.'` FOR UPDATE');
+						
+						$result = DB::select('SELECT `ids_row_update` FROM `counterparties_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
+						foreach ($result as $row) {
+							$ids_row_update = preg_replace('/(.+)(,|$)/U', '"$1",', $row->ids_row_update);
+							$ids_row_update = preg_replace('/,$/', '', $ids_row_update);
+						}
+						
+						DB::update('UPDATE `counterparties_'.$main_counterparty_id.'` SET `ids_row_update` = \'\' WHERE `id` = 1 LIMIT 1');
+						
+						$result = DB::select('SELECT `counterparty_id`, `is_confirmed` FROM `counterparties_'.$main_counterparty_id.'` WHERE `counterparty_id` IN ('.$ids_row_update.')');
+						foreach ($result as $row) {
+							$update_counterparties[] = ['counterparty_id' => $row->counterparty_id];
+						}
+					
+					DB::commit();
+					
+				}
+				
+			}
+			
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+			
+		}
+		
+		return array('data' => $update_counterparties);
+		
+	}
+	
+	protected function get_all_notifications() : array {
+		
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$page = preg_replace('/[^0-9]/', '', $_GET['page'] ?? '');
+		$order_id = preg_replace('/[^a-f0-9\-]/', '', substr($_GET['order_id'] ?? '', 0, 36));
+				
+		if(preg_match('/^[0-9]{6,}$/', $page)){
+			return array('error'=>'FAIL_PAGE');
+		}
+		
+		$page = (int) $page;	
+		$arr_notifications = [];
+		$pagination_max_page = 1;
+		$result2 = [];
+		$limit = 10; 
+		
+		try{
+				
+			$max_id = DB::table('notifications_'.$user_myid)->max('id');
+			$max_id++;
+			
+			if($order_id != ''){
+				$result = DB::select('SELECT `id`, `date`, `counterparty_id`, `document_id`, `category`, CONVERT(AES_DECRYPT(`subject`, :aes_key) USING utf8mb4) AS `subject`, CONVERT(AES_DECRYPT(`message`, :aes_key2) USING utf8mb4) AS `message`, `is_unread` FROM `notifications_'.$user_myid.'` WHERE `id` > 1 AND `id` < :last_id AND `document_id` = :order_id ORDER BY `id` DESC LIMIT :limit', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'last_id' => ($max_id - ($limit * ($page - 1))), 'order_id' => $order_id, 'limit' => $limit]);
+			}else{
+				$result = DB::select('SELECT `id`, `date`, `counterparty_id`, `document_id`, `category`, CONVERT(AES_DECRYPT(`subject`, :aes_key) USING utf8mb4) AS `subject`, CONVERT(AES_DECRYPT(`message`, :aes_key2) USING utf8mb4) AS `message`, `is_unread` FROM `notifications_'.$user_myid.'` WHERE `id` > 1 AND `id` < :last_id ORDER BY `id` DESC LIMIT :limit', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'last_id' => ($max_id - ($limit * ($page - 1))), 'limit' => $limit]);
+			}
+			
+			if($order_id != ''){
+				$result2 = DB::select('SELECT `id` FROM `notifications_'.$user_myid.'` WHERE `id` > 1 AND `document_id` = :order_id ORDER BY `id` DESC', ['order_id' => $order_id]);
+			}else{
+				$result2 = DB::select('SELECT `id` FROM `notifications_'.$user_myid.'` WHERE `id` > 1 ORDER BY `id` DESC');
+			}
+			
+			foreach ($result as $row) {
+				$arr_notifications[] = ['id' => $row->id, 'date' => $row->date, 'counterparty_id' => $row->counterparty_id, 'document_id' => $row->document_id, 'category' => $row->category, 'subject' => $row->subject, 'message' => $row->message, 'is_unread' => $row->is_unread];
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+		}
+
+		$pagination_max_page = ceil(sizeof($result2) / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		
+		return array('data' => $arr_notifications, 'pagination_max_page' => $pagination_max_page);
+		
+	}
+	
+	protected function get_employees(string $status, string $client_user_myid, string $user_myid) : array {
+		
+		$employees = [];
+		
+		try{
+			
+			$arr = [];
+			$arr2 = [];
+			$user_myids_ = '';
+			$delegation_user_myids_ = '';
+			
+			$result = DB::select('SELECT * FROM `employees_'.$client_user_myid.'` ORDER BY `id` ASC');
+			
+			foreach ($result as $row) {
+				$user_myids_ .= '"'.$row->user_myid.'",';
+				if($row->delegation_user_myid != '' && strpos($delegation_user_myids_, $row->delegation_user_myid) === false){
+					$delegation_user_myids_ .= '"'.$row->delegation_user_myid.'",';
+				}
+			}
+			
+			$user_myids_ = preg_replace('/,$/', '', $user_myids_);
+			$delegation_user_myids_ = preg_replace('/,$/', '', $delegation_user_myids_);
+						
+			if($user_myids_ != ''){
+				$result2 = DB::select('SELECT `user_myid`, CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio`, CONVERT(AES_DECRYPT(`phone`, :aes_key2) USING utf8mb4) AS `phone`, CONVERT(AES_DECRYPT(`email`, :aes_key3) USING utf8mb4) AS `email` FROM `users` WHERE `user_myid` IN ('.$user_myids_.')', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'aes_key3' => $this->aes_key[0]]);
+				foreach ($result2 as $row) {
+					$arr[$row->user_myid] = ['fio' => $row->fio, 'phone' => $row->phone, 'email' => $row->email];
+				}
+			}
+
+			if($delegation_user_myids_ != ''){
+				$result2 = DB::select('SELECT `user_myid`, CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio` FROM `users` WHERE `user_myid` IN ('.$delegation_user_myids_.')', ['aes_key' => $this->aes_key[0]]);
+				foreach ($result2 as $row) {
+					$arr2[$row->user_myid] = ['fio' => $row->fio];
+				}
+			}
+			
+			foreach ($result as $row) {
+				
+				$fio = '';
+				$phone = '';
+				$email = '';
+				$delegation_fio = '';
+				
+				if(array_key_exists($row->user_myid, $arr)){
+					$fio = $arr[$row->user_myid]['fio'];
+					$phone = $arr[$row->user_myid]['phone'];
+					$email = $arr[$row->user_myid]['email'];
+				}
+				
+				if($phone == ''){
+					continue;
+				}
+				
+				if(array_key_exists($row->delegation_user_myid, $arr2)){
+					$delegation_fio = $arr2[$row->delegation_user_myid]['fio'];
+				}
+				
+				if($delegation_fio != ''){
+					preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $delegation_fio, $matches);
+					if($matches){
+						$delegation_fio = mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255)) . ' ' . mb_strtoupper(mb_substr($matches[2], 0, 1)) . '.' . mb_strtoupper(mb_substr($matches[3], 0, 1)) . '.';
+					}else{
+						$delegation_fio = '';
+					}
+				}else{
+					$delegation_fio = '';
+				}
+				
+				preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $fio, $matches);
+				if($matches){
+					$fio2 = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+				}else{
+					$fio2 = '';
+				}
+				
+				if($status == 'ОсновнойПрофиль' || $status == 'Администратор'){
+					
+					$employees[] = ['phone' => '+7'.$phone, 'user_myid' => $row->user_myid, 'email' => $email, 'fio' => $fio, 'fio2' => $fio2,  'delegation_user_myid' => $row->delegation_user_myid, 'delegation_fio' => $delegation_fio, 'is_banned' => $row->is_banned];
+					
+				}
+				
+				if($status == 'Сотрудник'){
+
+					$employees[] = ['user_myid' => $row->user_myid, 'fio2' => $fio2];
+					
+				}
+					
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error'=>$err];
+			}
+		}
+		
+		return array('data' => $employees);
+		
+	}
+	
+	protected function get_nearest_available_dates(string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_nearest_available_delivery_date', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!array_key_exists('Дата', $result)){
+			return array('error'=>'NO_EXISTS_KEY_Дата');
+		}
+		
+		$delivery_date = $result['Дата'];
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_nearest_available_pick_up_date', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!array_key_exists('Дата', $result)){
+			return array('error'=>'NO_EXISTS_KEY_Дата');
+		}
+		
+		$pick_up_date = $result['Дата'];
+		
+		return array('data' => ['delivery_date' => $delivery_date, 'pick-up_date' => $pick_up_date]);
+		
+	}
+	
+	protected function get_transport(string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_transport', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+		
+		return array('data' => $result);
+		
+	}
+	
+	protected function get_shipping_calendar(string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_shipping_calendar', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+		
+		return array('data' => $result);
+		
+	}
+	
+	protected function get_shipping_intervals(string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_pickup_intervals', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+		
+		$pickup_intervals = $result;
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_delivery_intervals', ['token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+		
+		$delivery_intervals = $result;
+		
+		return array('data' => ['delivery_intervals' => $delivery_intervals, 'pickup_intervals' => $pickup_intervals]);
+		
+	}
+
+	protected function get_orders_for_shipment(string $shipping_date, string $token) : array {
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_orders_for_shipment', ['shipping_date' => $shipping_date, 'token' => $token]);
+		if($err){
+			return array('error'=>$this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('error'=>($this->escape_unicode_decode($result['Ошибка'])));
+		}
+		
+		if(!is_array($result)){
+			return array('error'=>'RESULT_IS_NOT_ARRAY');
+		}
+		
+		$limit = 12;
+		$pagination_max_page = ceil(sizeof($result) / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		
+		return array('data' => $result, 'pagination_max_page' => $pagination_max_page);
+		
+	}
+	
+	protected function get_substandard_balances() : array {
+
+		$substandard_balances = [];
+		
+		try{
+
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `substandard_balances` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+
+			foreach ($result as $row) {
+				$substandard_balances = json_decode($row->data, true);
+			}
+
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}
+		
+		return array('data' => $substandard_balances);
+		
+	}
+	
+	protected function get_product_balances() : array {
+
+		$product_balances = [];
+		
+		try{
+
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `product_balances` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+
+			foreach ($result as $row) {
+				$product_balances = json_decode($row->data, true);
+			}
+
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}
+		
+		return array('data' => $product_balances);
+		
+	}
+	
+	protected function get_leftover_metal_for_products() : array {
+		
+		$leftover_metal_for_products = [];
+		
+		try{
+
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `leftover_metal_for_products` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+
+			foreach ($result as $row) {
+				$leftover_metal_for_products = json_decode($row->data, true);
+			}
+
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}
+		
+		return array('data' => $leftover_metal_for_products);
+		
+	}
+	
+	protected function escape_unicode_decode(string $text) : string {
+
+		return preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function ($match) {
+			return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+		}, $text);
+
+	}
+	
+	private function log_er_email_sender_service(string $mess) : void {
+		
+		$f = @fopen($this->document_root.'/../storage/logs/errors_email_sender_service(php).log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' ' .trim($mess) .	PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+			
+	}
+	
+	protected function email_sender_service(string $email_to, string $email_from, string $service_from, string $subject, string $message) : bool {
+		
+		$url = $this->config_project['email_sender_service_host'];
+		$port = $this->config_project['email_sender_service_port'];
+		$path = '/api/v3/send';
+		$result = '';
+		$err = '';
+		$headers = [
+			'Accept: */*',
+			'Connection: Close',
+			'Content-Type: application/json'
+		];
+		$payload = json_encode(['host' => $this->config_project['smtp_host'], 'port' => $this->config_project['smtp_port'], 'user' => $this->config_project['smtp_login'], 'password' => $this->config_project['smtp_password'], 'recipients' => $email_to, 'subject' => $subject, 'message' => rawurlencode($message), 'email_from' => $email_from, 'service_from' => $service_from]);
+		$json = [];
+		
+		$cl = curl_init();
+		if($cl){
+			
+			for($i = 0; $i < 3; $i++){
+				
+				$start_time = time();
+
+				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
+					
+					fclose($socket);
+					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
+					curl_setopt($cl, CURLOPT_POST, true);
+					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
+					curl_setopt($cl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYPEER, false);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYHOST, 2);
+					curl_setopt($cl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($cl, CURLOPT_CONNECTTIMEOUT, $this->config_project['connect_process_timeout2']); 
+					curl_setopt($cl, CURLOPT_TIMEOUT, $this->config_project['connect_process_timeout2']); 
+					$result = curl_exec($cl);
+					
+					$end_time = time();
+					
+					if(preg_match('/^\{"(result|error)":/', $result)){
+						
+						$json = json_decode($result, true);
+						
+					}else{
+						
+						$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+						$err = preg_replace('/\r?\n/', '', $err);
+						
+						if($err == ''){
+							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
+								$err = 'CONNECTION_TIMEOUT';
+							}else{
+								$err = 'RESULT_IS_EMPTY';
+							}
+							$this->log_er_email_sender_service($err);
+							continue;
+						}
+						$this->log_er_email_sender_service($err);
+						
+					}
+					
+				}else{
+					$err = 'FAIL_SOCKET_CONNECT';
+					$this->log_er_email_sender_service($err);
+					continue;
+				}
+			
+				curl_close($cl);
+				unset($cl);
+					
+				break;
+				
+			}
+			
+		}else{
+			$err = 'FAIL_CURL_INIT';
+			$this->log_er_email_sender_service($err);
+		}
+		
+		if($err != ''){
+			return false;
+		}
+		
+		if(array_key_exists('error', $json)){
+			$this->log_er_email_sender_service($json['error']);
+			return false;
+		}
+		
+		return true;
+		
+	}
+	
+	protected function get_list_of_colors() : array {
+		
+		$list_of_colors = [];
+		
+		try{
+
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `list_of_colors` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+
+			foreach ($result as $row) {
+				$list_of_colors = json_decode($row->data, true);
+			}
+
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error'=>$err];
+		}
+		
+		return array('data' => $list_of_colors);
+		
+	}
+	
+	protected function send_notification(string $user_myid, array $data) : array {
+		
+		$mysqli = @new \mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));		
+		if($mysqli->connect_error) {
+			$err = $mysqli->connect_error;
+			$this->log_er_mysql($err);
+			return array(null, preg_replace('/\r?\n/', ' ', $err));
+		}
+		
+		if(!$mysqli->query('CREATE TABLE `notifications_'.$user_myid.'` (`id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `date` char(22) NOT NULL DEFAULT \'\', `counterparty_id` char(36) NOT NULL DEFAULT \'\', `document_id` char(36) NOT NULL DEFAULT \'\', `category` enum(\'buyers_order\',\'shipment_request\',\'official\') NOT NULL DEFAULT \'official\', `subject` blob DEFAULT NULL, `message` blob DEFAULT NULL, `is_unread` char(1) NOT NULL DEFAULT \'1\', `number_unread_notifications` int UNSIGNED NOT NULL DEFAULT 0, `number_new_row` int UNSIGNED NOT NULL DEFAULT 0) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;')){
+			$err = $mysqli->error;
+			if(strpos($err, 'already exists') === false){
+				$this->log_er_mysql($err);
+				return array(null, preg_replace('/\r?\n/', ' ', $err));
+			}
+		}
+		
+		try{
+			
+			DB::beginTransaction();
+
+				# блокируем всю таблицу в рамках транзакции
+				DB::select('SELECT COUNT(`id`) FROM `notifications_'.$user_myid.'` FOR UPDATE');
+				
+				if(DB::table('notifications_'.$user_myid)->count('id') == 0){
+					DB::insert('INSERT INTO `notifications_'.$user_myid.'` (`number_unread_notifications`, `number_new_row`) values (0, 0)');
+				}
+				
+				DB::update('UPDATE `notifications_'.$user_myid.'` SET `number_unread_notifications` = (`number_unread_notifications` + 1), `number_new_row` = (`number_new_row` + 1) WHERE `id` = 1 LIMIT 1');
+				DB::insert('INSERT INTO `notifications_'.$user_myid.'` (`date`, `counterparty_id`, `document_id`, `category`, `subject`, `message`) values (:date, :counterparty_id, :document_id, :category, AES_ENCRYPT(:subject, :aes_key), AES_ENCRYPT(:message, :aes_key2))', $data);
+			
+			DB::commit();
+
+			
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return array(null, preg_replace('/\r?\n/', ' ', $err));
+			
+		}
+		
+		/* try{
+			// раскомментировать если все таки выяснится что нужно все таки очищать старые строки с уведомлениями чтобы таблица не разросталась бесконечно, т.е. если в таблице с уведомлениями уже более 10 100 строк то первые 100 строк удалятся
+			DB::beginTransaction();
+
+				# блокируем всю таблицу в рамках транзакции
+				DB::select('SELECT COUNT(`id`) FROM `notifications_'.$user_myid.'` FOR UPDATE');
+				
+				if(DB::table('notifications_'.$user_myid)->count('id') > 10100){
+					DB::delete('DELETE FROM `notifications_'.$user_myid.'` WHERE `id` > 1 LIMIT 100');
+				}
+			DB::commit();
+			
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return array(null, preg_replace('/\r?\n/', ' ', $err));
+			
+		} */
+		
+		return ['ok', null];
+		
+	}
+	
+	protected function get_certain_orders(string $main_counterparty_id, string $orders_ids_, string $token) : array {
+		
+		$orders = [];
+		
+		if($orders_ids_ != ''){
+
+			$delivery_data = $this->get_delivery_addresses($token);
+					
+			if(array_key_exists('error', $delivery_data)){
+				return ['error'=>$delivery_data['error']];
+			}
+			
+			$arr_delivery_id_address = [];
+			foreach ($delivery_data['data'] as $c) {
+				$arr_delivery_id_address[$c['АдресДоставкиИД']] = $c['АдресДоставки'];
+			}
+		
+			try{
+			
+				if(!Schema::hasTable('orders_'.$main_counterparty_id)){
+					// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
+					return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
+					//
+				}
+			
+				$result = DB::select('SELECT `date`, `order_id`, `order_number`, `status`, `sum`, `shipping_date`, `delivery_address_id` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` IN ('.$orders_ids_.')');
+				
+				foreach ($result as $row) {
+					
+					$delivery_city = '';
+					if($row->delivery_address_id != ''){
+						if(array_key_exists($row->delivery_address_id, $arr_delivery_id_address)){
+							$delivery_city = preg_replace('/^[0-9]+, ([^,]+),.+/', '$1', $arr_delivery_id_address[$row->delivery_address_id]);
+						}
+					}
+					
+					$orders[] = ['date_create_order' => $this->convert_format_date2($row->date), 'order_id' => $row->order_id, 'order_number' => $row->order_number, 'status' => $row->status, 'sum' => $row->sum, 'shipping_date' => str_replace('01 янв 0001', '', $this->convert_format_date2($row->shipping_date)), 'delivery_city' => $delivery_city];
+				}
+				
+			} catch (QueryException $e) {
+				$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+				if(strpos($err, 'Base table or view not found') === false){
+					$this->log_er_mysql($err);
+					return ['error'=>$err];
+				}
+			}
+		
+		}
+		
+		return array('data' => $orders);
+		
+	}
+	
+	protected function prepare_response(array $data, bool $is_escape_unicode_decode = false) : string {
+		
+		if(array_key_exists('error', $data)){
+			if($data['error'] == 'FAIL_USER_MYID' || $data['error'] == 'EXPIRES_TOKEN' || $data['error'] == 'Срок действия токена истек' || $data['error'] == 'Токен заблокирован' || $data['error'] == 'Не найден токен' ){
+				header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized', true, 401);
+			}else{
+				header($_SERVER['SERVER_PROTOCOL'].' 400 Bad Request', true, 400);
+			}
+		}
+		if($is_escape_unicode_decode){
+			exit($this->escape_unicode_decode(json_encode($data)));
+		}
+		exit(json_encode($data));
+		
+	}
+
+	protected function check_shipping_warehouse_id(string $shipping_warehouse_id) : void {
+		
+		try{
+
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `warehouses` WHERE `id` = 1 LIMIT 1');
+			if(sizeof($result) == 0){
+				$this->prepare_response(['error'=>'NO_EXISTS_SHIPPING_WAREHOUSE_ID']);
+			}
+			$is_find = false;
+			foreach ($result as $row) {
+				$row = json_decode($row->data, true);
+				foreach ($row as $c){
+					if($c['СкладИД'] == $shipping_warehouse_id){
+						$is_find = true;
+						break;
+					}
+				}
+			}
+			if(!$is_find){
+				$this->prepare_response(['error'=>'NO_EXISTS_SHIPPING_WAREHOUSE_ID']);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			$this->prepare_response(['error'=>$err]);
+		}
+		
+	}
+	
+	protected function check_counterparty_id(string $main_counterparty_id, string $counterparty_id) : void {
+		
+		try{
+
+			if(!Schema::hasTable('counterparties_'.$main_counterparty_id)){
+				$this->prepare_response(['error'=>'COULD_NOT_FIND_THE_TABLE_WITH_THE_COUNTERPARTY_DATA', 'comment'=>$main_counterparty_id]);
+			}
+			
+			$result = DB::select('SELECT `is_confirmed` FROM `counterparties_'.$main_counterparty_id.'` WHERE `counterparty_id` = :counterparty_id OR `application_id` = :application_id LIMIT 1', ['counterparty_id' => $counterparty_id, 'application_id' => $counterparty_id]);
+			if(sizeof($result) == 0){
+				$this->prepare_response(['error'=>'NO_EXISTS_COUNTERPARTY_ID']);
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			$this->prepare_response(['error'=>$err]);
+		}
+		foreach ($result as $row) {
+			if($row->is_confirmed == ''){
+				$this->prepare_response(['error'=>'THIS_COUNTERPARTY_IS_NOT_CONFIRMED']);
+			}
+		}
+		
+	}
+	
+	protected function prepare_result_invoices(string $main_counterparty_id, string $invoices_date1, string $invoices_date2, string $shipment_type, string $counterparty_id, string $shipping_warehouse_id, string $sort, string $client_fio, string $token) : array {
+		
+		$invoices_data = [];
+		$pagination_max_page = 1;
+		$limit = 12;
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_invoices', ['invoices_date1' => $invoices_date1, 'invoices_date2' => $invoices_date2, 'token' => $token]);
+		if($err){
+			return ['', $err];
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return ['', $result['Ошибка']];
+		}
+		
+		if(!is_array($result)){
+			return ['', 'RESULT_IS_NOT_ARRAY'];
+		}
+		
+		$shipment_warehouses_data = $this->get_shipment_warehouses();
+
+		if(array_key_exists('error', $shipment_warehouses_data)){
+			return ['', $shipment_warehouses_data['error']];
+		}
+		
+		$counterparties_data = $this->get_counterparties($main_counterparty_id);
+		
+		if(array_key_exists('error', $counterparties_data)){
+			return ['', $counterparties_data['error']];
+		}
+		
+		$arr_shipment_warehouses_id_name = [];
+		foreach ($shipment_warehouses_data['data'] as $c) {
+			$arr_shipment_warehouses_id_name[$c['СкладИД']] = $c['Наименование'];
+		}
+		
+		$arr_counterparties_id_name = [];
+		foreach ($counterparties_data['data'] as $c) {
+			if($c['counterparty_id'] != ''){
+				$arr_counterparties_id_name[$c['counterparty_id']] = $c['fullname'];
+			}else if($c['application_id'] != '' && $c['application_id'] != '-'){
+				$arr_counterparties_id_name[$c['application_id']] = $c['fullname'];
+			}
+		}
+		
+		foreach ($result as $c) {
+			
+			if(($shipment_type != '') && ($shipment_type == 'pickup' && $c['Доставка'] === true || $shipment_type == 'delivery' && $c['Доставка'] === false)){
+				continue;
+			}
+			if($counterparty_id != '' && $counterparty_id != $c['КонтрагентИД']){
+				continue;
+			}
+			if($shipping_warehouse_id != '' && $shipping_warehouse_id != $c['СкладОтгрузкиИД']){
+				continue;
+			}
+			
+			$counterparty_name = '';
+			$shipping_warehouse_name = '';
+			
+			if(array_key_exists($c['КонтрагентИД'], $arr_counterparties_id_name)){
+				$counterparty_name = $arr_counterparties_id_name[$c['КонтрагентИД']];
+			}
+			
+			if(array_key_exists($c['СкладОтгрузкиИД'], $arr_shipment_warehouses_id_name)){
+				$shipping_warehouse_name = $arr_shipment_warehouses_id_name[$c['СкладОтгрузкиИД']];
+			}
+			
+			$invoices_data[] = ['timestamp_invoices' => ((int) date('U', strtotime($c['Дата']))), 'РасходнаяНакладнаяИД' => $c['РасходнаяНакладнаяИД'], 'Дата' => $this->convert_format_date2($c['Дата']), 'Номер' => $c['Номер'], 'КонтрагентИД' => $c['КонтрагентИД'], 'КонтрагентНаименование' => $counterparty_name, 'НаличнаяОплата' => $c['НаличнаяОплата'], 'СкладОтгрузкиИД' => $c['СкладОтгрузкиИД'], 'СкладОтгрузкиНаименование' => $shipping_warehouse_name, 'Доставка' => $c['Доставка'], 'Вес' => $c['Вес'], 'СуммаДокумента' => $c['СуммаДокумента'], 'АдресДоставки' => $c['АдресДоставки'], 'Sokrof' => '...', 'КлиентФио' => $client_fio];
+			
+		}
+		
+		$si = sizeof($invoices_data);
+		
+		if($si > 0){
+			
+			$pagination_max_page = ceil($si / $limit);
+			$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+			
+			$obj = new \Timsort();
+			$invoices_data = $obj->sort($invoices_data, 'timestamp_invoices');
+			
+			if($sort == 'invoices_date_new_first'){
+				$invoices_data = array_reverse($invoices_data);
+			}
+			
+		}
+		
+		return [['data' => $invoices_data, 'pagination_max_page' => $pagination_max_page], null];
+		
+	}
+	
+	private function log_er_pdf_creator_service(string $mess) : void {
+		
+		$f = @fopen($this->document_root.'/../storage/logs/errors_pdf_creator_service(php).log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' '. trim($mess) . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+			
+	}
+	
+	protected function pdf_creator_service(string $act, array $data, string $output_link) : array {
+		
+		$url = '127.0.0.1';
+		$port = $this->config_project['pdf_creator_service_port'];
+		$path = '/api/v4/create';
+		$result = '';
+		$err = '';
+		$headers = [
+			'Accept: */*',
+			'Connection: Close',
+			'Content-Type: application/json'
+		];
+		$payload = json_encode(['act' => $act, 'data' => $data, 'output_link' => $output_link]);
+		$json = [];
+		
+		$cl = curl_init();
+		if($cl){
+			
+			for($i = 0; $i < 3; $i++){
+					
+				$start_time = time();
+				
+				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
+					
+					fclose($socket);
+					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
+					curl_setopt($cl, CURLOPT_POST, true);
+					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
+					curl_setopt($cl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYPEER, false);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYHOST, 2);
+					curl_setopt($cl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($cl, CURLOPT_CONNECTTIMEOUT, $this->config_project['connect_process_timeout2']); 
+					curl_setopt($cl, CURLOPT_TIMEOUT, $this->config_project['connect_process_timeout2']); 
+					$result = curl_exec($cl);
+					
+					$end_time = time();
+					
+					if(preg_match('/^\{"(result|error)":/', $result)){
+						
+						$json = json_decode($result, true);
+						
+					}else{
+						
+						$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+						$err = preg_replace('/\r?\n/', '', $err);
+						
+						if($err == ''){
+							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
+								$err = 'CONNECTION_TIMEOUT';
+							}else{
+								$err = 'RESULT_IS_EMPTY';
+							}
+							$this->log_er_pdf_creator_service($err);
+							continue;
+						}
+						$this->log_er_pdf_creator_service($err);
+						
+					}
+					
+				}else{
+					$err = 'FAIL_SOCKET_CONNECT';
+					$this->log_er_pdf_creator_service($err);
+					continue;
+				}
+
+				curl_close($cl);
+				unset($cl);
+					
+				break;
+			
+			}
+			
+		}else{
+			$err = 'FAIL_CURL_INIT';
+			$this->log_er_pdf_creator_service($err);
+		}
+		
+		if($err != ''){
+			return ['', $err];
+		}
+		
+		if(array_key_exists('error', $json)){
+			return ['', $json['error']];
+		}
+		
+		return ['ok', null];
+		
+	}
+	
+	protected function prepare_result_product_remains(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `product_remains` WHERE `id` = 1 LIMIT 1');
+			
+			foreach($result as $row){
+				$product_remains = json_decode($row->data, true);
+			}
+		
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['', $err];
+		}
+		
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+
+		if(array_key_exists('error', $prices_product_catalog_data)){
+			return ['', $prices_product_catalog_data['error']];
+		}
+		
+		$arr_prices_product_catalog_id_price = [];
+		foreach ($prices_product_catalog_data['data'] as $c) {
+			foreach($c['Данные'] as $c2){
+				$arr_prices_product_catalog_id_price[$c2['НоменклатураИД']] = $c2['Цена'];
+			}
+		}		
+
+		$product_balances_data = $this->get_product_balances();
+		
+		if(array_key_exists('error', $product_balances_data)){
+			return ['', $product_balances_data['error']];
+		}
+
+		$arr_product_balances_id_quantity_and_length = [];
+		$is_get_data = false;
+		foreach ($product_balances_data['data'] as $c) {
+			$id = '';
+			foreach ($c as $key => $val) {
+				if($key == 'Данные' && $is_get_data){
+					$is_get_data = false;
+					foreach ($val as $c2) {
+						if(!array_key_exists($id.'-'.$c2['НоменклатураИД'], $arr_product_balances_id_quantity_and_length)){
+							$arr_product_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']] = [];
+						}
+						$arr_product_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']][] = ['Характеристика' => $c2['Характеристика'] ?? '', 'Количество' => $c2['Количество'], 'КоличествоЛистов' => $c2['КоличествоЛистов']];
+					}
+					break;
+				}
+				if($key == 'СкладИД'){
+					$id = $val;
+					$is_get_data = true;
+					continue;
+				}
+			}
+		}
+		
+		$arr = [];
+		$arr3 = [];
+		$product_remains2 = [];
+		$pagination_max_page = 1;
+		$i = 0;
+		$limit = 20;
+		$actual_date = '';
+		
+		foreach($product_remains as $c){
+			
+			$actual_date = $c['Дата'];
+			
+			if(($c['СкладИД'] == $shipping_warehouse_id) && ($products != '' ? ($c['ОсновнойРазделНаименование'] == $products || $c['РазделНаименование'] == $products) : true)){
+				if(array_key_exists('Данные', $c)){
+					foreach($c['Данные'] as $c2){
+						
+						$y = 0;
+						
+						if(($profile != '' ? (array_key_exists('Профиль', $c2['Свойства']) && $c2['Свойства']['Профиль'] == $profile) : true) && 
+						($thickness != '' ? (array_key_exists('Толщина', $c2['Свойства']) && $c2['Свойства']['Толщина'] == $thickness) : true) && 
+						($coating != '' ? (array_key_exists('Покрытие', $c2['Свойства']) && $c2['Свойства']['Покрытие'] == $coating) : true) && 
+						($color != '' ? (array_key_exists('Цвет', $c2['Свойства']) && $c2['Свойства']['Цвет'] == $color) : true)){
+							
+							if($c2['НедоступноДляВыбора']){
+								continue;
+							}
+							
+							if(in_array($c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'], $arr3)){
+								continue;
+							}
+							$arr3[] = $c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'];
+							
+							while(true){
+									
+								$i++;
+								$id_nomenclature = $c2['НоменклатураИД'];
+								
+								$arr2 = [
+									'НоменклатураИД' => $c2['НоменклатураИД'],
+									'НоменклатураНаименование' => $c2['Наименование'],
+									'ВидНоменклатурыИД' => $c2['ВидНоменклатурыИД'],
+									'ЕдиницаИзмеренияНаименования' => $c2['ЕдиницаИзмеренияНаименования']
+								];
+								$arr2['Цена'] = [];
+								$arr2['Сумма'] = 0;
+								$arr2['Итого'] = -1;
+								$arr2['Количество'] = 0;
+								$arr2['КоличествоЛистов'] = 0;
+								$arr2['Характеристика'] = '';
+								
+								$price = 0;
+								if(array_key_exists($id_nomenclature, $arr_prices_product_catalog_id_price)){
+									$price = $arr_prices_product_catalog_id_price[$id_nomenclature];
+								}
+								if($c2['ЕдиницаИзмеренияНаименования'] != 'м2'){
+									$arr2['Цена'][] = $price.' руб. / '.$c2['ЕдиницаИзмеренияНаименования'];
+									if($c2['КоэффициентПересчетаМетрКвадратные'] > 0){
+										$arr2['Цена'][] = round($price / $c2['КоэффициентПересчетаМетрКвадратные'], 2).' руб. / м2';
+									}
+								}else{
+									$arr2['Цена'][] = $price.' руб. / м2';
+								}
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_product_balances_id_quantity_and_length)){
+									$arr2['Характеристика'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Характеристика'];
+									$arr2['Количество'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Количество'];
+									$arr2['КоличествоЛистов'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['КоличествоЛистов'];
+								}
+								
+								if($c2['ЗаполнятьХарактеристику']){
+									if($arr2['Характеристика'] == ''){
+										$total = $arr2['КоличествоЛистов'] * 0 * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}else{
+										$total = $arr2['КоличествоЛистов'] * $arr2['Характеристика'] * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else if($c2['ПродаетсяКомплектами']){
+									$total = $arr2['КоличествоЛистов'] * $c2['КоличествоШтукВКомплекте'];
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else{
+									$total = $arr2['Количество'];
+								}
+								$arr2['Итого'] = round($total, 2);
+								
+								if($arr2['Итого'] > -1 && $price > 0){
+									$arr2['Сумма'] = round($arr2['Итого'] * $price, 2);
+								}
+								
+								$arr[] = $arr2;	
+									
+								$y++;
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_product_balances_id_quantity_and_length)){
+									if($y >= sizeof($arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature])){
+										break;
+									}
+								}else{
+									break;
+								}
+							
+							}
+							
+						}
+						
+					}
+				}
+			}
+		}
+		
+		$pagination_max_page = ceil($i / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		
+		$product_remains2['actual_date'] = $actual_date;
+		$product_remains2['data'] = $arr;
+		$product_remains2['pagination_max_page'] = $pagination_max_page;
+		
+		return [$product_remains2, ''];
+		
+	}
+	
+	protected function prepare_result_substandard_catalog(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `substandard_catalog` WHERE `id` = 1 LIMIT 1');
+			
+			foreach($result as $row){
+				$substandard_catalog = json_decode($row->data, true);
+			}
+		
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['', $err];
+		}
+			
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+
+		if(array_key_exists('error', $prices_product_catalog_data)){
+			return ['', $prices_product_catalog_data['error']];
+		}
+		
+		$arr_prices_product_catalog_id_price = [];
+		foreach ($prices_product_catalog_data['data'] as $c) {
+			foreach($c['Данные'] as $c2){
+				$arr_prices_product_catalog_id_price[$c2['НоменклатураИД']] = $c2['Цена'];
+			}
+		}		
+
+		$substandard_balances_data = $this->get_substandard_balances();
+		
+		if(array_key_exists('error', $substandard_balances_data)){
+			return ['', $substandard_balances_data['error']];
+		}
+
+		$arr_substandard_balances_id_quantity_and_length = [];
+		$is_get_data = false;
+		foreach ($substandard_balances_data['data'] as $c) {
+			$id = '';
+			foreach ($c as $key => $val) {
+				if($key == 'Данные' && $is_get_data){
+					$is_get_data = false;
+					foreach ($val as $c2) {
+						if(!array_key_exists($id.'-'.$c2['НоменклатураИД'], $arr_substandard_balances_id_quantity_and_length)){
+							$arr_substandard_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']] = [];
+						}
+						$arr_substandard_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']][] = ['Характеристика' => $c2['Характеристика'] ?? '', 'Количество' => $c2['Количество'], 'КоличествоЛистов' => $c2['КоличествоЛистов']];
+					}
+					break;
+				}
+				if($key == 'СкладИД'){
+					$id = $val;
+					$is_get_data = true;
+					continue;
+				}
+			}
+		}
+		
+		$arr = [];
+		$arr3 = [];
+		$substandard_catalog2 = [];
+		$pagination_max_page = 1;
+		$i = 0;
+		$limit = 20;
+		$actual_date = '';
+		
+		foreach($substandard_catalog as $c){
+			
+			$actual_date = $c['Дата'];
+			
+			if(($c['СкладИД'] == $shipping_warehouse_id) && ($products != '' ? ($c['ОсновнойРазделНаименование'] == $products || $c['РазделНаименование'] == $products) : true)){				
+				if(array_key_exists('Данные', $c)){
+					foreach($c['Данные'] as $c2){
+						
+						$y = 0;
+						
+						if(($profile != '' ? (array_key_exists('Профиль', $c2['Свойства']) && $c2['Свойства']['Профиль'] == $profile) : true) && 
+						($thickness != '' ? (array_key_exists('Толщина', $c2['Свойства']) && $c2['Свойства']['Толщина'] == $thickness) : true) && 
+						($coating != '' ? (array_key_exists('Покрытие', $c2['Свойства']) && $c2['Свойства']['Покрытие'] == $coating) : true) && 
+						($color != '' ? (array_key_exists('Цвет', $c2['Свойства']) && $c2['Свойства']['Цвет'] == $color) : true)){
+							
+							if(in_array($c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'], $arr3)){
+								continue;
+							}
+							$arr3[] = $c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'];
+							
+							while(true){
+									
+								$i++;
+								$id_nomenclature = $c2['НоменклатураИД'];
+								
+								$arr2 = [
+									'НоменклатураИД' => $c2['НоменклатураИД'],
+									'НоменклатураНаименование' => $c2['Наименование'],
+									'ВидНоменклатурыИД' => $c2['ВидНоменклатурыИД'],
+									'ЕдиницаИзмеренияНаименования' => $c2['ЕдиницаИзмеренияНаименования']
+								];
+								$arr2['Цена'] = [];
+								$arr2['Сумма'] = 0;
+								$arr2['Итого'] = -1;
+								$arr2['Количество'] = 0;
+								$arr2['КоличествоЛистов'] = 0;
+								$arr2['Характеристика'] = '';
+								
+								$price = 0;
+								if(array_key_exists($id_nomenclature, $arr_prices_product_catalog_id_price)){
+									$price = $arr_prices_product_catalog_id_price[$id_nomenclature];
+								}
+								if($c2['ЕдиницаИзмеренияНаименования'] != 'м2'){
+									$arr2['Цена'][] = $price.' руб. / '.$c2['ЕдиницаИзмеренияНаименования'];
+									if($c2['КоэффициентПересчетаМетрКвадратные'] > 0){
+										$arr2['Цена'][] = round($price / $c2['КоэффициентПересчетаМетрКвадратные'], 2).' руб. / м2';
+									}
+								}else{
+									$arr2['Цена'][] = $price.' руб. / м2';
+								}
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_substandard_balances_id_quantity_and_length)){
+									$arr2['Характеристика'] = $arr_substandard_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Характеристика'];
+									$arr2['Количество'] = $arr_substandard_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Количество'];
+									$arr2['КоличествоЛистов'] = $arr_substandard_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['КоличествоЛистов'];
+								}
+								
+								if($c2['ЗаполнятьХарактеристику']){
+									if($arr2['Характеристика'] == ''){
+										$total = $arr2['КоличествоЛистов'] * 0 * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}else{
+										$total = $arr2['КоличествоЛистов'] * $arr2['Характеристика'] * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else if($c2['ПродаетсяКомплектами']){
+									$total = $arr2['КоличествоЛистов'] * $c2['КоличествоШтукВКомплекте'];
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else{
+									$total = $arr2['Количество'];
+								}
+								$arr2['Итого'] = round($total, 2);
+								
+								if($arr2['Итого'] > -1 && $price > 0){
+									$arr2['Сумма'] = round($arr2['Итого'] * $price, 2);
+								}
+								
+								$arr[] = $arr2;	
+									
+								$y++;
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_substandard_balances_id_quantity_and_length)){
+									if($y >= sizeof($arr_substandard_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature])){
+										break;
+									}
+								}else{
+									break;
+								}
+							
+							}							
+								
+						}
+						
+					}
+				}
+			}
+		}
+		
+		$pagination_max_page = ceil($i / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		
+		$substandard_catalog2['actual_date'] = $actual_date;
+		$substandard_catalog2['data'] = $arr;
+		$substandard_catalog2['pagination_max_page'] = $pagination_max_page;
+		
+		return [$substandard_catalog2, ''];
+		
+	}
+	
+	protected function prepare_result_finished_products(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+		
+		try{
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `finished_products` WHERE `id` = 1 LIMIT 1');
+			
+			foreach($result as $row){
+				$finished_products = json_decode($row->data, true);
+			}
+		
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['', $err];
+		}
+			
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+
+		if(array_key_exists('error', $prices_product_catalog_data)){
+			return ['', $prices_product_catalog_data['error']];
+		}
+		
+		$arr_prices_product_catalog_id_price = [];
+		foreach ($prices_product_catalog_data['data'] as $c) {
+			foreach($c['Данные'] as $c2){
+				$arr_prices_product_catalog_id_price[$c2['НоменклатураИД']] = $c2['Цена'];
+			}
+		}		
+		
+		$product_balances_data = $this->get_product_balances();
+		
+		if(array_key_exists('error', $product_balances_data)){
+			return ['', $product_balances_data['error']];
+		}
+
+		$arr_product_balances_id_quantity_and_length = [];
+		$is_get_data = false;
+		foreach ($product_balances_data['data'] as $c) {
+			$id = '';
+			foreach ($c as $key => $val) {
+				if($key == 'Данные' && $is_get_data){
+					$is_get_data = false;
+					foreach ($val as $c2) {
+						if(!array_key_exists($id.'-'.$c2['НоменклатураИД'], $arr_product_balances_id_quantity_and_length)){
+							$arr_product_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']] = [];
+						}
+						$arr_product_balances_id_quantity_and_length[$id.'-'.$c2['НоменклатураИД']][] = ['Характеристика' => $c2['Характеристика'] ?? '', 'Количество' => $c2['Количество'], 'КоличествоЛистов' => $c2['КоличествоЛистов']];
+					}
+					break;
+				}
+				if($key == 'СкладИД'){
+					$id = $val;
+					$is_get_data = true;
+					continue;
+				}
+			}
+		}
+		
+		$arr = [];
+		$arr3 = [];
+		$finished_products2 = [];
+		$pagination_max_page = 1;
+		$i = 0;
+		$limit = 20;
+		$actual_date = '';
+		
+		foreach($finished_products as $c){
+			
+			$actual_date = $c['Дата'];
+			
+			if(($c['СкладИД'] == $shipping_warehouse_id) && ($products != '' ? ($c['ОсновнойРазделНаименование'] == $products || $c['РазделНаименование'] == $products) : true)){
+				
+				if(array_key_exists('Данные', $c)){
+					foreach($c['Данные'] as $c2){
+						
+						$y = 0;
+						
+						if(($profile != '' ? (array_key_exists('Профиль', $c2['Свойства']) && $c2['Свойства']['Профиль'] == $profile) : true) && 
+						($thickness != '' ? (array_key_exists('Толщина', $c2['Свойства']) && $c2['Свойства']['Толщина'] == $thickness) : true) && 
+						($coating != '' ? (array_key_exists('Покрытие', $c2['Свойства']) && $c2['Свойства']['Покрытие'] == $coating) : true) && 
+						($color != '' ? (array_key_exists('Цвет', $c2['Свойства']) && $c2['Свойства']['Цвет'] == $color) : true)){
+							
+							if($c2['НедоступноДляВыбора']){
+								continue;
+							}
+							
+							if(in_array($c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'], $arr3)){
+								continue;
+							}
+							$arr3[] = $c2['НоменклатураИД'].'-'.$c2['ВидНоменклатурыИД'];
+							
+							while(true){
+							
+								$i++;
+								$id_nomenclature = $c2['НоменклатураИД'];
+								
+								$arr2 = [
+									'НоменклатураИД' => $c2['НоменклатураИД'],
+									'НоменклатураНаименование' => $c2['Наименование'],
+									'ВидНоменклатурыИД' => $c2['ВидНоменклатурыИД'],
+									'ЕдиницаИзмеренияНаименования' => $c2['ЕдиницаИзмеренияНаименования']
+								];
+								$arr2['Цена'] = [];
+								$arr2['Сумма'] = 0;
+								$arr2['Итого'] = -1;
+								$arr2['Количество'] = 0;
+								$arr2['КоличествоЛистов'] = 0;
+								$arr2['Характеристика'] = '';
+								
+								$price = 0;
+								if(array_key_exists($id_nomenclature, $arr_prices_product_catalog_id_price)){
+									$price = $arr_prices_product_catalog_id_price[$id_nomenclature];
+								}
+								if($c2['ЕдиницаИзмеренияНаименования'] != 'м2'){
+									$arr2['Цена'][] = $price.' руб. / '.$c2['ЕдиницаИзмеренияНаименования'];
+									if($c2['КоэффициентПересчетаМетрКвадратные'] > 0){
+										$arr2['Цена'][] = round($price / $c2['КоэффициентПересчетаМетрКвадратные'], 2).' руб. / м2';
+									}
+								}else{
+									$arr2['Цена'][] = $price.' руб. / м2';
+								}
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_product_balances_id_quantity_and_length)){
+									$arr2['Характеристика'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Характеристика'];
+									$arr2['Количество'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['Количество'];
+									$arr2['КоличествоЛистов'] = $arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature][$y]['КоличествоЛистов'];
+								}
+								
+								if($c2['ЗаполнятьХарактеристику']){
+									if($arr2['Характеристика'] == ''){
+										$total = $arr2['КоличествоЛистов'] * 0 * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}else{
+										$total = $arr2['КоличествоЛистов'] * $arr2['Характеристика'] * $c2['КоэффициентПересчетаКоличества'] / 1000;
+									}
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else if($c2['ПродаетсяКомплектами']){
+									$total = $arr2['КоличествоЛистов'] * $c2['КоличествоШтукВКомплекте'];
+									$arr2['Количество'] = $arr2['КоличествоЛистов'];
+								}else{
+									$total = $arr2['Количество'];
+								}
+								$arr2['Итого'] = round($total, 2);
+								
+								if($arr2['Итого'] > -1 && $price > 0){
+									$arr2['Сумма'] = round($arr2['Итого'] * $price, 2);
+								}
+								
+								$arr[] = $arr2;	
+								
+								$y++;
+								
+								if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_product_balances_id_quantity_and_length)){
+									if($y >= sizeof($arr_product_balances_id_quantity_and_length[$shipping_warehouse_id.'-'.$id_nomenclature])){
+										break;
+									}
+								}else{
+									break;
+								}
+							
+							}
+						
+						}
+						
+					}
+				}
+			}
+		}
+		
+		$pagination_max_page = ceil($i / $limit);
+		$pagination_max_page = ($pagination_max_page < 1 ? 1 : $pagination_max_page);
+		
+		$finished_products2['actual_date'] = $actual_date;
+		$finished_products2['data'] = $arr;
+		$finished_products2['pagination_max_page'] = $pagination_max_page;
+		
+		return [$finished_products2, ''];
+		
+	}
+	
+	private function log_er_xlsx_creator_service(string $mess) : void {
+		
+		$f = @fopen($this->document_root.'/../storage/logs/errors_xlsx_creator_service(php).log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' '. trim($mess) .	PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+			
+	}
+	
+	protected function xlsx_creator_service(string $act, array $data, string $output_link) : array {
+		
+		$url = '127.0.0.1';
+		$port = $this->config_project['xlsx_creator_service_port'];
+		$path = '/api/v5/create';
+		$result = '';
+		$err = '';
+		$headers = [
+			'Accept: */*',
+			'Connection: Close',
+			'Content-Type: application/json'
+		];
+		$payload = json_encode(['act' => $act, 'data' => $data, 'output_link' => $output_link]);
+		$json = [];
+		
+		$cl = curl_init();
+		if($cl){
+			
+			for($i = 0; $i < 3; $i++){
+					
+				$start_time = time();
+				
+				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
+					
+					fclose($socket);
+					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
+					curl_setopt($cl, CURLOPT_POST, true);
+					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
+					curl_setopt($cl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYPEER, false);
+					curl_setopt($cl, CURLOPT_SSL_VERIFYHOST, 2);
+					curl_setopt($cl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($cl, CURLOPT_CONNECTTIMEOUT, $this->config_project['connect_process_timeout2']); 
+					curl_setopt($cl, CURLOPT_TIMEOUT, $this->config_project['connect_process_timeout2']); 
+					$result = curl_exec($cl);
+					
+					$end_time = time();
+					
+					if(preg_match('/^\{"(result|error)":/', $result)){
+						
+						$json = json_decode($result, true);
+						
+					}else{
+						
+						$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+						$err = preg_replace('/\r?\n/', '', $err);
+						
+						if($err == ''){
+							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
+								$err = 'CONNECTION_TIMEOUT';
+							}else{
+								$err = 'RESULT_IS_EMPTY';
+							}
+							$this->log_er_xlsx_creator_service($err);
+							continue;
+						}
+						$this->log_er_xlsx_creator_service($err);
+						
+					}
+					
+				}else{
+					$err = 'FAIL_SOCKET_CONNECT';
+					$this->log_er_xlsx_creator_service($err);
+					continue;
+				}
+				
+				curl_close($cl);
+				unset($cl);
+					
+				break;
+			
+			}
+			
+		}else{
+			$err = 'FAIL_CURL_INIT';
+			$this->log_er_xlsx_creator_service($err);
+		}
+		
+		if($err != ''){
+			return ['', $err];
+		}
+		
+		if(array_key_exists('error', $json)){
+			return ['', $json['error']];
+		}
+		
+		return ['ok', null];
+		
+	}
+	
+	protected function get_cart_info(string $user_myid, string $target, string $shipping_warehouse_id) : array {
+		
+		$number_of_positions = 0;
+		$total_sum = 0;
+		
+		try{
+		
+			$result = DB::select('SELECT `sum`, `other` FROM `cart_'.$user_myid.'` WHERE `target` = :target', ['target' => $target]);
+			
+			foreach ($result as $row) {
+				$j = json_decode($row->other, true);
+				if($j !== null){
+					if($shipping_warehouse_id == $j['shipping_warehouse_id']){
+						$number_of_positions++;
+						$total_sum += (float) $row->sum;
+					}
+				}
+			}
+		
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['error' => $err];
+			}
+		}
+		
+		return ['data' => ['number_of_positions' => $number_of_positions, 'total_sum' => $total_sum]];
+		
+	}
+	
+	protected function prepare_cart_contents(string $user_myid, string $target, string $shipping_warehouse_id) : array {
+		
+		$shipment_warehouses_data = $this->get_shipment_warehouses();
+
+		if(array_key_exists('error', $shipment_warehouses_data)){
+			return ['', '', $shipment_warehouses_data['error']];
+		}
+		
+		$arr_shipment_warehouses_id_name = [];
+		foreach ($shipment_warehouses_data['data'] as $c) {
+			$arr_shipment_warehouses_id_name[$c['СкладИД']] = $c['Наименование'];
+		}
+		
+		$cart_contents = ['data' => []];
+		$shipping_warehouse_name = '';
+		
+		try{
+			
+			$result = DB::select('SELECT * FROM `cart_'.$user_myid.'` WHERE `target` = :target ORDER BY `id` DESC', ['target' => $target]);
+			if(sizeof($result) == 0){
+				return ['', '', 'CART_IS_EMPTY'];
+			}
+			
+			foreach ($result as $row) {
+				
+				$j = json_decode($row->other, true);
+				
+				if($shipping_warehouse_id == $j['shipping_warehouse_id']){
+						
+					if(array_key_exists($j['shipping_warehouse_id'], $arr_shipment_warehouses_id_name)){
+						$shipping_warehouse_name = $arr_shipment_warehouses_id_name[$j['shipping_warehouse_id']];
+					}
+				
+					$cart_contents['data'][] = ['id' => $row->id, 'id_nomenclature' => $row->id_nomenclature, 'id_nomenclature_type' => $row->id_nomenclature_type, 'nomenclature_name' => $row->nomenclature_name, 'unit' => $row->unit, 'price' => explode('|', $row->price), 'sum' => (int) $row->sum, 'total' => (float) $row->total, 'quantity' => (int) $row->quantity, 'length' => $row->length];
+					
+				}
+				
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['', '', $err];
+			}else{
+				return ['', '', 'CART_IS_EMPTY'];
+			}
+		}
+		
+		return [$shipping_warehouse_name, $cart_contents, ''];
+		
+	}
+	
+	protected function prepare_result_draft_details(string $main_counterparty_id, string $user_myid, string $draft_id, string $token, array $result) : array {
+		
+		$counterparties_data = $this->get_counterparties($main_counterparty_id);
+		
+		if(array_key_exists('error', $counterparties_data)){
+			return ['', '', $counterparties_data['error']];
+		}
+		
+		$arr_counterparties_id_name = [];
+		foreach ($counterparties_data['data'] as $c) {
+			if($c['counterparty_id'] != ''){
+				$arr_counterparties_id_name[$c['counterparty_id']] = $c['fullname'];
+			}else if($c['application_id'] != '' && $c['application_id'] != '-'){
+				$arr_counterparties_id_name[$c['application_id']] = $c['fullname'];
+			}
+		}
+			
+		$shipment_warehouses_data = $this->get_shipment_warehouses();
+
+		if(array_key_exists('error', $shipment_warehouses_data)){
+			return ['', '', $shipment_warehouses_data['error']];
+		}
+		
+		$arr_shipment_warehouses_id_name = [];
+		foreach ($shipment_warehouses_data['data'] as $c) {
+			$arr_shipment_warehouses_id_name[$c['СкладИД']] = $c['Наименование'];
+		}
+			
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+
+		if(array_key_exists('error', $prices_product_catalog_data)){
+			return ['', '', $prices_product_catalog_data['error']];
+		}
+		
+		$arr_prices_product_catalog_id_price = [];
+		foreach ($prices_product_catalog_data['data'] as $c) {
+			foreach($c['Данные'] as $c2){
+				$arr_prices_product_catalog_id_price[$c2['НоменклатураИД']] = $c2['Цена'];
+			}
+		}		
+		
+		$product_catalog_data = $this->get_product_catalog();
+
+		if(array_key_exists('error', $product_catalog_data)){
+			return ['', '', $product_catalog_data['error']];
+		}
+		
+		$arr_product_catalog_id_data = [];
+		foreach ($product_catalog_data['data'] as $c) {
+			foreach ($c['Данные'] as $c2) {
+				$arr_product_catalog_id_data[$c2['НоменклатураИД']] = [
+					'Наименование' => $c2['Наименование'],
+					'ЕдиницаИзмеренияНаименования' => $c2['ЕдиницаИзмеренияНаименования'],
+					'КоличествоШтукВКомплекте' => $c2['КоличествоШтукВКомплекте'],
+					'КоэффициентПересчетаКоличества' => $c2['КоэффициентПересчетаКоличества'],
+					'ЗаполнятьХарактеристику' => $c2['ЗаполнятьХарактеристику'],
+					'ПродаетсяКомплектами' => $c2['ПродаетсяКомплектами'],
+					'Толщина' => str_replace(',', '.', $c2['Толщина']),
+					'ЦветИД' => $c2['ЦветИД'],
+					'ОстаткиПоМеталлу' => $c2['ОстаткиПоМеталлу'],
+					'ОстаткиВШтуках' => $c2['ОстаткиВШтуках']
+				];
+			}
+		}
+			
+		$leftover_metal_for_products = $this->get_leftover_metal_for_products();
+		
+		if(array_key_exists('error', $leftover_metal_for_products)){
+			return ['', '', $leftover_metal_for_products['error']];
+		}
+		
+		$arr_leftover_metal_for_products_id_quantity = [];
+		foreach ($leftover_metal_for_products['data'] as $key2 => $val2) {
+			if($key2 == 'Данные'){
+				foreach ($val2 as $c) {
+					$arr_leftover_metal_for_products_id_quantity[str_replace(',', '.', $c['Толщина']).'-'.$c['ЦветИД']] = $c['Количество'];
+				}
+			}
+		}
+			
+		$product_balances = $this->get_product_balances();
+		
+		if(array_key_exists('error', $product_balances)){
+			return ['', '', $product_balances['error']];
+		}
+
+		$arr_product_balances_id_quantity = [];
+		$is_get_data = false;
+		foreach ($product_balances['data'] as $c) {
+			$id = '';
+			foreach ($c as $key => $val) {
+				if($key == 'Данные' && $is_get_data){
+					$is_get_data = false;
+					foreach ($val as $c2) {
+						$arr_product_balances_id_quantity[$id.'-'.$c2['НоменклатураИД']] = $c2['Количество'];
+					}
+					break;
+				}
+				if($key == 'СкладИД'){
+					$id = $val;
+					$is_get_data = true;
+					continue;
+				}
+			}
+		}
+			
+		$counterparty_id = '';
+		$counterparty_name = '';
+		$shipping_warehouse_id = '';
+		$ready_date = '';
+		$shipping_date = '';
+		$shipping_warehouse_name = '';
+		$is_cash_payment = false;
+		$document_amount = 0;
+		$goods = [];
+		$goods_non_standard_addition = [];
+		$files_non_standard_addition = [];
+		$arr3 = [];
+		$fio1 = '';
+		$manager_fio1 = '';
+		$comment = '';
+		
+		foreach ($result as $row) {
+			
+			list($fio1, $manager_fio1, $fio2, $manager_fio2) = $this->get_fio_and_manager_fio($row->client_id);
+			$comment = $row->comment;
+			
+			$counterparty_id = $row->counterparty_id;
+			$counterparty_name = '';
+			if(array_key_exists($counterparty_id, $arr_counterparties_id_name)){
+				$counterparty_name = $arr_counterparties_id_name[$counterparty_id];
+			}
+			
+			$ready_date = str_replace('01 янв 0001', 'нет', $this->convert_format_date2($row->shipping_date));
+			if($ready_date == ''){$ready_date = 'нет';}
+			if($row->is_shipping == '1'){
+				$shipping_date = $ready_date;
+			}else{
+				$shipping_date = 'нет';
+			}
+			
+			$shipping_warehouse_id = $row->shipping_warehouse_id;
+			$shipping_warehouse_name = '';
+			if(array_key_exists($shipping_warehouse_id, $arr_shipment_warehouses_id_name)){
+				$shipping_warehouse_name = $arr_shipment_warehouses_id_name[$shipping_warehouse_id];
+			}
+			
+			$is_cash_payment = ($row->is_cash_payment == '1');
+			$arr = [];
+			$goods = json_decode($row->goods, true);
+			$goods_non_standard_addition = json_decode($row->goods_non_standard_addition, true);
+			if($goods_non_standard_addition === null){
+				$goods_non_standard_addition = [];
+			}
+			$files_non_standard_addition = json_decode($row->files_non_standard_addition, true);
+			if($files_non_standard_addition === null){
+				$files_non_standard_addition = [];
+			}
+			foreach ($goods as $c) {
+				
+				$id_nomenclature = $c['НоменклатураИД'];
+				$id_nomenclature_type = '';
+				
+				if(array_key_exists('ВидНоменклатурыИД', $c)){
+					$id_nomenclature_type = $c['ВидНоменклатурыИД'];
+				}
+				
+				$arr2 = [
+					'НоменклатураИД' => $id_nomenclature,
+					'ВидНоменклатурыИД' => $id_nomenclature_type,
+					'Характеристика' => $c['Характеристика'],
+					'Количество' => $c['Количество'],
+					'ПроцентБонуса' => $c['ПроцентБонуса']
+				];
+				$arr2['КоличествоЛистов'] = -1;
+				$arr2['Резерв'] = -1;
+				$arr2['Цена'] = -1;
+				$arr2['Сумма'] = 0;
+				$arr2['ПроцентСкидкиНаценки'] = 0;
+				$arr2['НоменклатураНаименование'] = '';
+				$arr2['ЕдиницаИзмеренияНаименования'] = '';
+				$arr2['Толщина'] = '';
+				$arr2['ЦветИД'] = '';
+				$arr2['ОстаткиПоМеталлу'] = false;
+				$arr2['ОстаткиВШтуках'] = false;
+				$arr2['КоличествоШтукВКомплекте'] = 0;
+				$arr2['КоэффициентПересчетаКоличества'] = 0;
+				$arr2['ЗаполнятьХарактеристику'] = false;
+				$arr2['ПродаетсяКомплектами'] = false;
+				$arr2['Наличие'] = '-';
+				$arr2['Итого'] = -1;
+			
+				if(array_key_exists($id_nomenclature, $arr_prices_product_catalog_id_price)){
+					$arr2['Цена'] = $arr_prices_product_catalog_id_price[$id_nomenclature];
+				}
+				
+				if(array_key_exists($id_nomenclature, $arr_product_catalog_id_data)){
+					$arr2['НоменклатураНаименование'] = $arr_product_catalog_id_data[$id_nomenclature]['Наименование'];
+					$arr2['ЕдиницаИзмеренияНаименования'] = $arr_product_catalog_id_data[$id_nomenclature]['ЕдиницаИзмеренияНаименования'];
+					$arr2['КоличествоШтукВКомплекте'] = $arr_product_catalog_id_data[$id_nomenclature]['КоличествоШтукВКомплекте'];
+					$arr2['КоэффициентПересчетаКоличества'] = $arr_product_catalog_id_data[$id_nomenclature]['КоэффициентПересчетаКоличества'];
+					$arr2['ЗаполнятьХарактеристику'] = $arr_product_catalog_id_data[$id_nomenclature]['ЗаполнятьХарактеристику'];
+					$arr2['ПродаетсяКомплектами'] = $arr_product_catalog_id_data[$id_nomenclature]['ПродаетсяКомплектами'];
+					$arr2['Толщина'] = $arr_product_catalog_id_data[$id_nomenclature]['Толщина'];
+					$arr2['ЦветИД'] = $arr_product_catalog_id_data[$id_nomenclature]['ЦветИД'];
+					$arr2['ОстаткиПоМеталлу'] = $arr_product_catalog_id_data[$id_nomenclature]['ОстаткиПоМеталлу'];
+					$arr2['ОстаткиВШтуках'] = $arr_product_catalog_id_data[$id_nomenclature]['ОстаткиВШтуках'];
+				}
+				
+				if($arr2['ОстаткиПоМеталлу'] && $arr2['ОстаткиВШтуках']){
+					$arr2['Наличие'] = 'ошибка';
+				}
+				if(!$arr2['ОстаткиПоМеталлу'] && !$arr2['ОстаткиВШтуках']){
+					$arr2['Наличие'] = 'ошибка 2';
+				}
+				
+				if($arr2['Наличие'] == '-'){
+					
+					if($arr2['ОстаткиПоМеталлу']){
+						if(array_key_exists($arr2['Толщина'].'-'.$arr2['ЦветИД'], $arr_leftover_metal_for_products_id_quantity)){
+							$arr2['Наличие'] = $arr_leftover_metal_for_products_id_quantity[$arr2['Толщина'].'-'.$arr2['ЦветИД']];
+						}
+					}
+					
+					if($arr2['ОстаткиВШтуках']){
+						if(array_key_exists($shipping_warehouse_id.'-'.$id_nomenclature, $arr_product_balances_id_quantity)){
+							$arr2['Наличие'] = $arr_product_balances_id_quantity[$shipping_warehouse_id.'-'.$id_nomenclature].' шт.';
+						}
+					}
+					
+				}
+				
+				if($arr2['ЗаполнятьХарактеристику']){
+					if($c['Характеристика'] == ''){
+						$total = $c['Количество'] * 1 * $arr2['КоэффициентПересчетаКоличества'] / 1000;
+					}else{
+						$total = $c['Количество'] * $c['Характеристика'] * $arr2['КоэффициентПересчетаКоличества'] / 1000;
+					}
+				}else if($arr2['ПродаетсяКомплектами']){
+					$total = $c['Количество'] * $arr2['КоличествоШтукВКомплекте'];
+				}else{
+					$total = $c['Количество'];
+				}
+				$arr2['Итого'] = round($total, 3);
+				
+				if($arr2['Цена'] > -1){
+					$arr2['Сумма'] = round($arr2['Итого'] * $arr2['Цена'] * (1 - (($c['ПроцентБонуса'] + $arr2['ПроцентСкидкиНаценки']) / 100)), 2);
+				}
+				
+				$document_amount += $arr2['Сумма'];
+				$arr[] = $arr2;	
+
+				$arr3[] = ['НоменклатураИД' => $id_nomenclature, 'Количество' => $arr2['Итого']];
+			
+			}
+			
+			$goods = $arr;
+			$arr = [];
+			
+			foreach($goods_non_standard_addition as $c){
+				$arr[] = [
+					'Описание' => $c['Описание'],
+					'Количество' => $c['Количество']
+				];	
+			}
+			
+			$goods_non_standard_addition = $arr;
+			$arr = [];
+			
+			foreach($files_non_standard_addition as $c){
+				$arr[] = [
+					'СсылкаНаФайл' => $c['СсылкаНаФайл'],
+					'ИмяФайла' => $c['ИмяФайла']
+				];	
+			}
+			
+			$files_non_standard_addition = $arr;
+			$arr = [];
+
+		}
+		
+		list($result, $err) = $this->post_request_to_api_1c('weight_calculation', ['data' => $arr3, 'token' => $token]);
+		if($err){
+			return ['', '', $err];
+		}
+
+		if(array_key_exists('Ошибка', $result)){
+			return ['', '', $result['Ошибка']];
+		}
+
+		if(!array_key_exists('Вес', $result)){
+			return ['', '', 'NO_EXISTS_KEY_Вес'];
+		}
+		
+		$weight = $result['Вес'];
+		
+		$draft_details = [
+			'КонтрагентИД' => $counterparty_id,
+			'КонтрагентНаименование' => $counterparty_name,
+			'СкладОтгрузкиИД' => $shipping_warehouse_id,
+			'СкладОтгрузкиНаименование' => $shipping_warehouse_name,
+			'ДатаГотовности' => $ready_date,
+			'ДатаДоставки' => $shipping_date,
+			'НаличнаяОплата' => $is_cash_payment,
+			'СуммаДокумента' => round($document_amount, 2),
+			'Вес' => round($weight, 2),
+			'Запасы' => $goods,
+			'НестандартнаяДоборка' => $goods_non_standard_addition,
+			'НестандартнаяДоборкаПрикрепленныеФайлы' => $files_non_standard_addition,
+			'ОтветственныйОтКлиента' => $fio1,
+			'ОтветственныйSokrof' => $manager_fio1,
+			'Комментарий' => $comment 			
+		];
+		
+		$commercial_offers = [];
+		$result = [];
+		
+		try{
+			$result = DB::select('SELECT `commercial_offer_amount`, `markup_type`, `markup_percentage`, CONVERT(AES_DECRYPT(`recipient_of_the_commercial_offer`, :aes_key) USING utf8mb4) AS `recipient_of_the_commercial_offer`, `commercial_offer_id` FROM `commercial_offers_'.$user_myid.'` WHERE `draft_id` = :draft_id ORDER BY `id` DESC', ['aes_key' => $this->aes_key[0], 'draft_id' => $draft_id]);
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			if(strpos($err, 'Base table or view not found') === false){
+				$this->log_er_mysql($err);
+				return ['', '', $err];
+			}
+		}
+		
+		foreach ($result as $row) {
+			$commercial_offers[] = ['commercial_offer_id' => $row->commercial_offer_id, 'client' => $row->recipient_of_the_commercial_offer, 'extra_charge' => ($row->markup_type == 'manual' ? 'Ручная' : $row->markup_percentage.'% ко всем ценам'), 'cp_amount' => ((float) $row->commercial_offer_amount)];
+		}
+		
+		return [$draft_details, $commercial_offers, ''];
+		
+	}
+	
+	protected function get_data_from_popular_statuses(string $main_counterparty_id) : string {
+		
+		$result = DB::select('SELECT `status` FROM `orders_'.$main_counterparty_id.'` WHERE `id` > 1');
+		
+		$ready_for_shipment = 0;
+		$with_shipments = 0;
+		$needs_confirmation = 0;
+		$draft = 0;
+		
+		foreach ($result as $row) {
+			switch($row->status){
+				case 'ready_for_shipment':
+					$ready_for_shipment++;
+					break;
+				case 'in_shipment':
+					$with_shipments++;
+					break;
+				case 'needs_confirmation':
+					$needs_confirmation++;
+					break;
+				case 'draft':
+					$draft++;
+					break;
+			}
+		}
+		
+		return json_encode(['ready_for_shipment' => $ready_for_shipment, 'with_shipments' => $with_shipments, 'needs_confirmation' => $needs_confirmation, 'draft' => $draft]);
+				
+	}
+	
+	protected function get_employees2(string $main_counterparty_id) : array {
+		
+		$employees_data = ['data' => []];
+		
+		try{
+			
+			$result = DB::select('SELECT `user_myid`, CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio`, `is_banned` FROM `users` WHERE `main_counterparty_id` = :main_counterparty_id', ['aes_key' => $this->aes_key[0], 'main_counterparty_id' => $main_counterparty_id]);
+			
+			foreach ($result as $row) {
+				if($row->is_banned == ''){
+					
+					preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->fio, $matches);
+					if($matches){
+						$fio2 = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+					}else{
+						$fio2 = '';
+					}
+					
+					$employees_data['data'][] = ['user_myid' => $row->user_myid, 'fio2' => $fio2];
+				}
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['error' => $err];
+		}
+		
+		return $employees_data;
+		
+	}
+	
+	protected function get_fio_and_manager_fio(string $client_id) : array {
+		
+		$fio1 = '';
+		$manager_fio1 = '';
+		$fio2 = '';
+		$manager_fio2 = '';
+		
+		try{
+			
+			$result = DB::select('SELECT CONVERT(AES_DECRYPT(`fio`, :aes_key) USING utf8mb4) AS `fio`, CONVERT(AES_DECRYPT(`manager_fio`, :aes_key2) USING utf8mb4) AS `manager_fio` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'user_myid' => $client_id]);
+			
+			foreach ($result as $row) {
+				
+				preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->fio, $matches);
+				if($matches){
+					$fio1 = $matches[2].' '.$matches[1];
+				}
+
+				preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->fio, $matches);
+				if($matches){
+					$fio2 = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+				}
+					
+				preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->manager_fio, $matches);
+				if($matches){
+					$manager_fio1 = $matches[2].' '.$matches[1];
+				}
+				
+				preg_match('/([^ ]+) ([^ ]+) ([^ ]+)/', $row->manager_fio, $matches);
+				if($matches){
+					$manager_fio2 = mb_strtoupper(mb_substr($matches[2], 0, 1)) . '. ' . mb_strtoupper(mb_substr($matches[1], 0, 1)) . mb_strtolower(mb_substr($matches[1], 1, 255));
+				}
+				
+			}
+			
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return ['', '', '', '', $err];
+		}
+		
+		return [$fio1, $manager_fio1, $fio2, $manager_fio2, ''];
+		
+	}
+	
+	protected function update_data_for_head_counterparty(string $main_counterparty_id, string $token) : array {
+		
+		if($main_counterparty_id == '00000000-0000-0000-0000-000000000000' || $main_counterparty_id == ''){
+			return array('', 'THE_MAIN_COUNTERPARTY_IS_NOT_CORRECT');
+		}
+		
+		list($result, $err) = $this->post_request_to_api_1c('get_counterparties', ['token' => $token]);
+		if($err){
+			return array('', $this->escape_unicode_decode($err));
+		}
+		
+		if(array_key_exists('Ошибка', $result)){
+			return array('', $this->escape_unicode_decode($result['Ошибка']));
+		}
+		
+		if(!is_array($result)){
+			return array('', 'RESULT_IS_NOT_ARRAY');
+		}
+		
+		$counterparty_id = '';
+		$application_id = '';
+		$fullname = '';
+		$inn = '';
+		$kpp = '';
+		$ogrn = '';
+		$legal_address = '';
+		$actual_address = '';
+		$corr_account = '';
+		$bank_bik = '';
+		$bank_name = '';
+		$checking_account = '';
+		$id_delivery_addresses = '';
+		$bonus_percentage = '';
+		$under_consideration = false;
+		$arr = [];
+		$arr2 = [];
+		
+		foreach($result as $c){
+			
+			if(!array_key_exists('ГоловнойКонтрагентИД', $c)){
+				return array('', 'NO_EXISTS_KEY_ГоловнойКонтрагентИД');
+			}
+			if(!array_key_exists('КонтрагентИД', $c)){
+				return array('', 'NO_EXISTS_KEY_КонтрагентИД');
+			}
+			if(!array_key_exists('НаименованиеПолное', $c)){
+				return array('', 'NO_EXISTS_KEY_НаименованиеПолное');
+			}
+			if(!array_key_exists('ИНН', $c)){
+				return array('', 'NO_EXISTS_KEY_ИНН');
+			}
+			if(!array_key_exists('КПП', $c)){
+				return array('', 'NO_EXISTS_KEY_КПП');
+			}
+			if(!array_key_exists('ОГРН', $c)){
+				return array('', 'NO_EXISTS_KEY_ОГРН');
+			}
+			if(!array_key_exists('ЮрАдресКонтрагента', $c)){
+				return array('', 'NO_EXISTS_KEY_ЮрАдресКонтрагента');
+			}
+			if(!array_key_exists('ФактАдресКонтрагента', $c)){
+				return array('', 'NO_EXISTS_KEY_ФактАдресКонтрагента');
+			}
+			if(!array_key_exists('КоррСчет', $c)){
+				return array('', 'NO_EXISTS_KEY_КоррСчет');
+			}
+			if(!array_key_exists('БикБанка', $c)){
+				return array('', 'NO_EXISTS_KEY_БикБанка');
+			}
+			if(!array_key_exists('НаименованиеБанка', $c)){
+				return array('', 'NO_EXISTS_KEY_НаименованиеБанка');
+			}
+			if(!array_key_exists('РасчетныйСчет', $c)){
+				return array('', 'NO_EXISTS_KEY_РасчетныйСчет');
+			}
+			if(!array_key_exists('ОсновнойАдресДоставкиИД', $c)){
+				return array('', 'NO_EXISTS_KEY_ОсновнойАдресДоставкиИД');
+			}
+			if(!array_key_exists('ПроцентБонуса', $c)){
+				return array('', 'NO_EXISTS_KEY_ПроцентБонуса');
+			}
+			if(!array_key_exists('НаРассмотрении', $c)){
+				return array('', 'NO_EXISTS_KEY_НаРассмотрении');
+			}
+			
+			$main_counterparty_id = mb_substr(htmlspecialchars($c['ГоловнойКонтрагентИД'], ENT_QUOTES, $this->encoding), 0, 36);
+			$counterparty_id = mb_substr(htmlspecialchars($c['КонтрагентИД'], ENT_QUOTES, $this->encoding), 0, 36);
+			$application_id = '-';
+			$fullname = mb_substr(htmlspecialchars($c['НаименованиеПолное'], ENT_QUOTES, $this->encoding), 0, 255);
+			$inn = mb_substr(htmlspecialchars($c['ИНН'], ENT_QUOTES, $this->encoding), 0, 12);
+			$kpp = mb_substr(htmlspecialchars($c['КПП'], ENT_QUOTES, $this->encoding), 0, 9);
+			$ogrn = mb_substr(htmlspecialchars($c['ОГРН'], ENT_QUOTES, $this->encoding), 0, 13);
+			$legal_address = mb_substr(htmlspecialchars($c['ЮрАдресКонтрагента'], ENT_QUOTES, $this->encoding), 0, 500);
+			$actual_address = mb_substr(htmlspecialchars($c['ФактАдресКонтрагента'], ENT_QUOTES, $this->encoding), 0, 500);
+			$corr_account = mb_substr(htmlspecialchars($c['КоррСчет'], ENT_QUOTES, $this->encoding), 0, 20);
+			$bank_bik = mb_substr(htmlspecialchars($c['БикБанка'], ENT_QUOTES, $this->encoding), 0, 9);
+			$bank_name = mb_substr(htmlspecialchars($c['НаименованиеБанка'], ENT_QUOTES, $this->encoding), 0, 100); 
+			$checking_account = mb_substr(htmlspecialchars($c['РасчетныйСчет'], ENT_QUOTES, $this->encoding), 0, 20);
+			$id_delivery_addresses = mb_substr(htmlspecialchars($c['ОсновнойАдресДоставкиИД'], ENT_QUOTES, $this->encoding), 0, 36);
+			$bonus_percentage = mb_substr(htmlspecialchars($c['ПроцентБонуса'], ENT_QUOTES, $this->encoding), 0, 3);
+			$under_consideration = htmlspecialchars($c['НаРассмотрении'], ENT_QUOTES, $this->encoding);
+			
+			if($under_consideration){
+				$application_id = $counterparty_id;
+				$counterparty_id = '';
+			}
+			
+			$arr1 = ['counterparty_id' => $counterparty_id, 'application_id' => $application_id, 'fullname' => $fullname, 'inn' => $inn, 'kpp' => $kpp, 'ogrn' => $ogrn, 'legal_address' => $legal_address, 'actual_address' => $actual_address, 'corr_account' => $corr_account, 'bank_bik' => $bank_bik, 'bank_name' => $bank_name, 'checking_account' => $checking_account, 'id_delivery_addresses' => $id_delivery_addresses, 'bonus_percentage' => $bonus_percentage, 'is_confirmed' => (!$under_consideration ? '1' : '')];
+			
+			if($c['КонтрагентИД'] == $main_counterparty_id){
+				$arr = $arr1;
+			}else{
+				$arr2[] = $arr1;
+			}
+			
+		}
+			
+		if(sizeof($arr) == 0){
+			return array('', 'NO_EXISTS_HEAD_COUNTERPARTY_ID');
+		}
+		
+		$mysqli = @new \mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));		
+		if($mysqli->connect_error) {
+			$err = $mysqli->connect_error;
+			$this->log_er_mysql($err);
+			return array('', $err);
+		}
+		
+		if(!$mysqli->query('CREATE TABLE `counterparties_'.$main_counterparty_id.'` (`id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `counterparty_id` char(36) NOT NULL DEFAULT \'\', `application_id` char(36) NOT NULL DEFAULT \'\', `fullname` blob DEFAULT NULL, `inn` tinyblob DEFAULT NULL, `kpp` tinyblob DEFAULT NULL, `ogrn` tinyblob DEFAULT NULL, `legal_address` blob DEFAULT NULL, `actual_address` blob DEFAULT NULL, `corr_account` tinyblob DEFAULT NULL, `bank_bik` tinyblob DEFAULT NULL, `bank_name` tinyblob DEFAULT NULL, `checking_account` tinyblob DEFAULT NULL, `bonus_percentage` tinyint(3) UNSIGNED DEFAULT 0, `id_delivery_addresses` char(36) DEFAULT \'\', `is_confirmed` char(1) DEFAULT \'\', `ids_row_update` text NOT NULL DEFAULT \'\') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')){
+			$err = $mysqli->error;
+			if(strpos($err, 'already exists') === false){
+				$this->log_er_mysql($err);
+				return array('', $err);
+			}else{
+				array_unshift($arr2, $arr);
+				return array($arr2, '');
+			}
+		}
+		
+		try{
+		
+			DB::beginTransaction();
+			
+				if(DB::table('counterparties_'.$main_counterparty_id)->count('id') == 0){
+				
+					DB::insert('INSERT INTO `counterparties_'.$main_counterparty_id.'` (`ids_row_update`) values (\'\')');
+					
+					foreach([$arr] as $c){
+						DB::insert('INSERT INTO `counterparties_'.$main_counterparty_id.'` (`counterparty_id`, `application_id`, `fullname`, `inn`, `kpp`, `ogrn`, `legal_address`, `actual_address`, `corr_account`, `bank_bik`, `bank_name`, `checking_account`, `bonus_percentage`, `id_delivery_addresses`, `is_confirmed`) values (:counterparty_id, :application_id, AES_ENCRYPT(:fullname, :aes_key), AES_ENCRYPT(:inn, :aes_key2), AES_ENCRYPT(:kpp, :aes_key3), AES_ENCRYPT(:ogrn, :aes_key4), AES_ENCRYPT(:legal_address, :aes_key5), AES_ENCRYPT(:actual_address, :aes_key6), AES_ENCRYPT(:corr_account, :aes_key7), AES_ENCRYPT(:bank_bik, :aes_key8), AES_ENCRYPT(:bank_name, :aes_key9), AES_ENCRYPT(:checking_account, :aes_key10), :bonus_percentage, :id_delivery_addresses, :is_confirmed)', ['counterparty_id' => $c['counterparty_id'], 'application_id' => $c['application_id'], 'fullname' => $c['fullname'], 'aes_key' => $this->aes_key[0], 'inn' => $c['inn'], 'aes_key2' => $this->aes_key[0], 'kpp' => $c['kpp'], 'aes_key3' => $this->aes_key[0], 'ogrn' => $c['ogrn'], 'aes_key4' => $this->aes_key[0], 'legal_address' => $c['legal_address'], 'aes_key5' => $this->aes_key[0], 'actual_address' => $c['actual_address'], 'aes_key6' => $this->aes_key[0], 'corr_account' => $c['corr_account'], 'aes_key7' => $this->aes_key[0], 'bank_bik' => $c['bank_bik'], 'aes_key8' => $this->aes_key[0], 'bank_name' => $c['bank_name'], 'aes_key9' => $this->aes_key[0], 'checking_account' => $c['checking_account'], 'aes_key10' => $this->aes_key[0], 'bonus_percentage' => $c['bonus_percentage'], 'id_delivery_addresses' => $c['id_delivery_addresses'], 'is_confirmed' => $c['is_confirmed']]);
+					}
+
+					foreach($arr2 as $c){
+						DB::insert('INSERT INTO `counterparties_'.$main_counterparty_id.'` (`counterparty_id`, `application_id`, `fullname`, `inn`, `kpp`, `ogrn`, `legal_address`, `actual_address`, `corr_account`, `bank_bik`, `bank_name`, `checking_account`, `bonus_percentage`, `id_delivery_addresses`, `is_confirmed`) values (:counterparty_id, :application_id, AES_ENCRYPT(:fullname, :aes_key), AES_ENCRYPT(:inn, :aes_key2), AES_ENCRYPT(:kpp, :aes_key3), AES_ENCRYPT(:ogrn, :aes_key4), AES_ENCRYPT(:legal_address, :aes_key5), AES_ENCRYPT(:actual_address, :aes_key6), AES_ENCRYPT(:corr_account, :aes_key7), AES_ENCRYPT(:bank_bik, :aes_key8), AES_ENCRYPT(:bank_name, :aes_key9), AES_ENCRYPT(:checking_account, :aes_key10), :bonus_percentage, :id_delivery_addresses, :is_confirmed)', ['counterparty_id' => $c['counterparty_id'], 'application_id' => $c['application_id'], 'fullname' => $c['fullname'], 'aes_key' => $this->aes_key[0], 'inn' => $c['inn'], 'aes_key2' => $this->aes_key[0], 'kpp' => $c['kpp'], 'aes_key3' => $this->aes_key[0], 'ogrn' => $c['ogrn'], 'aes_key4' => $this->aes_key[0], 'legal_address' => $c['legal_address'], 'aes_key5' => $this->aes_key[0], 'actual_address' => $c['actual_address'], 'aes_key6' => $this->aes_key[0], 'corr_account' => $c['corr_account'], 'aes_key7' => $this->aes_key[0], 'bank_bik' => $c['bank_bik'], 'aes_key8' => $this->aes_key[0], 'bank_name' => $c['bank_name'], 'aes_key9' => $this->aes_key[0], 'checking_account' => $c['checking_account'], 'aes_key10' => $this->aes_key[0], 'bonus_percentage' => $c['bonus_percentage'], 'id_delivery_addresses' => $c['id_delivery_addresses'], 'is_confirmed' => $c['is_confirmed']]);
+					}
+				
+				}
+			
+			DB::commit();
+		
+		} catch (QueryException $e) {
+			
+			DB::rollBack();
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return array('', $err);
+			
+		}
+		
+		array_unshift($arr2, $arr);
+		
+		return array($arr2, '');
+		
+	}
+
+	protected function check_goods(array $goods) : array {
+	
+		$new_goods = [];
+
+		foreach ($goods as $good) {
+				if (!empty($good['НоменклатураИД']) && !empty($good['ВидНоменклатурыИД']) && !empty($good['Количество']) && is_numeric($good['Количество']) && array_key_exists('ПроцентБонуса', $good) && is_numeric($good['ПроцентБонуса'])) {
+						$new_goods[] = $good;
+				} else {
+						return [null, 'В поле Товары указана структура товаров с ошибками'];
+				}
+		}
+
+		return [$new_goods, null];
+			
+	}
+
+  protected function check_non_standard_goods($goods) : array {
+		
+		$new_goods = [];
+
+		foreach ($goods as $good) {
+				if (!empty($good['Описание']) && !empty($good['Количество']) && is_int($good['Количество'])) {
+						$new_goods[] = $good;
+				} else {
+						return [null, 'В поле НестандартнаяДоборка указана структура товаров с ошибками'];
+				}
+		}
+		return [$new_goods, null];
+				
+  }
+		
+	protected function upload_file_from_base64(string $user_id, string $file_name, string $base64_data) : string {
+		
+		$file_data = base64_decode($base64_data);
+
+		if (!is_dir($this->document_root . '/user_files/' . $user_id)) {
+				mkdir($this->document_root . '/user_files/' . $user_id, 0774);
+		}
+
+		if (!is_dir($this->document_root . '/user_files/' . $user_id . '/files_for_non_standard_addition')) {
+				mkdir($this->document_root . '/user_files/' . $user_id . '/files_for_non_standard_addition', 0774);
+		}
+		
+		file_put_contents($this->document_root . '/user_files/' . $user_id . '/files_for_non_standard_addition/' . $file_name, $file_data);
+		$file = '/user_files/' . $user_id . '/files_for_non_standard_addition/' . $file_name;
+		
+		if(file_exists($this->document_root . $file)){
+			chmod($this->document_root . $file, 0664);
+		}
+		
+		return $file;
+				
+	}
+	
+	protected function validate_fields(string $target, Request $request) : string {
+		
+		switch($target){
+			
+			case 'other':
+				if(empty($request->input('data_crypt'))){
+					return 'DATA_CRYPT_IS_INCORRECT';
+				}
+				
+				if(empty($request->input('symmetric_key_crypt'))){
+					return 'SYMMETRIC_KEY_CRYPT_IS_INCORRECT';
+				}
+
+				if(empty($request->input('client_rsa_pubkey'))){
+					return 'CLIENT_RSA_PUBKEY_IS_INCORRECT';
+				}
+				break;
+		
+		}
+	
+		return '';
+		
+	}
+	
+	protected function validate_get_params(string $target) : string {
+		
+		switch($target){
+			
+			case 'other':
+				if(empty($_GET['client_rsa_pubkey'])){
+					return 'CLIENT_RSA_PUBKEY_IS_INCORRECT';
+				}
+				break;
+				
+		}
+		
+		return '';
+		
+	}
+	
+	protected function get_common_rsa_keys() : array {
+		
+		try{
+			
+			$rsa_pubkey = '';
+			$rsa_privkey = '';
+			
+			$result = DB::select('SELECT SQL_CACHE CONVERT(AES_DECRYPT(`rsa_pubkey`, :aes_key) USING utf8mb4) AS `rsa_pubkey`, CONVERT(AES_DECRYPT(`rsa_privkey`, :aes_key2) USING utf8mb4) AS `rsa_privkey` FROM `common_rsa_keys` WHERE `id` = 1 LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0]]);			
+			
+			if(sizeof($result) == 0){
+				return [null, null, 'NOT_FOUND_RSA_PRIVKEY'];
+			}
+						
+			foreach ($result as $row) {
+				$rsa_pubkey = $row->rsa_pubkey;
+				$rsa_privkey = $row->rsa_privkey;
+			}
+
+		} catch (QueryException $e) {
+			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+			$this->log_er_mysql($err);
+			return [null, null, $err];
+		}
+		
+		return [$rsa_pubkey, $rsa_privkey, null];
+		
+	}
+	
+	protected function decrypt_symmetric_key(string $symmetric_key_crypt) : array {
+		
+		$rsa_privkey = '';
+		
+		list($rsa_pubkey, $rsa_privkey, $err) = $this->get_common_rsa_keys();
+		if($err){
+			return [null, $err];
+		}
+		
+		list($result, $err) = $this->rsa_crypto_service('decrypt', $symmetric_key_crypt, $rsa_privkey, '');
+		if($err){
+			return [null, $err];
+		}
+		
+		return [trim($result), null];
+		
+	}
+
+	private function log_er_aes_crypto_service(string $mess) : void {
+
+		$f = @fopen($this->document_root.'/../storage/logs/errors_aes_crypto_service(php).log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' ' .trim($mess) . PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+		
+	}
+	
+	protected function aes_crypto_service(string $act, string $data, string $key) : array {
+
+		$result = '';
+		$err = '';
+		$payload = json_encode(['act' => $act, 'data' => $data, 'key' => $key]);
+		
+		for($i = 0; $i < 3; $i++){
+					
+			$start_time = time();
+			
+			if(PHP_OS != 'WINNT'){
+				$socket = @fsockopen('unix://'.$this->config_project['aes_crypto_service_socket'], -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+			}else{
+				$socket = @fsockopen('127.0.0.1', $this->config_project['aes_crypto_service_port'], $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+			}
+			
+			if(!$socket ){
+				$err = 'FAIL_SOCKET_CONNECT';
+				$this->log_er_aes_crypto_service($err);
+				continue;
+			}
+						
+			fwrite($socket, $payload . "\n");
+			
+			while (true) {
+				$data = fgets($socket, 1024);
+				if(mb_strlen($data) == 0){
+					break;
+				}
+				$result .= $data;
+				if(preg_match('/(\r|\n|\r\n)$/', $data)){
+					break;
+				}
+			}
+			fclose($socket);
+			
+			$end_time = time();
+			$result = urldecode($result);
+			
+			preg_match('/^\{"(result|error)":/', $result, $matches);
+			
+			if($matches){
+				
+				if($matches[1] == 'error'){
+					$err = json_decode($result, true)['error'];
+					$result = '';
+				}else{
+					$result = preg_replace('/^\{"result": *"|"\}\r\n$/', '', $result);
+					$err = '';
+				}
+				
+			}else{
+				
+				$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+				$err = preg_replace('/\r?\n/', '', $err);
+				
+				if($err == ''){
+					if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
+						$err = 'CONNECTION_TIMEOUT';
+					}else{
+						$err = 'RESULT_IS_EMPTY';
+					}
+					$this->log_er_aes_crypto_service($err);
+					continue;
+				}
+				$this->log_er_aes_crypto_service($err);
+						
+			}
+			
+			if($err != ''){
+				return ['', trim($err)];
+			}
+			
+			return [trim($result), null];
+		
+		}
+		return ['', trim($err)];
+		
+	}
+
+	private function log_er_rsa_crypto_service(string $mess) : void {
+
+		$date = $this->convert_format_date($this->date);
+		$f = @fopen($this->document_root.'/../storage/logs/errors_rsa_crypto_service(php).log', 'a+');
+		$text =	date('D M j G:i:s T Y').' '.$this->time . ' '. trim($mess) .	PHP_EOL . '----------------------------------------------------------------------------------------'. PHP_EOL;
+		@stream_set_write_buffer($f, 0);
+		@fwrite($f, $text);
+		@fflush($f);
+		@fclose($f);
+		
+	}
+	
+	protected function rsa_crypto_service(string $act, string $data, string $key = '', string $key_source = '') : array {
+
+		$result = '';
+		$err = '';
+		if($act == 'decrypt'){
+			$key = "-----BEGIN RSA PRIVATE KEY-----\n".$key."\n-----END RSA PRIVATE KEY-----";
+		}
+		if($act == 'encrypt'){
+			$key = "-----BEGIN RSA PUBLIC KEY-----\n".$key."\n-----END RSA PUBLIC KEY-----";
+		}
+		$payload = json_encode(['act' => $act, 'data' => $data, 'key' => $key, 'key_source' => $key_source]);
+		
+		for($i = 0; $i < 3; $i++){
+					
+			$start_time = time();
+			
+			if(PHP_OS != 'WINNT'){
+				$socket = @fsockopen('unix://'.$this->config_project['rsa_crypto_service_socket'], -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+			}else{
+				$socket = @fsockopen('127.0.0.1', $this->config_project['rsa_crypto_service_port'], $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+			}
+			
+			if(!$socket ){
+				$err = 'FAIL_SOCKET_CONNECT';
+				$this->log_er_rsa_crypto_service($err);
+				continue;
+			}
+			
+			fwrite($socket, $payload . "\n");
+			while (true) {
+				$data = fgets($socket, 1024);
+				if(mb_strlen($data) == 0){
+					break;
+				}
+				$result .= $data;
+				if(preg_match('/(\r|\n|\r\n)$/', $data)){
+					break;
+				}
+			}
+			fclose($socket);
+			
+			$end_time = time();
+
+			preg_match('/^\{"(result|error)":/', $result, $matches);
+			
+			if($matches){
+				
+				if($matches[1] == 'error'){
+					$err = json_decode($result, true)['error'];
+					$result = '';
+				}else{
+					$result = json_decode($result, true)['result'];
+					$err = '';
+				}
+			
+			}else{
+				
+				$err = substr(htmlspecialchars($result, ENT_QUOTES, $this->encoding), 0, 255);
+				$err = preg_replace('/\r?\n/', '', $err);
+				
+				if($err == ''){
+					if($end_time - $start_time >= $this->config_project['connect_process_timeout3']){
+						$err = 'CONNECTION_TIMEOUT';
+					}else{
+						$err = 'RESULT_IS_EMPTY';
+					}
+					$this->log_er_rsa_crypto_service($err);
+					continue;
+				}
+				$this->log_er_rsa_crypto_service($err);
+						
+			}
+			
+			if($err != ''){
+				return ['', trim($err)];
+			}
+			
+			return [trim($result), null];
+		
+		}
+		return ['', trim($err)];
+		
+	}
+
+	protected function handler_data_crypt(Request $request) : array {
+		
+		$data_crypt = $request->input('data_crypt');
+		$symmetric_key_crypt = $request->input('symmetric_key_crypt');
+		$client_rsa_pubkey = $request->input('client_rsa_pubkey');
+
+		$data_crypt = htmlspecialchars($data_crypt, ENT_QUOTES, $this->encoding);
+		$symmetric_key_crypt = htmlspecialchars($symmetric_key_crypt, ENT_QUOTES, $this->encoding);
+		$client_rsa_pubkey = htmlspecialchars($client_rsa_pubkey, ENT_QUOTES, $this->encoding);
+
+		list($symmetric_key, $err) = $this->decrypt_symmetric_key($symmetric_key_crypt);
+		if($err){
+			return [null, $err];
+		}
+		
+		list($result, $err) = $this->aes_crypto_service('decrypt', $data_crypt, $symmetric_key);
+		if($err){
+			return [null, $err];
+		}
+		
+		$data = json_decode(trim($result), true);
+		$data['client_rsa_pubkey'] = $client_rsa_pubkey;
+	
+		return [$data, null];
+		
+	}
+	
+	protected function handler_data_crypt2(array $data, string $client_rsa_pubkey) : array {
+		
+		$symmetric_key = hash('sha256', $this->rnd . $this->time . $this->rnd);
+		
+		list($data_crypt, $err) = $this->aes_crypto_service('encrypt', str_replace('+', ' ', urlencode(utf8_encode(json_encode($data)))), $symmetric_key);
+		if($err){
+			return [null, null, $err];
+		}
+
+		list($symmetric_key_crypt, $err) = $this->rsa_crypto_service('encrypt', $symmetric_key, $client_rsa_pubkey, 'js');
+		if($err){
+			return [null, null, $err];
+		}
+		
+		return [$data_crypt, $symmetric_key_crypt, null];
+		
+	}
+		
+}

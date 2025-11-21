@@ -1,0 +1,8 @@
+[Unit]
+Description=Xlsx creator
+[Service]
+Type=simple
+User=vasya
+ExecStart=/usr/bin/python3.9 /var/www/default/xlsx_creator/xlsx_creator.py
+[Install]
+WantedBy=multi-user.target

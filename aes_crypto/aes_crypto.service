@@ -1,0 +1,8 @@
+[Unit]
+Description=Aes crypto service
+[Service]
+Type=simple
+User=vasya
+ExecStart=/usr/bin/node /var/www/default/aes_crypto/aes_crypto.js
+[Install]
+WantedBy=multi-user.target

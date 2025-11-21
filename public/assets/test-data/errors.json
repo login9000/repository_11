@@ -1,0 +1,32 @@
+[
+  {
+    "error": "SHIPPING_WAREHOUSE_NOT_SPECIFIED",
+    "comment": "Не указан склад отгрузки",
+    "isResultToLogout": false
+  },
+  {
+    "error": "DELIVERY_ADDRESS_NOT_SPECIFIED",
+    "comment": "Не указан адрес доставки",
+    "isResultToLogout": false
+  },
+  {
+    "error": "LIMIT_MAX_COUNT_GOODS",
+    "comment": "Превышет лимит товаров (1000)",
+    "isResultToLogout": false
+  },
+  {
+    "error": "COUNT_ARRAY_GOODS_IS_ZERO",
+    "comment": "Товары не добавлены",
+    "isResultToLogout": false
+  },
+  {
+    "error": "LIMIT_MAX_COUNT_GOODS_NON_STANDARD_ADDITION",
+    "comment": "",
+    "isResultToLogout": false
+  },
+  {
+    "error": "LIMIT_MAX_COUNT_PHOTOS_NON_STANDARD_ADDITION",
+    "comment": "",
+    "isResultToLogout": false
+  }
+]

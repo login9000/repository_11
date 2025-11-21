@@ -1,0 +1,8 @@
+[Unit]
+Description=Pdf creator
+[Service]
+Type=simple
+User=vasya
+ExecStart=/usr/bin/python3.9 /var/www/default/pdf_creator/pdf_creator.py
+[Install]
+WantedBy=multi-user.target

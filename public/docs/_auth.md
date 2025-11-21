@@ -1,0 +1,2 @@
+Для авторизации необходимо использовать следующий заголовок
+> Authorization: Bearer 3|h3Fmtl6BByGoQlDnsHVwkoMuKNKU0vjjbuCyhYln

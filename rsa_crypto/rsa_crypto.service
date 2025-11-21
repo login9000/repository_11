@@ -1,0 +1,8 @@
+[Unit]
+Description=Rsa crypto service
+[Service]
+Type=simple
+User=vasya
+ExecStart=/usr/bin/python3.9 /var/www/default/rsa_crypto/rsa_crypto.py
+[Install]
+WantedBy=multi-user.target
