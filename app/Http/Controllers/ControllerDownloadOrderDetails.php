@@ -439,6 +439,8 @@ class ControllerDownloadOrderDetails extends Common{
 		// 	chmod($this->document_root . $link, 0664);
 		// }
 		
+		$link .= '?'.time();
+		
 		parent::prepare_response(['response' => ['link' => $link]]);
 		
 	}
