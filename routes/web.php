@@ -62,7 +62,7 @@ Route::any('/api/v1/get_delivery_addresses', 'ControllerGetDeliveryAddresses');
 Route::any('/api/v1/add_new_delivery_addresses', 'ControllerAddNewDeliveryAddresses');
 Route::any('/api/v1/edit_delivery_addresses', 'ControllerEditDeliveryAddresses');
 Route::any('/api/v1/delete_delivery_addresses', 'ControllerDeleteDeliveryAddresses');
-Route::any('/api/v1/graphql', 'ControllerPseudoGraphql');
+Route::any('/api/v1/get_other_data', 'ControllerGetOtherData');
 Route::any('/api/v1/add_new_counterparty', 'ControllerAddNewCounterparty');
 Route::any('/api/v1/weight_calculation', 'ControllerWeightCalculation');
 Route::any('/api/v1/order_creation', 'ControllerOrderCreation');

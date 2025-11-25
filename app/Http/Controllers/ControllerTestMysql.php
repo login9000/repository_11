@@ -12,14 +12,13 @@ class ControllerTestMysql extends Common{
 	
 	public function __invoke(){
 		
-		return '<br>exit!!!!!!!!!!!!';
+		//return '<br>exit!!!!!!!!!!!!';
 		
-		 $user_myid = '40fac567-5283-11f0-814d-000c29ac4925';
-		 $commercial_offer_id = 'ea666e3c-b882-4418-9ba4-2cabf9cf07e9';
+		 echo 'DB_HOST:'.env('DB_HOST');
+		 echo '<br>';
+		 echo 'DB_USERNAME:'.env('DB_USERNAME');
 		 
-		 $result = DB::select('SELECT `draft_id`, CONVERT(AES_DECRYPT(`recipient_of_the_commercial_offer`, :aes_key) USING utf8mb4) AS `recipient_of_the_commercial_offer`, `commercial_offer_amount`, `goods`, CONVERT(AES_DECRYPT(`comment`, :aes_key2) USING utf8mb4) AS `comment` FROM `commercial_offers_'.$user_myid.'` WHERE `commercial_offer_id` = :commercial_offer_id LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'commercial_offer_id' => $commercial_offer_id]);
-		 
-		 var_dump($result);
+		 exit;
 		 
 		 
 		 
