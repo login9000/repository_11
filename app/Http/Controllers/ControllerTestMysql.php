@@ -14,9 +14,28 @@ class ControllerTestMysql extends Common{
 		
 		//return '<br>exit!!!!!!!!!!!!';
 		
-		 echo 'DB_HOST:'.env('DB_HOST');
-		 echo '<br>';
-		 echo 'DB_USERNAME:'.env('DB_USERNAME');
+		$main_counterparty_id = 'dbb01a60-15d8-471c-b207-e099d83b411a';
+		
+		//mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+		
+		$mysqli = @new \mysqli(env('DB_HOST').'111', env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));		
+		if ($mysqli->connect_error) {
+			exit($mysqli->connect_error);
+		}
+		
+		if(!$mysqli->query('CREATE TABLE `orders_'.$main_counterparty_id.'` (`id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `date` char(22) NOT NULL DEFAULT \'\', `timestamp_order` int(10) UNSIGNED NOT NULL DEFAULT 0, `order_id` char(36) NOT NULL DEFAULT \'-\', `order_number` char(11) NOT NULL DEFAULT \'\', `status` enum(\'needs_confirmation\',\'ready_for_shipment\',\'in_work\',\'in_processing\',\'shipped\',\'in_shipment\',\'canceled\',\'draft\') NOT NULL DEFAULT \'draft\', `counterparty_id` char(36) NOT NULL DEFAULT \'\', `sum` char(32) NOT NULL DEFAULT \'0\', `is_cash_payment` char(1) NOT NULL DEFAULT \'\', `shipping_date` char(22) NOT NULL DEFAULT \'\', `timestamp_shipments` int(10) UNSIGNED NOT NULL DEFAULT 0, `shipping_warehouse_id` char(36) NOT NULL DEFAULT \'\', `is_shipping` char(1) NOT NULL DEFAULT \'\', `weight` char(32) NOT NULL DEFAULT \'0\', `delivery_address_id` char(36) NOT NULL DEFAULT \'\', `responsible_sokrof` blob DEFAULT NULL, `client_id` char(36) NOT NULL DEFAULT \'\', `goods` text DEFAULT \'\', `goods_non_standard_addition` blob DEFAULT NULL, `files_non_standard_addition` blob DEFAULT NULL, `ids_row_update` text DEFAULT \'\', `popular_statuses` text DEFAULT \'\', `comment` blob DEFAULT NULL, `orderlkid` char(36) NOT NULL DEFAULT \'\' ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;')){
+			$err = $mysqli->error;
+			if(strpos($err, 'already exists') === false){
+				echo '1...'.$err;
+			}
+		}else{
+			if(!$mysqli->query('ALTER TABLE `orders_' . $main_counterparty_id . '` ADD KEY `order_id_index` (`order_id`) USING BTREE')){
+				$err = $mysqli->error;
+				echo '2...'.$err;	
+			}				
+		}
+		
+		echo '3...';
 		 
 		 exit;
 		 
