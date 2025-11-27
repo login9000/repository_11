@@ -522,8 +522,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   API_URL: () => (/* binding */ API_URL),
 /* harmony export */   PROJECT_URL: () => (/* binding */ PROJECT_URL)
 /* harmony export */ });
-// export const PROJECT_URL = document.location.origin.replace(/:[0-9]+\/?$/, '');
-const PROJECT_URL = 'http://127.0.0.1:8070';
+const PROJECT_URL = document.location.origin;
 const API_URL = PROJECT_URL + '/api/v1/';
 
 /***/ }),
