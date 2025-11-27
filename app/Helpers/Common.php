@@ -2389,7 +2389,7 @@ window.onerror = function(message, source, lineno){
 	
 	protected function email_sender_service(string $email_to, string $email_from, string $service_from, string $subject, string $message) : bool {
 		
-		$url = $this->config_project['email_sender_service_host'];
+		$url = '127.0.0.1';
 		$port = $this->config_project['email_sender_service_port'];
 		$path = '/api/v3/send';
 		$result = '';
