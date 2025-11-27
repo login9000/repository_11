@@ -150,7 +150,18 @@ class _baa7a52965 extends Common {
 		$notifications_data2['data'] = $arr;
 		$notifications_data2['number_unread'] = $number_unread;
 		
-		$this->result_ = [['response' => ['news' => $news_data, 'popular_statuses' => $popular_statuses_data, 'update_orders' => $update_orders_data, 'update_shipments' => $update_shipments_data, 'notifications' => $notifications_data2, 'update_counterparties' => $update_counterparties_data]], true];
+		$product_catalog_time_modify = @filemtime($this->document_root.'/../public/product_catalog.json');
+		$is_password_changed_from_1c = false;
+		
+		$result = DB::select('SELECT `password_changed_from_1c` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+		
+		foreach ($result as $row) {
+			if ($row->password_changed_from_1c) {
+				$is_password_changed_from_1c = true;
+			}
+		}	
+		
+		$this->result_ = [['response' => ['news' => $news_data, 'popular_statuses' => $popular_statuses_data, 'update_orders' => $update_orders_data, 'update_shipments' => $update_shipments_data, 'notifications' => $notifications_data2, 'update_counterparties' => $update_counterparties_data, 'product_catalog_time_modify' => $product_catalog_time_modify, 'is_password_changed_from_1c'  => $is_password_changed_from_1c]], true];
 		
 	}
 

@@ -14,10 +14,11 @@ import socket
 import json
 from color_print import Color_print
 from typing import Union
+import jsonschema # pip3 install jsonschema
 
 
 document_root = re.sub(r'/[^/]+$', '', os.path.abspath(__file__).replace(u'\\', u'/'))
-app_version = '5.5'
+app_version = '5.6'
 max_size_rsa_crypto_errors = 5_000_000
 is_access_log = False
 config_app = {}
@@ -99,7 +100,9 @@ def generate_rsa_keys() -> dict:
 		rsa_privkey = rsa_privkey.save_pkcs1('PEM').decode()
 
 		rsa_pubkey = re.sub('\r\n|\n', '\\n', re.sub('^(\r\n|\n)|(\r\n|\n)$', '', rsa_pubkey))
+		rsa_pubkey = re.sub('-----BEGIN RSA PUBLIC KEY-----\n|\n-----END RSA PUBLIC KEY-----', '', rsa_pubkey)
 		rsa_privkey = re.sub('\r\n|\n', '\\n', re.sub('^(\r\n|\n)|(\r\n|\n)$', '', rsa_privkey))
+		rsa_privkey = re.sub('-----BEGIN RSA PRIVATE KEY-----\n|\n-----END RSA PRIVATE KEY-----', '', rsa_privkey)
 
 		return {'rsa_pubkey':rsa_pubkey, 'rsa_privkey':rsa_privkey}
 
@@ -159,26 +162,23 @@ def remove_unix_socket() -> None:
 		pass
 
 def validate_fields(data: dict) -> dict:
-	
-	if not 'act' in data:
-		return {'error':'MISSING_ACT_FIELD'}
-	if not data['act'] in ('generate_keys', 'decrypt', 'encrypt'):
-		return {'error':'ACT_IS_INCORRECT'}
 
-	if not 'data' in data:
-		return {'error':'MISSING_DATA_FIELD'}
-	if not isinstance(data['data'], str):
-		return {'error':'DATA_IS_INCORRECT'}
-	
-	if not 'key' in data:
-		return {'error':'MISSING_KEY_FIELD'}
-	if not isinstance(data['key'], str):
-		return {'error':'KEY_IS_INCORRECT'}
-	
-	if not 'key_source' in data:
-		return {'error':'MISSING_KEY_SOURCE_FIELD'}
-	if not isinstance(data['key_source'], str):
-		return {'error':'KEY_SOURCE_IS_INCORRECT'}
+	try:
+		jsonschema.validate(instance = data, schema = {
+			"type" : "object",
+			"properties" : {
+				"act" : {"type" : "string", "enum": ['generate_keys', 'decrypt', 'encrypt']},
+				"data" : {"type" : "string"},
+				"key" : {"type" : "string"},
+				"key_source" : {"type" : "string"},
+			},
+			"required": [
+				"act"
+			]
+		})
+	except jsonschema.exceptions.ValidationError as err:
+		_err = str(err).replace('\n', ' ')
+		return {'error': f'{_err}'}
 	
 def handler(sock : socket) -> dict:
 

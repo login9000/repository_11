@@ -46,7 +46,6 @@ Route::any('/offers', 'ControllerRoot');
 
 Route::any('/api/v1/js_error', 'ControllerJsError');
 Route::any('/api/v1/auth', 'ControllerAuth');
-Route::any('/api/v1/check_password_change', 'ControllerPasswordChange');
 Route::any('/api/v1/recovery_pass', 'ControllerRecoveryPass');
 Route::any('/api/v1/upload_photo', 'ControllerUploadPhoto');
 Route::any('/api/v1/update_email', 'ControllerUpdateEmail');
@@ -124,6 +123,7 @@ Route::any('/api/v1/get_product_availability', 'ControllerGetProductAvailability
 Route::any('/api/v1/download_draft_details', 'ControllerDownloadDraftDetails');
 Route::any('/api/v1/copy_order', 'ControllerCopyOrder');
 Route::any('/api/v1/clear_cart', 'ControllerClearCart');
+Route::any('/api/v1/delete_avatar', 'ControllerDeleteAvatar');
 
 Route::any('/test_mysql', 'ControllerTestMysql');
 // Route::any('/api/v1/test_post_request', 'ControllerTestPostRequest');

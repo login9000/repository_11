@@ -50,6 +50,7 @@ class Common {
 		$this->date = date('H i s d m Y');
 		$this->user_agent = mb_substr(htmlspecialchars($_SERVER['HTTP_USER_AGENT'] ?? '', ENT_QUOTES, $this->encoding), 0, 250);
 		$this->rnd = mt_rand(100000,999000).mt_rand(100000,999000);
+		mysqli_report(MYSQLI_REPORT_OFF);
 		
 	}
 	
@@ -595,6 +596,8 @@ window.onerror = function(message, source, lineno){
 				
 		}
 		
+		$full_url = ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path;
+		
 		$cl = curl_init();
 		if($cl){
 			
@@ -605,7 +608,7 @@ window.onerror = function(message, source, lineno){
 				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
 					
 					fclose($socket);
-					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_URL, $full_url);
 					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
 					curl_setopt($cl, CURLOPT_POST, true);
 					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
@@ -924,9 +927,9 @@ window.onerror = function(message, source, lineno){
 						
 						if($err == ''){
 							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-								$err = 'CONNECTION_TIMEOUT';
+								$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 							}else{
-								$err = 'RESULT_IS_EMPTY';
+								$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 							}
 							$this->log_er_post_request_to_api_1c($err);
 							continue;
@@ -936,7 +939,7 @@ window.onerror = function(message, source, lineno){
 					}
 					
 				}else{
-					$err = 'FAIL_SOCKET_CONNECT';
+					$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 					$this->log_er_post_request_to_api_1c($err);
 					continue;
 				}
@@ -2398,6 +2401,7 @@ window.onerror = function(message, source, lineno){
 		];
 		$payload = json_encode(['host' => $this->config_project['smtp_host'], 'port' => $this->config_project['smtp_port'], 'user' => $this->config_project['smtp_login'], 'password' => $this->config_project['smtp_password'], 'recipients' => $email_to, 'subject' => $subject, 'message' => rawurlencode($message), 'email_from' => $email_from, 'service_from' => $service_from]);
 		$json = [];
+		$full_url = ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path;
 		
 		$cl = curl_init();
 		if($cl){
@@ -2409,7 +2413,7 @@ window.onerror = function(message, source, lineno){
 				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
 					
 					fclose($socket);
-					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_URL, $full_url);
 					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
 					curl_setopt($cl, CURLOPT_POST, true);
 					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
@@ -2434,9 +2438,9 @@ window.onerror = function(message, source, lineno){
 						
 						if($err == ''){
 							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-								$err = 'CONNECTION_TIMEOUT';
+								$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 							}else{
-								$err = 'RESULT_IS_EMPTY';
+								$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 							}
 							$this->log_er_email_sender_service($err);
 							continue;
@@ -2446,7 +2450,7 @@ window.onerror = function(message, source, lineno){
 					}
 					
 				}else{
-					$err = 'FAIL_SOCKET_CONNECT';
+					$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 					$this->log_er_email_sender_service($err);
 					continue;
 				}
@@ -2808,6 +2812,7 @@ window.onerror = function(message, source, lineno){
 		];
 		$payload = json_encode(['act' => $act, 'data' => $data, 'output_link' => $output_link]);
 		$json = [];
+		$full_url = ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path;
 		
 		$cl = curl_init();
 		if($cl){
@@ -2819,7 +2824,7 @@ window.onerror = function(message, source, lineno){
 				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
 					
 					fclose($socket);
-					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_URL, $full_url);
 					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
 					curl_setopt($cl, CURLOPT_POST, true);
 					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
@@ -2844,9 +2849,9 @@ window.onerror = function(message, source, lineno){
 						
 						if($err == ''){
 							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-								$err = 'CONNECTION_TIMEOUT';
+								$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 							}else{
-								$err = 'RESULT_IS_EMPTY';
+								$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 							}
 							$this->log_er_pdf_creator_service($err);
 							continue;
@@ -2856,7 +2861,7 @@ window.onerror = function(message, source, lineno){
 					}
 					
 				}else{
-					$err = 'FAIL_SOCKET_CONNECT';
+					$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 					$this->log_er_pdf_creator_service($err);
 					continue;
 				}
@@ -3441,6 +3446,7 @@ window.onerror = function(message, source, lineno){
 		];
 		$payload = json_encode(['act' => $act, 'data' => $data, 'output_link' => $output_link]);
 		$json = [];
+		$full_url = ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path;
 		
 		$cl = curl_init();
 		if($cl){
@@ -3452,7 +3458,7 @@ window.onerror = function(message, source, lineno){
 				if($socket = @fsockopen($url, $port, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2'])){
 					
 					fclose($socket);
-					curl_setopt($cl, CURLOPT_URL, ($port == 443 ? 'https://' : 'http://').$url.($port != 443 && $port != 80 ? ':'.$port : '').$path);
+					curl_setopt($cl, CURLOPT_URL, $full_url);
 					curl_setopt($cl, CURLOPT_HTTPHEADER, $headers);
 					curl_setopt($cl, CURLOPT_POST, true);
 					curl_setopt($cl, CURLOPT_POSTFIELDS, $payload);
@@ -3477,9 +3483,9 @@ window.onerror = function(message, source, lineno){
 						
 						if($err == ''){
 							if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-								$err = 'CONNECTION_TIMEOUT';
+								$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 							}else{
-								$err = 'RESULT_IS_EMPTY';
+								$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 							}
 							$this->log_er_xlsx_creator_service($err);
 							continue;
@@ -3489,7 +3495,7 @@ window.onerror = function(message, source, lineno){
 					}
 					
 				}else{
-					$err = 'FAIL_SOCKET_CONNECT';
+					$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 					$this->log_er_xlsx_creator_service($err);
 					continue;
 				}
@@ -4380,13 +4386,15 @@ window.onerror = function(message, source, lineno){
 			$start_time = time();
 			
 			if(PHP_OS != 'WINNT'){
-				$socket = @fsockopen('unix://'.$this->config_project['aes_crypto_service_socket'], -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+				$full_url = 'unix://'.$this->config_project['aes_crypto_service_socket'];
+				$socket = @fsockopen($full_url, -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
 			}else{
+				$full_url = 'http://127.0.0.1:'.$this->config_project['aes_crypto_service_port'];
 				$socket = @fsockopen('127.0.0.1', $this->config_project['aes_crypto_service_port'], $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
 			}
 			
 			if(!$socket ){
-				$err = 'FAIL_SOCKET_CONNECT';
+				$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 				$this->log_er_aes_crypto_service($err);
 				continue;
 			}
@@ -4427,9 +4435,9 @@ window.onerror = function(message, source, lineno){
 				
 				if($err == ''){
 					if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-						$err = 'CONNECTION_TIMEOUT';
+						$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 					}else{
-						$err = 'RESULT_IS_EMPTY';
+						$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 					}
 					$this->log_er_aes_crypto_service($err);
 					continue;
@@ -4478,13 +4486,15 @@ window.onerror = function(message, source, lineno){
 			$start_time = time();
 			
 			if(PHP_OS != 'WINNT'){
-				$socket = @fsockopen('unix://'.$this->config_project['rsa_crypto_service_socket'], -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
+				$full_url = 'unix://'.$this->config_project['rsa_crypto_service_socket'];
+				$socket = @fsockopen($full_url, -1, $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
 			}else{
+				$full_url = 'http://127.0.0.1:'.$this->config_project['rsa_crypto_service_port'];
 				$socket = @fsockopen('127.0.0.1', $this->config_project['rsa_crypto_service_port'], $errorNumber, $errorDescription, $this->config_project['connect_process_timeout2']);
 			}
 			
 			if(!$socket ){
-				$err = 'FAIL_SOCKET_CONNECT';
+				$err = 'FAIL_SOCKET_CONNECT ('.$full_url.')';
 				$this->log_er_rsa_crypto_service($err);
 				continue;
 			}
@@ -4523,9 +4533,9 @@ window.onerror = function(message, source, lineno){
 				
 				if($err == ''){
 					if($end_time - $start_time >= $this->config_project['connect_process_timeout2']){
-						$err = 'CONNECTION_TIMEOUT';
+						$err = 'CONNECTION_TIMEOUT ('.$full_url.')';
 					}else{
-						$err = 'RESULT_IS_EMPTY';
+						$err = 'RESULT_IS_EMPTY ('.$full_url.')';
 					}
 					$this->log_er_rsa_crypto_service($err);
 					continue;

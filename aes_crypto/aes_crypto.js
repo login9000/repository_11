@@ -3,10 +3,11 @@ const aes = require('./crypto-js-aes.js');
 const readline = require('readline');
 const net = require('net');
 const { console_log_pass, console_log_fail, console_log_warn } = require('./colorfull_console_log');
+const Validator = require('jsonschema').Validator; // npm i jsonschema
 
 var document_root = __dirname,
 		js_eol = (process.platform == 'linux' ? '\r\n' : '\n'),
-		app_version = '9.4',
+		app_version = '9.5',
 		count_lines_log_err_aes_crypto = 0,
 		config_app = {};
 		
@@ -157,23 +158,21 @@ async function aes_crypto(data){
 }
 
 function validate_fields(data){
-	if(data.act === undefined){
-		return {'error':'MISSING_ACT_FIELD'};
-	}
-	if(!~['decrypt', 'encrypt'].indexOf(data.act)){
-		return {'error':'ACT_IS_INCORRECT'};
-	}	
-	if(data.data === undefined){
-		return {'error':'MISSING_DATA_FIELD'};
-	}
-	if(data.data === ''){
-		return {'error':'DATA_IS_INCORRECT'};
-	}
-	if(data.key === undefined){
-		return {'error':'MISSING_DATA_FIELD'};
-	}
-	if(data.key === ''){
-		return {'error':'KEY_IS_INCORRECT'};
+	var result = (new Validator()).validate(data, {
+		"type": "object",
+		"properties": {
+			"act": {"type": "string", "enum":["decrypt", "encrypt"]},
+			"data": {"type": "string", "pattern":".+"},
+			"key": {"type": "string", "pattern":".+"}
+		},
+		"required": [
+			"act", 
+			"data",
+			"key"
+		]
+	});
+	if(result.errors[0]){
+		return {'error': result.errors[0].stack};
 	}
 }
 

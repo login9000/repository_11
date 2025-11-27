@@ -86,8 +86,6 @@ class ControllerDownloadPriceList extends Common{
 			//chmod($file_path, 0664);
 		}
 		
-		$link .= '?'.time();
-		
 		parent::prepare_response(['response' => ['file_size' => $file_size, 'link' => $link]]);
 		
 	}

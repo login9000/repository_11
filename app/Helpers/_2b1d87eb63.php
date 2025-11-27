@@ -495,21 +495,13 @@ class _2b1d87eb63 extends Common {
 			
 		}
 		
-		list($data_crypt, $symmetric_key_crypt, $err) = parent::handler_data_crypt2(['delivery_addresses' => $delivery_addresses_data, 'counterparties' => $counterparties_data, 'shipment_warehouses' => $shipment_warehouses_data, 'product_catalog' => $product_catalog_data, 'prices_product_catalog' => $prices_product_catalog_data, 'available_specifications' => $available_specifications_data, 'draft_details' => $draft_details], $client_rsa_pubkey);
+		list($data_crypt, $symmetric_key_crypt, $err) = parent::handler_data_crypt2(['delivery_addresses' => $delivery_addresses_data, 'counterparties' => $counterparties_data, 'shipment_warehouses' => $shipment_warehouses_data, 'prices_product_catalog' => $prices_product_catalog_data, 'available_specifications' => $available_specifications_data, 'draft_details' => $draft_details], $client_rsa_pubkey);
 		if($err){
 		 $this->result_ = [['error'=>$err], false];
 		 return;
 		}
 		
 		$this->result_ = [['response' => ['data_crypt' => $data_crypt, 'symmetric_key_crypt' => $symmetric_key_crypt]], true];
-		
-		/* list($data_crypt, $symmetric_key_crypt, $err) = parent::handler_data_crypt2(['delivery_addresses' => $delivery_addresses_data, 'counterparties' => $counterparties_data, 'shipment_warehouses' => $shipment_warehouses_data, 'prices_product_catalog' => $prices_product_catalog_data, 'draft_details' => $draft_details], $client_rsa_pubkey);
-		if($err){
-		 $this->result_ = [['error'=>$err], false];
-		 return;
-		}
-		
-		$this->result_ = [['response' => ['data_crypt' => $data_crypt, 'symmetric_key_crypt' => $symmetric_key_crypt, 'other_data' => ['product_catalog' => $product_catalog_data, 'available_specifications' => $available_specifications_data]]], true]; */
 		
 	}
 

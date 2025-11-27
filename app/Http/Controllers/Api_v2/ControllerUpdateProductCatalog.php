@@ -24,7 +24,14 @@ class ControllerUpdateProductCatalog extends Common{
 		if(!$data){
 			return parent::escape_unicode_decode(json_encode(array('Ошибка'=>'Содержимое поля "Данные" не похоже на корректную json структуру')));
 		}
-		
+
+		$f = fopen($this->document_root.'/../public/product_catalog.json','a+');
+		ftruncate($f, 0);
+		stream_set_write_buffer($f, 0); 
+		fwrite($f, $data);
+		fflush($f);
+		fclose($f);
+
 		try{
 			DB::update('UPDATE `product_catalog` SET `data` = :data WHERE `id` = 1 LIMIT 1', ['data' => $data]);
 		} catch (QueryException $e) {
