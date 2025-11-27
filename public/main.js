@@ -522,7 +522,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   API_URL: () => (/* binding */ API_URL),
 /* harmony export */   PROJECT_URL: () => (/* binding */ PROJECT_URL)
 /* harmony export */ });
-const PROJECT_URL = document.location.origin;
+const PROJECT_URL = document.location.origin; // Для продакшена или тестирования на VDS сервере
+// export const PROJECT_URL = 'http://127.0.0.1:8070'; // Для тестирования на локальном компуктере
 const API_URL = PROJECT_URL + '/api/v1/';
 
 /***/ }),
@@ -4862,7 +4863,7 @@ class DraftPageComponent {
         this.downloadLoader = false;
         const url = response.response.link;
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, fileName, this.messageService);
+        this.fileService.downloadFile(url, fileName);
       },
       error: error => {
         this.downloadLoader = false;
@@ -4954,7 +4955,7 @@ class DraftPageComponent {
       next: response => {
         let url = response.response.link;
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, fileName, this.messageService);
+        this.fileService.downloadFile(url, fileName);
       },
       error: error => {
         this.messageService.add({
@@ -10333,7 +10334,7 @@ class OfferEditorComponent {
           });
           let url = response.response.link;
           const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-          this.fileService.downloadFile(url, fileName, this.messageService);
+          this.fileService.downloadFile(url, fileName);
           setTimeout(() => {
             this.animationSubmitButton1 = false;
             this.blockSubmitButton1 = false;
@@ -14070,7 +14071,7 @@ class MutualSettlementReportComponent {
       next: response => {
         let url = response.response.link;
         const filename = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, filename, this.messageService);
+        this.fileService.downloadFile(url, filename);
       }
     });
   }
@@ -14763,7 +14764,7 @@ class ProductReportTemplateComponent {
           if (file.fileSize) {
             let url = file.link;
             const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-            this.fileService.downloadFile(url, fileName, this.messageService);
+            this.fileService.downloadFile(url, fileName);
           }
         },
         error: error => {},
@@ -16318,7 +16319,7 @@ class WaybillListComponent {
       next: response => {
         const url = response.response.link;
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, fileName, this.messageService);
+        this.fileService.downloadFile(url, fileName);
       },
       error: error => {
         this.messageService.add({
@@ -16339,7 +16340,7 @@ class WaybillListComponent {
       next: response => {
         const url = response.response.link;
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, fileName, this.messageService);
+        this.fileService.downloadFile(url, fileName);
       },
       error: error => {
         this.messageService.add({
@@ -17097,7 +17098,7 @@ class TopBarComponent {
   downloadPriceList() {
     this.clicked = false;
     const file_name = this.priceListLink.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-    this.fileService.downloadFile(this.priceListLink, file_name, this.messageService);
+    this.fileService.downloadFile(this.priceListLink, file_name);
     this.priceListLink = undefined;
   }
   getPriceListDownloadLink() {
@@ -17653,22 +17654,16 @@ __webpack_require__.r(__webpack_exports__);
 
 class FileService {
   constructor() {}
-  downloadFile(url, fileName, messageService) {
-    fetch(url).then(responce => responce.status === 200 ? responce.blob() : Promise.reject('SOMETHING_WENT_WRONG')).then(blob => {
-      var rnd = String(Math.random()).replace('.', '');
-      var url = window.URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url + '?' + rnd;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }).catch(() => messageService.add({
-      severity: 'error',
-      summary: 'Ошибка',
-      detail: 'Попробуйте еще раз'
-    }));
+  downloadFile(url, fileName) {
+    var rnd = String(Math.random()).replace('.', '');
+    const link = document.createElement('a');
+    link.href = url + '?' + rnd;
+    link.target = '_blank';
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
   static ɵfac = function FileService_Factory(t) {
     return new (t || FileService)();
