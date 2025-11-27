@@ -1,0 +1,41 @@
+[
+  {
+    "id": "a1abaa11-fa0c-11e4-8044-40167e7a5fac",
+    "typeId": "db49622e-eaf6-11ea-8109-000c29ac4925",
+    "name": "Евроштакетник SOKROF 0,5 6005 Textur*103*",
+    "length": 0,
+    "measureUnitName": "пог. м",
+    "amount": "11",
+    "color": "c6db7875-3c95-11e3-82b5-50e549ac2567",
+    "thickness": "0,5",
+    "price": 891,
+    "summaryPrice": 891,
+    "metalStock": false
+  },
+  {
+    "id": "4d5bec5f-feb9-11e4-8044-40167e7a5fac",
+    "typeId": "db49622e-eaf6-11ea-8109-000c29ac4925",
+    "name": "Евроштакетник SOKROF 0,45 9003*103*",
+    "length": 0,
+    "measureUnitName": "пог. м",
+    "amount": "3",
+    "color": "85ce1f21-d8cb-11e2-a484-50e549ac2567",
+    "thickness": "0,45",
+    "price": 198,
+    "summaryPrice": 198,
+    "metalStock": false
+  },
+  {
+    "id": "70a4bb5d-ce8b-11e2-929c-50e549ac2567",
+    "typeId": "db496220-eaf6-11ea-8109-000c29ac4925",
+    "name": "Труба профильная 60х60х2,0",
+    "length": 0,
+    "measureUnitName": "пог. м",
+    "amount": "4",
+    "color": "00000000-0000-0000-0000-000000000000",
+    "thickness": "0",
+    "price": 1158,
+    "summaryPrice": 1158,
+    "metalStock": false
+  }
+]

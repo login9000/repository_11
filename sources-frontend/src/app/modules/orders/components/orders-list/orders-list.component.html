@@ -1,0 +1,192 @@
+<p-toast></p-toast>
+<p class="page-title">Заказы</p>
+<p-button class="mr-2" label="Добавить" icon="pi pi-plus" iconPos="left" severity="secondary"
+          [routerLink]="['/orders/edit']"></p-button>
+<p-divider></p-divider>
+<span>Показать: </span>
+<span class="gray-text mr-2" (click)="getByStatus('ready_for_shipment')">
+        Готовы к отгрузке
+        <ng-container *ngIf="popularStatuses?.ready_for_shipment > 0">
+        <p-badge [value]="popularStatuses?.ready_for_shipment?.toString()" severity="info"></p-badge>
+        </ng-container>
+      </span>
+<span class="gray-text mr-2" (click)="getByStatus('in_shipment')">
+        С отгрузками
+        <ng-container *ngIf="popularStatuses?.with_shipments > 0">
+              <p-badge [value]="popularStatuses?.with_shipments?.toString()" severity="info"></p-badge>
+        </ng-container>
+      </span>
+<span class="gray-text mr-2" (click)="getByStatus('needs_confirmation')">
+        Требуют подтверждения
+        <ng-container *ngIf="popularStatuses?.needs_confirmation > 0">
+        <p-badge [value]="popularStatuses?.needs_confirmation?.toString()" severity="info"></p-badge>
+        </ng-container>
+      </span>
+<span class="gray-text mr-2" [routerLink]="['/drafts']">
+        Черновики
+        <ng-container *ngIf="popularStatuses?.draft > 0">
+        <p-badge [value]="popularStatuses?.draft?.toString()" severity="info"></p-badge>
+        </ng-container>
+      </span>
+<p-divider></p-divider>
+<div class="grid">
+  <div class="col-2">
+  </div>
+</div>
+<div class="grid" [formGroup]="orderService.filterForm">
+  <div class="col-2">
+    <div>
+      <small>ДАТА ЗАКАЗА</small>
+    </div>
+    <p-calendar formControlName="orderDateRange"
+                selectionMode="range"
+                [dateFormat]="'dd.mm.yy'"
+                onChange="calendarChanged($event)"
+                >
+    </p-calendar>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>СТАТУС</small>
+    </div>
+    <p-multiSelect [options]="groupedStatuses" [group]="true" placeholder="Выберите" scrollHeight="550px"
+                   [showHeader]="false" [style]="{'width':'100%'}"
+                   [(ngModel)]="selectedStatuses"
+                   [ngModelOptions]="{standalone: true}"
+                   (ngModelChange)="onStatusSelect($event)"
+                   [showClear]="selectedStatuses?.length > 0"
+    >
+      <ng-template let-group pTemplate="group">
+        <div class="flex align-items-center">
+          <span>{{ group.label }}</span>
+        </div>
+      </ng-template>
+    </p-multiSelect>
+  </div>
+  <div class="col-2">
+    <div>
+      <small>ОТВЕТСТВЕННЫЙ</small>
+    </div>
+    <p-dropdown [options]="employees"
+                formControlName="responsible"
+                [showClear]="true"
+                emptyMessage="Нет данных"
+                optionLabel="fio2"
+                placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+  </div>
+  <div class="col-2">
+    <div>
+      <small style="color: white">-</small>
+    </div>
+    <p-button class="mr-2" label="Еще" icon="pi pi-sliders-v" iconPos="right" severity="secondary"
+              (click)="showFiltersDialog()"></p-button>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>СОРТИРОВАТЬ</small>
+    </div>
+    <p-dropdown [options]="sortOrders"
+                formControlName="sort"
+                emptyMessage="Нет данных"
+                optionLabel="label"
+                placeholder="Укажите сортировку"
+                [style]="{'width':'100%'}"></p-dropdown>
+  </div>
+  <div class="col">
+    <span class="green-link" (click)="resetFilters()">Очистить фильтр</span>
+  </div>
+</div>
+<p-table [value]="orders"
+         [(selection)]="selectedOrder"
+         selectionMode="single"
+         dataKey="order_number"
+         [styleClass]="'p-datatable-sm'"
+         [tableStyle]="{'min-width': '50rem'}">
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 4rem">
+      </th>
+      <th style="min-width:100px">Дата</th>
+      <th style="min-width:200px">Номер</th>
+      <th style="min-width:200px">Статус</th>
+      <th style="min-width:200px">Контрагент</th>
+      <th style="min-width:200px">Сумма, &#8381;</th>
+      <th style="min-width:200px">Оплата</th>
+      <th style="min-width:200px">Отгрузка (план)</th>
+      <th style="min-width:200px">Склад отгрузки</th>
+      <th style="min-width:200px">Sokrof</th>
+      <th style="min-width:200px">Клиент</th>
+    </tr>
+	
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadOrders == 'loaded' && orders.length == 0">
+		<td colspan="10"><span class="nothing_found_text_orders">Заказы не найдены, попробуйте изменить параметры фильтра</span></td>
+      </tr>
+
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadOrders != 'loaded'">
+		<td colspan="10"><span class="loading_orders"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span></td>
+      </tr>
+	  
+  </ng-template>
+  <ng-template pTemplate="body" let-order>
+    <tr>
+      <td>
+        <p-tableRadioButton [value]="order"></p-tableRadioButton>
+      </td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.date }}</td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.order_number }}</td>
+      <ng-container *ngIf="order.status === 'ready_for_shipment'; else showStatusLabel">
+        <td>
+          <p-button class="mr-2" label="Создать отгрузку" severity="primary"
+                    size="small"
+                    [routerLink]="['/shipments/edit']"></p-button>
+        </td>
+      </ng-container>
+      <ng-template #showStatusLabel>
+        <td (click)="goToOrderDetails(order)" class="cursor-pointer">
+          {{ order.status | orderStatus }}
+        </td>
+      </ng-template>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ getCounterpartyName(order.counterparty_name) }}
+      </td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.sum | number:'1.2-2' }}</td>
+      <td (click)="goToOrderDetails(order)"
+          class="cursor-pointer">{{ order.is_cash_payment === '1' ? 'Наличный расчет' : 'Безналичный расчет' }}
+      </td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.shipping_date }}</td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.shipping_warehouse_name }}</td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.responsible_sokrof }}</td>
+      <td (click)="goToOrderDetails(order)" class="cursor-pointer">{{ order.client_fio }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+<!--<div class="grid mt-2">-->
+<!--  <div class="col-3">-->
+<!--    <p-dropdown [options]="selectedOrdersActionList"-->
+<!--                [showClear]="true"-->
+<!--                [(ngModel)]="selectedOrdersAction"-->
+<!--                emptyMessage="Нет данных"-->
+<!--                optionLabel="label"-->
+<!--                placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>-->
+<!--  </div>-->
+<!--  <div class="col-3">-->
+<!--    <p-button class="mr-2" label="Применить" severity="secondary"-->
+<!--    (click)="executeAction()"-->
+<!--    [disabled]="!selectedOrdersAction || !selectedOrder"></p-button>-->
+<!--  </div>-->
+<!--</div>-->
+<div class="mt-2">
+  <p-button class="mr-2 ml-2" label="Копировать" icon="pi pi-copy" iconPos="left" severity="secondary"
+            [disabled]="!selectedOrder"
+            (click)="copyOrder()"></p-button>
+</div>
+<div class="flex justify-content-center flex-wrap">
+  <div class="flex align-items-center justify-content-center">
+    <ng-container *ngIf="maxPage > 1">
+      <p-paginator
+        #paginator
+        (onPageChange)="onPageChange($event)"
+        [rows]="12"
+        [totalRecords]="maxPage*12"></p-paginator>
+    </ng-container>
+  </div>
+</div>

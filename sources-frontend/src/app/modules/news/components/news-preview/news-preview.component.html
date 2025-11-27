@@ -1,0 +1,25 @@
+<div class="news-wrapper">
+<span class="nothing_found_text_news" *ngIf="globalThis.stateLoadDataForUserDesktop == 'loaded' && desktopService.data?.response?.news?.data.length == 0">Новости не найдены</span>
+
+<span class="loading_news" *ngIf="globalThis.stateLoadDataForUserDesktop != 'loaded'"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span>
+
+  <ng-container *ngFor="let theNews of desktopService.data?.response?.news?.data">
+    <div class="news-card"
+         [ngClass]="{
+                                     'unread-news': theNews.is_unread !== '',
+                                     'read-news': theNews.is_unread === ''
+                                     }"
+         (click)="goToNews(theNews)"
+    >
+      <div class="news-card-header">
+        <div>
+          {{theNews?.header}}
+        </div>
+      </div>
+      <div class="news-card-content" [innerHTML]="theNews?.text | shortText:50"></div>
+      <div class="news-card-footer">
+        {{theNews?.date}}
+      </div>
+    </div>
+  </ng-container>
+</div>

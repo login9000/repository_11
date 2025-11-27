@@ -1,0 +1,12 @@
+<div class="flex flex-row flex-wrap">
+  <div class="flex align-items-center justify-content-center font-bold mr-2 border-round">
+    <p-avatar
+      label="
+        {{(appService.sessionConfig?.manager_fio | fio: 'имя')[0]}}{{(appService.sessionConfig?.manager_fio | fio: 'фамилия')[0]}}"
+      size="xlarge" shape="circle"></p-avatar>
+  </div>
+  <div class="flex align-items-center justify-content-center font-bold border-round">
+    <span>{{appService.sessionConfig?.manager_fio | fio: 'имя'}}
+      <br> {{appService.sessionConfig?.manager_fio | fio: 'фамилия'}}</span>
+  </div>
+</div>

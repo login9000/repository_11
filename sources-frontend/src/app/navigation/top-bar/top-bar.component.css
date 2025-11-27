@@ -1,0 +1,23 @@
+.menu-bar {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+}
+
+.menu-bar span {
+  color: #525252;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.menu-bar span:hover {
+  background-color: #dee2e6;
+}
+
+.price-list-btn-bg {
+  background-color: rgba(215, 215, 215, 1);
+}

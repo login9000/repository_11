@@ -1,0 +1,122 @@
+<p-toast></p-toast>
+<p-progressSpinner [hidden]="draft"></p-progressSpinner>
+<div [hidden]="!draft">
+  <ng-container *ngIf="!copyMode; else copyModeTitle">
+    <p class="page-title">Изменить заказ № {{ draft?.DraftNumber }}</p>
+  </ng-container>
+  <ng-template #copyModeTitle>
+    <p class="page-title">Новый заказ</p>
+  </ng-template>
+  <form [formGroup]="draftForm">
+    <div class="grid">
+      <div class="col-8">
+        <div class="grid">
+          <div class="col-6">
+            <div><small>Контрагент</small></div>
+            <div>
+              <p-dropdown [options]="counterparties" emptyMessage="Нет данных" optionLabel="fullname"
+                placeholder="Выберите" formControlName="counterparty" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+          <div class="col-6">
+            <div><small>Склад отгрузки</small></div>
+            <div>
+              <p-dropdown [options]="data?.response?.shipment_warehouses?.data" emptyMessage="Нет данных"
+                optionLabel="Наименование" formControlName="shipping_warehouse" placeholder="Выберите"
+                [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+          <div class="col-6">
+            <div><small>Форма оплаты</small></div>
+            <div>
+              <p-dropdown [options]="paymentTypes" emptyMessage="Нет данных" optionLabel="title"
+                formControlName="is_cash_payment" placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+          <div class="col-4">
+            <div><small>Желаемая дата отгрузки/доставки</small></div>
+            <div>
+              <p-calendar [dateFormat]="'dd.mm.yy'" formControlName="shipping_date"></p-calendar>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <p>Ответственный от клиента</p>
+        <app-sokrof-responsible-avatar-and-name></app-sokrof-responsible-avatar-and-name>
+      </div>
+    </div>
+    <div>
+      <p-checkbox [(ngModel)]="isDeliveryNeeded" label="Нужна доставка" [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="toggleDeliveryNeeded()" [binary]="true"></p-checkbox>
+    </div>
+    <div class="grid mt-2" *ngIf="isDeliveryNeeded">
+      <div class="col-4">
+        <div><small>Адрес</small></div>
+        <div>
+          <p-dropdown [options]="addresses" emptyMessage="Нет данных" optionLabel="АдресДоставки"
+            formControlName="delivery_address" placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+          <p class="green-link" (click)="addNewAddress()">добавить новый</p>
+        </div>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+    <p class="page-title page-title-h2">Товары</p>
+    <div class="flex justify-content-between flex-wrap">
+      <div class="flex align-items-center justify-content-center">
+
+
+        <p-button class="mr-2" label="Добавить" (click)="onShowProductSearchDialog()" icon="pi pi-plus" iconPos="left"
+          severity="secondary"></p-button>
+
+        <p-button class="mr-2" label="Добавить нестандартную доборку" (click)="onShowNonStandardProductEditor()"
+          [disabled]="isBasedOnCart" iconPos="left" severity="secondary"></p-button>
+      </div>
+
+      <div class="flex align-items-center justify-content-center" *ngIf="showRequestedWindow">
+        <p-button class="mr-2" label="Заявка на нестандартную доборку" [text]="true"
+          (click)="onShowNonStandardProductViewer()" iconPos="left" severity="primary"></p-button>
+        <p-button icon="pi pi-times" [text]="true" severity="secondary" pTooltip="Удалить нестандартную доборку"
+          tooltipPosition="bottom" (click)="removeNonStandardElements()"></p-button>
+      </div>
+
+    </div>
+
+
+    <div class="flex justify-content-between flex-wrap">
+      <div class="flex align-items-center justify-content-center">
+        <p>Ориентировочный вес продукции: <b>{{ summaryWeight | number }} кг</b> <i
+            class="pi pi-refresh ml-2 cursor-pointer" (click)="calculateWeight()"></i></p>
+      </div>
+      <div class="flex align-items-center justify-content-center">
+        <p>Стоимость заказа: <b>{{ getOrderCost() | currencyRu }}</b></p>
+      </div>
+    </div>
+    <app-product-table-for-order-editor
+      [warehouseId]="draftForm.value['shipping_warehouse']"></app-product-table-for-order-editor>
+    <!--  <div class="mt-3">-->
+    <!--    <p-dropdown [options]="options"-->
+    <!--                emptyMessage="Нет данных"-->
+    <!--                optionLabel="name" placeholder="Создать отгрузку"></p-dropdown>-->
+    <!--    <p-button class="ml-2" label="Применить" severity="secondary"></p-button>-->
+    <!--  </div>-->
+    <div class="pt-5">
+      <span class="p-float-label">
+        <textarea id="float-input" rows="5" cols="30" pInputTextarea style="width: 100%;"
+          formControlName="comment"></textarea>
+        <label for="float-input">Комментарий для менеджера</label>
+      </span>
+    </div>
+  </form>
+  <div class="mt-2">
+  
+    <p-button icon="{{ blockSubmitButton1 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" iconPos="left" class="mr-2" label="Изменить и отправить менеджеру" severity="success"
+    [disabled]="blockSubmitButton1"
+      (click)="sendToManager()"></p-button>
+
+    <p-button class="mr-2" icon="{{ blockSubmitButton2 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" label="Изменить и сохранить" severity="success" [disabled]="blockSubmitButton2" (click)="saveAndGoToDrafts()"></p-button>
+	
+  </div>
+
+</div>

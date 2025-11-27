@@ -1,0 +1,85 @@
+<ng-container *ngIf="!!nonStandardElements; else showForm">
+  <div class="grid" *ngIf="nonStandardElements?.length > 0">
+    <ng-container>
+      <div class="col-9"><label>Описание:</label></div>
+      <div class="col-2"><label>Количество:</label></div>
+    </ng-container>
+    <ng-container *ngFor="let element of nonStandardElements">
+      <div class="col-10">
+        <ng-container *ngIf="element.description.length > 500; else showInPTag">
+          <p-scrollPanel [style]="{ width: '100%', height: '150px' }">
+            <p>
+              {{element['description']}}
+            </p>
+          </p-scrollPanel>
+        </ng-container>
+        <ng-template #showInPTag>
+          <p>{{element['description']}}</p>
+        </ng-template>
+      </div>
+      <div class="col-2">
+        <p>
+          {{element['quantity']}}
+        </p>
+      </div>
+    </ng-container>
+  </div>
+  <p-divider
+    *ngIf="nonStandardElements?.length > 0 && nonStandardElementFiles?.length > 0"></p-divider>
+  <ng-container *ngIf="nonStandardElementFiles?.length > 0">
+    <p>Прикрепленные фото:</p>
+    <ng-container *ngFor="let photo of nonStandardElementFiles">
+      <div class="mt-1">
+        <p-chip (click)="openFileInNewTab(photo)"  label="{{photo.fileName}}"></p-chip>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>
+<ng-template #showForm>
+  <form [formGroup]="draftService.nonStandardElementsForm">
+    <div class="grid" *ngIf="nonStandardElementsFromForm.controls?.length > 0">
+      <ng-container>
+        <div class="col-9"><label>Описание:</label></div>
+        <div class="col-2"><label>Количество:</label></div>
+      </ng-container>
+      <ng-container formArrayName="nonStandardElements">
+        <ng-container *ngFor="let element of nonStandardElementsFromForm.controls; let i = index">
+          <ng-container [formGroupName]="i">
+            <div class="col-10">
+              <ng-container *ngIf="element.value['description'].length > 500; else showInPTag">
+                <p-scrollPanel [style]="{ width: '100%', height: '150px' }">
+                  <p>
+                    {{element.value['description']}}
+                  </p>
+                </p-scrollPanel>
+              </ng-container>
+              <ng-template #showInPTag>
+                <p>{{element.value['description']}}</p>
+              </ng-template>
+            </div>
+            <div class="col-2">
+              <p>
+                {{element.value['quantity']}}
+              </p>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </div>
+    <p-divider
+      *ngIf="nonStandardElementsFromForm.controls?.length > 0 && nonStandardElementPhotos.controls?.length > 0"></p-divider>
+    <ng-container *ngIf="nonStandardElementPhotos.controls?.length > 0">
+      <p>Прикрепленные файлы:</p>
+      <div formArrayName="nonStandardElementPhotos">
+        <ng-container *ngFor="let photo of nonStandardElementPhotos.controls; let i = index">
+          <ng-container [formGroupName]="i">
+            <div class="mt-1">
+              <p-chip label="{{photo.value['file_name']}}"></p-chip>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+  </form>
+</ng-template>
+

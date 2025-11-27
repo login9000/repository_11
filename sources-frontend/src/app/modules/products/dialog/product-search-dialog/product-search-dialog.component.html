@@ -1,0 +1,193 @@
+<p-toast></p-toast>
+<span class="p-input-icon-right">
+  <i class="pi pi-search"></i>
+  <input type="text" pInputText placeholder="быстрый поиск" [(ngModel)]="filter.title"
+         (ngModelChange)="fastSearch()"/>
+</span>
+<!--Селекты-->
+<div class="grid">
+  <div class="col-3">
+    <div>
+      <small>ПРОДУКЦИЯ</small>
+    </div>
+    <div>
+      <p-treeSelect class="md:w-20rem w-full" containerStyleClass="w-full"
+                    [options]="productNodes"
+                    [showClear]="true"
+                    [(ngModel)]="selectedNode" (ngModelChange)="onSelectNode()" placeholder="Выберите"></p-treeSelect>
+    </div>
+  </div>
+  <div class="col-2">
+    <div>
+      <small>ПРОФИЛЬ</small>
+    </div>
+    <div>
+      <p-dropdown [options]="profiles" optionLabel="name"
+                  placeholder="Выберите"
+                  emptyMessage="Нет данных"
+                  [style]="{'width':'100%'}"
+                  [(ngModel)]="filter.profile" (ngModelChange)="changeFilter('profile')" [showClear]="true">
+      </p-dropdown>
+    </div>
+  </div>
+  <div class="col-2">
+    <div>
+      <small>ТОЛЩИНА</small>
+    </div>
+    <div>
+      <p-dropdown [options]="weights" optionLabel="name" placeholder="Выберите"
+                  emptyMessage="Нет данных" [style]="{'width':'100%'}"
+                  [(ngModel)]="filter.weight" (ngModelChange)="changeFilter('weight')" [showClear]="true">
+      </p-dropdown>
+    </div>
+  </div>
+  <div class="col-2">
+    <div>
+      <small>ПОКРЫТИЕ</small>
+    </div>
+    <div>
+      <p-dropdown [options]="coatings" optionLabel="name" placeholder="Выберите"
+                  emptyMessage="Нет данных"
+                  [style]="{'width':'100%'}"
+                  [(ngModel)]="filter.coating" (ngModelChange)="changeFilter('coating')" [showClear]="true">
+      </p-dropdown>
+    </div>
+  </div>
+  <div class="col-2">
+    <div>
+      <small>ЦВЕТ</small>
+    </div>
+    <div>
+      <p-dropdown [filter]="true" [filterBy]="'label'" [options]="colors" optionLabel="name" placeholder="Выберите"
+                  emptyMessage="Нет данных" [style]="{'width':'100%'}"
+                  [(ngModel)]="filter.color" (ngModelChange)="changeFilter('color')" [showClear]="true">
+      </p-dropdown>
+    </div>
+  </div>
+</div>
+<!--Таблица-->
+<div>
+  <p-table [value]="filteredProducts" [scrollable]="true" scrollHeight="35rem"
+           [tableStyle]="{ 'min-width': '50rem' }"
+           [paginator]="true"
+           [rows]="rows"
+           (onPage)="pageChange($event)"
+           [(first)]="first"
+           [showCurrentPageReport]="true"
+           currentPageReportTemplate="Показаны с {first} по {last} из {totalRecords} записей"
+           [styleClass]="'p-datatable-sm'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Номенклатура</th>
+        <th>Толщина</th>
+        <th>Цена</th>
+        <th>Ед. изм.</th>
+        <th>Заказ</th>
+        <th>Итого</th>
+        <th>Сумма, ₽</th>
+        <th>Действия</th>
+        <th>Копировать позиции<br>(кол-во строк)</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-product>
+      <tr *ngFor="let item of product.orderItems let idx = index">
+        <ng-container *ngIf="idx == 0; else notFirstRows">
+          <td>{{product.name}}</td>
+          <td>{{product?.properties?.thickness}}</td>
+          <td>
+            {{product.price | number: '1.2-2'}} руб/{{product.measureUnitName}}
+            <ng-container *ngIf="product.squareMeterConversionFactor > 0">
+              <br>
+              {{product.price / product.squareMeterConversionFactor | number: '1.2-2'}} руб/м<sup>2</sup>
+            </ng-container>
+          </td>
+          <td>
+            {{product.measureUnitName}}
+          </td>
+        </ng-container>
+        <ng-template #notFirstRows>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </ng-template>
+        <td>
+          <div class="grid">
+            <div class="col-6">
+              <div><small>Длина, мм</small></div>
+              <div>
+                <input type="text" class="p-inputtext-sm" [style]="{'width':'100%'}" pInputText
+                       [(ngModel)]="item.length"
+                       [disabled]="!product.fillCharacteristic"
+                       (focus)="onInputFocus($event)"
+                       (keyup.enter)="addItemsInOrder(product)"/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div><small>Кол-во</small></div>
+              <div>
+                <input type="text" class="p-inputtext-sm" [style]="{'width':'100%'}" [(ngModel)]="item.amount"
+                       (keyup.enter)="addItemsInOrder(product)"
+                       (focus)="onInputFocus($event)"
+                       pInputText/>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>
+          {{getQuantity(product, item)| number: '1.3-3'}}
+        </td>
+        <td>
+          {{getItemPrice(product, item)| number:'1.2-2'}}
+        </td>
+        <td>
+          <div *ngIf="idx == 0; else removeBtn">
+            <p-button class="mt-3" label="В заказ" severity="secondary" size="small"
+                      [disabled]="item?.amount < 1"
+                      (click)="addItemsInOrder(product)"></p-button>
+          </div>
+          <ng-template #removeBtn>
+            <div>
+              <p-button class="mt-3" label="Удалить" severity="danger" [text]="true" size="small"
+                        (click)="removeItemInOrder(product, idx)"></p-button>
+            </div>
+          </ng-template>
+        </td>
+        <td>
+          <p-button class="mt-3" label="Добавить строку" [text]="true"
+                    (click)="addOrderItem(product)"
+                    severity="info"
+                    size="small"></p-button>
+        </td>
+      </tr>
+      <tr *ngIf="product.orderItems?.length > 1">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><b>Итого: </b></td>
+        <td>
+          {{getSummaryPrice(product) | number:'1.3-3'}}
+        </td>
+        <td>
+          <p-button class="mt-3" label="В заказ" severity="secondary" size="small"
+                    (click)="addItemsInOrder(product)"
+                    [disabled]="checkOrderItemsAmount(product)"
+          ></p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-button class="mt-3" label="Отмена" (click)="closeDialog()" severity="danger"></p-button>
+<p-dialog header="Длина имеет некорректное значение" [(visible)]="lengthDialogVisible" [modal]="true"
+          [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+  <p>Ниже представлен список возможных значений длины для <br>
+    <b>{{nomenclatureName}}</b>
+  </p>
+  <p class="m-0">
+    {{possibleValues}}
+  </p>
+</p-dialog>

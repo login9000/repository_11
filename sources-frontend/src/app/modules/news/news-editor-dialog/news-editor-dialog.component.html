@@ -1,0 +1,12 @@
+<form [formGroup]="newsForm">
+  <label>Тема</label>
+  <input class="mt-1" type="text" pInputText [style]="'width: 100%'" formControlName="header" maxlength="255"/>
+  <label class="mt-2">Текст</label>
+  <textarea class="mt-1" rows="5" cols="30" pInputTextarea [style]="'width: 100%'"
+            formControlName="text" maxlength="8192"></textarea>
+  <p-messages [(value)]="messages" [enableService]="false"></p-messages>
+</form>
+
+<div class="mt-2">
+  <p-button label="Добавить новость" severity="secondary" [disabled]="!newsForm.valid" (click)="save()"></p-button>
+</div>

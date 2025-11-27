@@ -1,0 +1,43 @@
+<div #dialog>
+  <div>
+    <small>Контрагент</small>
+  </div>
+  <form [formGroup]="filterForm">
+    <p-dropdown [options]="shipmentService.counterparties" optionLabel="fullname"
+                formControlName="counterparty"
+                placeholder="Любой"
+                emptyMessage="Нет данных"
+                [showClear]="true"
+                [overlayOptions]="{ appendTo: 'body' }"
+                [style]="{'width':'100%'}"
+    ></p-dropdown>
+    <div class="mt-3">
+      <small>Склад отгрузки</small>
+    </div>
+    <p-dropdown [options]="shipmentService.shipmentWarehouses" optionLabel="Наименование"
+                formControlName="shipmentWarehouse"
+                placeholder="Любой"
+                emptyMessage="Нет данных"
+                [showClear]="true"
+                [overlayOptions]="{ appendTo: 'body' }"
+                [style]="{'width':'100%'}"
+    ></p-dropdown>
+    <div class="mt-3">
+      <small>Ответственный Sokrof</small>
+    </div>
+    <p-dropdown [options]="shipmentService.sokrofResponders"
+                optionLabel="label"
+                emptyMessage="Нет данных"
+                formControlName="sokrofResponsible"
+                placeholder="Любой"
+                [showClear]="true"
+                [overlayOptions]="{ appendTo: 'body' }"
+                [style]="{'width':'100%'}"
+    ></p-dropdown>
+    <div class="mt-2">
+      <p-button label="Применить" severity="secondary" (click)="onConfirm()"></p-button>
+    </div>
+  </form>
+</div>
+
+

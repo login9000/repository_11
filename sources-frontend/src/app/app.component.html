@@ -1,0 +1,15 @@
+<ng-container *ngIf="authenticationService.isAuthenticated; else notLogin">
+  <div class="sidebar" [hidden]="appService.sidebarHidden">
+    <app-side-bar></app-side-bar>
+  </div>
+  <div class="content" [ngStyle]="{'margin-left': appService.sidebarHidden ? '0px' : '320px'}">
+    <div class="header">
+      <app-top-bar></app-top-bar>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+</ng-container>
+<ng-template #notLogin>
+  <app-signin></app-signin>
+</ng-template>
+

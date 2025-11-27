@@ -1,0 +1,37 @@
+<ng-container *ngIf="mode === 'email'">
+  <p class="gray-text">Указывайте только существующую почту, Вам будет выслан код для подтверждения.</p>
+  <div [formGroup]="employeeService.mailForm" class="mt-2">
+    <div>
+      <small>Новый адрес e-mail</small>
+    </div>
+    <div>
+      <input type="email" class="p-inputtext w-full" formControlName="email" data-exclude-styling>
+    </div>
+  </div>
+  <p-messages [(value)]="updateMailErrorMessage" [enableService]="false"></p-messages>
+  <div class="mt-2">
+    <p-button label="Изменить" severity="secondary" [disabled]="!employeeService.mailForm.valid"
+              (click)="updateEmail()"></p-button>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="mode === 'code'">
+  <div style="text-align: center;">
+    <h2>Введите код подтверждения</h2>
+    <form [formGroup]="confirmForm" (ngSubmit)="sendCode()">
+      <!--        <input type="number" pInputText formControlName="code" class="w-full"/>-->
+      <p-inputMask mask="9999" formControlName="code" placeholder="____"></p-inputMask>
+    </form>
+    <ng-container *ngIf="!canResend">
+      <p>Отправить повторно</p>
+      <p>{{displayTime}}</p>
+    </ng-container>
+    <ng-container *ngIf="canResend">
+      <p class="green" (click)="resend()">Отправить повторно</p>
+    </ng-container>
+    <p-messages [(value)]="enterConfirmCodeErrorMessage" [enableService]="false"></p-messages>
+    <p-button label="Отправить код" severity="secondary" (click)="sendCode()"></p-button>
+    <p>В случае проблем Вы можете обратиться к <span class="green-link" (click)="showManagerMessageForm()">Вашему менеджеру</span>
+    </p>
+  </div>
+</ng-container>

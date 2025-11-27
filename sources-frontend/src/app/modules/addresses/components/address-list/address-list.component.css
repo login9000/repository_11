@@ -1,0 +1,16 @@
+:host ::ng-deep .p-panel {
+  cursor: pointer;
+}
+
+.panel-header-container {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+.transport-delete-dtn {
+  position: absolute;
+  top:-8px;
+  right: -8px;
+  font-size: 16px;
+  cursor: pointer;
+}

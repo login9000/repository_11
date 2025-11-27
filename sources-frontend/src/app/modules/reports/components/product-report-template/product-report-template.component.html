@@ -1,0 +1,161 @@
+<p-toast></p-toast>
+<ng-container *ngIf="searchProductForm">
+  <div class="report-container" [formGroup]="searchProductForm">
+    <p class="page-title">{{reportName}}</p>
+    <p><span class="green-link" [routerLink]="['/reports']">← К списку отчетов</span> Актуальность: <b>{{data?.response?.date}}</b></p>
+    <div class="cart-block" (click)="goToCartPage()">
+      <p class="cart-title"><i class="pi pi-shopping-cart" style="font-size: 1.2rem"></i> КОРЗИНА</p>
+      <ng-container *ngIf="cartInfo?.number_of_positions > 0; else emptyCart">
+        <p>Позиций: {{cartInfo?.number_of_positions}}</p>
+        <p>Сумма: {{cartInfo?.total_sum | number}} руб.</p>
+      </ng-container>
+      <ng-template #emptyCart>
+        <p>Пусто</p>
+      </ng-template>
+    </div>
+    <div class="grid">
+      <div class="col-5">
+        <div>
+          <small>СКЛАД ОТГРУЗКИ</small>
+        </div>
+        <p-dropdown [options]="data?.response?.shipment_warehouses?.data"
+                    [(ngModel)]="selectedWarehouse"
+                    [ngModelOptions]="{standalone: true}"
+                    (onChange)="onWarehouseChange($event)"
+                    optionLabel="Наименование"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    placeholder="Любой" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+      <div class="col-3">
+        <div>
+          <small>ПРОДУКЦИЯ</small>
+        </div>
+        <p-treeSelect class="md:w-20rem w-full" containerStyleClass="w-full"
+                      formControlName="products"
+                      emptyMessage="Нет данных"
+                      [showClear]="true"
+                      [options]="categories"
+                      placeholder="Любая"
+        ></p-treeSelect>
+
+      </div>
+    </div>
+    <p class="page-title-h2"><b>Дополнительные параметры</b></p>
+    <div class="grid">
+      <div class="col-3">
+        <div>
+          <small>ПРОФИЛЬ</small>
+        </div>
+        <p-dropdown [options]="data?.response?.list_profiles"
+                    formControlName="profile"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    placeholder="Любой" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+      <div class="col-3">
+        <div>
+          <small>ТОЛЩИНА</small>
+        </div>
+        <p-dropdown [options]="data?.response?.list_thickness"
+                    formControlName="thickness"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    placeholder="Любая" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+      <div class="col-3">
+        <div>
+          <small>ПОКРЫТИЕ</small>
+        </div>
+        <p-dropdown [options]="data?.response?.list_coating"
+                    formControlName="coating"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    placeholder="Любой" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+      <div class="col-3">
+        <div>
+          <small>ЦВЕТ</small>
+        </div>
+        <p-dropdown [options]="data?.response?.list_colors"
+                    formControlName="color"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    placeholder="Любой" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<div class="mt-2 mb-2">
+  <p-button label="Сформировать"
+            [loading]="searchProducts"
+            (click)="getProductRemains()"></p-button>
+</div>
+<div class="mb-2" *ngIf="!searchProducts && products?.length > 0">
+  Скачать:
+  <ng-container *ngFor="let file of generatedFiles">
+    <a class="green-link ml-2" (click)="getFileLinkAndDownload(file)">
+      {{file.fileFormat}} <i class="pi pi-spin pi-spinner" *ngIf="file.loading"></i>
+      <span *ngIf="file.fileSize">{{file.fileSize/1024/1024 | number : '1.0-2'}} МБ</span>
+    </a>
+  </ng-container>
+</div>
+<p-table [value]="products" [tableStyle]="{ 'min-width': '50rem' }"
+         [paginator]="true"
+         [rows]="5"
+         [showCurrentPageReport]="true"
+         [(first)]="first"
+         currentPageReportTemplate="Показаны с {first} по {last} из {totalRecords} записей"
+         [rowsPerPageOptions]="[5, 10, 20]">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Номенклатура</th>
+      <th>Длина,мм</th>
+      <th>Ед. изм.</th>
+      <th>Кол-во</th>
+      <th>Итого</th>
+      <th>Цена</th>
+      <th>Сумма</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-product>
+    <tr (dblclick)="onSelectProductForCart(product)">
+      <td>{{ product['НоменклатураНаименование'] }}</td>
+      <td>{{ product['Характеристика'] | number }}</td>
+      <td>{{ product['ЕдиницаИзмеренияНаименования'] }}</td>
+      <td>{{ product['Количество']}}</td>
+      <td>{{ product['Итого'] | number:'1.1-3' }}</td>
+      <td>
+        <p *ngFor="let price of product['Цена']">
+          {{price}}
+        </p>
+      </td>
+      <td>{{ product['Сумма'] === -1 ? '-' : (product['Сумма'] | number:'1.1-2' ) }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+<p-dialog header="Добавить в корзину" [modal]="true"  [(visible)]="cartAdderVisible" [style]="{width: '500px'}">
+  <div style="text-align: center">
+    <p>Какое количество листов/шт добавить в корзину?</p>
+    <p-inputNumber  [(ngModel)]="newItemForCartAmount" [maxFractionDigits]="5"> </p-inputNumber>
+    <div class="mt-1">
+      <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" (click)="hideMessage()"></p-message>
+    </div>
+    <p>Добавить позицию?</p>
+    <p-button label="Да" severity="success" (click)="addProductToCart()"></p-button>
+    <p-button label="Нет" severity="danger" (click)="closeDialog()" class="ml-2"></p-button>
+  </div>
+</p-dialog>
+<p-dialog header="Смена склада отгрузки" [modal]="true" [(visible)]="showQuestionModalForChangeWarehouse" [style]="{width: '500px'}" [closable]="false">
+  <div style="text-align: center">
+    <p>Корзина с товаром! При изменении склада в отчете корзина обнулится.</p>
+    <p>Продолжить?</p>
+    <p-button label="Да" severity="success" (click)="confirmWarehouseChanging()"></p-button>
+    <p-button label="Нет" severity="danger" (click)="cancelWarehouseChanging()" class="ml-2"></p-button>
+  </div>
+</p-dialog>

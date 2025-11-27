@@ -1,0 +1,24 @@
+:host ::ng-deep .p-inputtext {
+  width: 150px !important; /* Установка ширины */
+  text-align: center !important; /* Выравнивание текста по центру */
+}
+:host ::ng-deep .p-inputtext[data-exclude-styling] {
+  width: 100% !important; /* Пример: сброс ширины */
+  text-align: left !important; /* Пример: сброс выравнивания текста */
+}
+
+.green {
+  color: rgb(0, 128, 128);
+  font-family: Montserrat, sans-serif;
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  cursor: pointer;
+}

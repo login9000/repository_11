@@ -1,0 +1,49 @@
+<p-table [value]="userDesktopService.data.response?.orders?.data" [scrollable]="true" scrollHeight="400px"  [styleClass]="'p-datatable-sm'">
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="min-width:100px">Дата</th>
+      <th style="min-width:200px">Номер</th>
+      <th style="min-width:200px">Статус</th>
+      <th style="min-width:200px">Контрагент</th>
+      <th style="min-width:200px">Сумма, &#8381;</th>
+      <th style="min-width:200px">Оплата</th>
+      <th style="min-width:200px">Отгрузка (план)</th>
+      <th style="min-width:200px">Склад отгрузки</th>
+      <th style="min-width:200px">Sokrof</th>
+      <th style="min-width:200px">Клиент</th>
+    </tr>
+	
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDataForUserDesktop == 'loaded' && userDesktopService.data.response?.orders?.data.length == 0">
+		<td colspan="10"><span class="nothing_found_text_orders">Заказы не найдены</span></td>
+      </tr>
+
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDataForUserDesktop != 'loaded'">
+		<td colspan="10"><span class="loading_orders"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span></td>
+      </tr>
+	  
+  </ng-template>
+  <ng-template pTemplate="body" let-order>
+    <tr (click)="goToOrderPage(order.order_id)" style="cursor: pointer">
+      <td>{{order.date}}</td>
+      <td>{{order.order_number}}</td>
+      <td>
+        <ng-container *ngIf="order.status === 'ready_for_shipment'; else showStatusLabel">
+          <p-button class="mr-2" label="Создать отгрузку" severity="primary"
+                    size="small"
+                    [routerLink]="['/shipments/edit']"></p-button>
+        </ng-container>
+        <ng-template #showStatusLabel>
+          {{order.status | orderStatus}}
+        </ng-template>
+      </td>
+      <td>{{order.counterparty_name | counterpartyFullname}}</td>
+      <td><span *ngIf="order.sum > 0">{{order.sum| number: '2.0-2'}}</span></td>
+      <td>{{order.is_cash_payment === '1' ? 'Наличный расчет' : 'Безналичный расчет'}}</td>
+      <td>{{order.shipping_date}}</td>
+      <td>{{order.shipping_warehouse_name}}</td>
+      <td>{{order.responsible_sokrof}}</td>
+      <td>{{order.client_fio}}</td>
+    </tr>
+  </ng-template>
+  
+</p-table>

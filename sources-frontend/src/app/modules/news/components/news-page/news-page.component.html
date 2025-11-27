@@ -1,0 +1,5 @@
+<p class="green-link mb-2" routerLink="/news">← К списку новостей</p>
+<div class="page-title mb-2">{{theNews?.header}}</div><br>
+<div class="subtitle mb-2">{{theNews?.date}}</div><br>
+<div class="news-text" [innerHTML]="theNews?.text">
+</div>

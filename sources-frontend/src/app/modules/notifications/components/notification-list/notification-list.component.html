@@ -1,0 +1,67 @@
+<p-toast></p-toast>
+<div class="flex justify-content-start flex-wrap">
+  <div class="flex align-items-center justify-content-center">
+    <div class="page-title mr-4">Уведомления</div>
+  </div>
+  <div class="flex align-items-center justify-content-center">
+    <ng-container *ngIf="!!notifications && notifications?.length > 0">
+      <div class="green-link" (click)="readAll()">Отметить все прочитанными</div>
+    </ng-container>
+  </div>
+</div>
+
+<span class="nothing_found_text_notifications" *ngIf="globalThis.stateLoadAllNotifications == 'loaded' && notifications.length == 0">Уведомления не найдены</span>
+
+<span class="loading_notifications" *ngIf="globalThis.stateLoadAllNotifications != 'loaded'"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span>
+
+<ng-container *ngFor="let notification of notifications">
+  <div (click)="readNotification(notification)" class="notification-container mt-5"
+       [ngStyle]="notification?.is_unread === '1' ? {'background': 'rgb(242, 242, 242)'} : {'background': 'white'}">
+    <div class="new-notification-identification" *ngIf="notification?.is_unread === '1'"></div>
+    <div class="notification-title">{{notification?.subject}}</div>
+    <div class="notification-timestamp">{{notification?.date}}</div>
+    <div class="notification-filter-link">
+      <span *ngIf="notification?.category === NotificationCategories?.buyers_order"
+            (click)="filterByOrder(notification)">Уведомления по заказу</span>
+      <span *ngIf="notification?.category === NotificationCategories?.shipment_request"
+            (click)="filterByShipment(notification)">Уведомления по отгрузке</span>
+    </div>
+    <div class="notification-details">
+      <p>
+        <span *ngIf="!!notification?.message">
+          {{decode(notification?.message)}}
+        </span>
+        <ng-container *ngIf="notification?.category !== NotificationCategories?.official">
+        <span *ngIf="notification?.order_number"> № {{notification?.order_number}}
+          от {{notification?.date_create_order}}</span>
+          <span *ngIf="notification.sum"><b>{{notification.sum}} ₽</b></span>
+          <span *ngIf="notification.counterparty_name">{{notification.counterparty_name | counterpartyFullname}}</span>
+          <span>
+            <ng-container *ngIf="notification.shipping_date === '' else delivery">
+            Самовывоз
+            </ng-container>
+            <ng-template #delivery>
+            Готовность {{notification.shipping_date}}
+            </ng-template>
+          </span>
+          <span *ngIf="notification.delivery_city">{{notification.delivery_city}}</span>
+          <span class="green-link" (click)="readNotificationAndGoToOrder(notification)">Перейти</span>
+        </ng-container>
+      </p>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="!!notifications && notifications?.length > 0">
+  <div style="text-align: center">
+    <p-button [label]="'Показать еще ' + pageSize"
+              severity="secondary"
+              (click)="loadNotifications()"
+              [disabled]="notificationFilter.page === lastPage"
+              class="w-full"
+    ></p-button>
+  </div>
+</ng-container>
+<div class="card flex justify-content-center" *ngIf="lastPage > 1">
+  <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="pageSize"
+               [totalRecords]="lastPage*pageSize"></p-paginator>
+</div>

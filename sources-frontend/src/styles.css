@@ -1,0 +1,172 @@
+@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+
+body {
+  /*background-color: rgba(242, 242, 242, 1);*/
+}
+
+.green-link {
+  color: rgb(0, 128, 128);
+  font-family: Montserrat, sans-serif;
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  width: auto;
+  cursor: pointer;
+}
+
+.green-link:hover {
+  color: rgb(0, 51, 51);
+}
+
+.gray-text {
+  color: rgb(115, 115, 115);
+  font-family: Montserrat, sans-serif;
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  width: auto;
+  cursor: pointer;
+}
+
+.gray-container {
+  font-family: Montserrat, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  background-color: rgba(242, 242, 242, 1);
+  border-radius: 7px;
+}
+
+.page-title {
+  color: rgb(51, 51, 51);
+  font-family: "Montserrat Bold", "Montserrat Regular", Montserrat, sans-serif;
+  font-feature-settings: "kern";
+  font-kerning: normal;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 32px;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+}
+
+
+.page-title-h2 {
+  font-size: 24px !important;
+}
+
+
+.subtitle {
+  color: rgb(51, 51, 51);
+  font-family: Montserrat, sans-serif;
+  font-feature-settings: "kern";
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  letter-spacing: normal;
+  line-height: 21px;
+  overflow-wrap: break-word;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+}
+
+.news-text {
+  color: rgb(51, 51, 51);
+  font-family: Montserrat, sans-serif;
+  font-feature-settings: "kern";
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  max-width: 80%;
+  letter-spacing: normal;
+  line-height: 22px;
+  overflow-wrap: break-word;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+}
+
+.news-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.news-card {
+  border-bottom: 1px solid #1f1f1f;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 30%;
+  position: relative;
+  padding: 20px
+}
+
+.unread-news {
+  color: #333333;
+}
+
+.read-news {
+  color: #7f7f7f;
+}
+
+.news-card-header {
+  font-family: 'Montserrat SemiBold', 'Montserrat Regular', 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 22px;
+  margin-bottom: 1rem;
+}
+
+.news-card-content {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1;
+  -webkit-font-feature-settings: "kern";
+  -moz-font-feature-settings: "kern";
+  -moz-font-feature-settings: "kern=1";
+  font-kerning: normal;
+  margin-bottom: 3rem;
+}
+
+.news-card-footer {
+  position: absolute;
+  bottom: 10px;
+  left:20px;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  color: #333333;
+  text-transform: none;
+}

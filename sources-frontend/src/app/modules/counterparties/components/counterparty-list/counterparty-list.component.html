@@ -1,0 +1,42 @@
+<p-toast></p-toast>
+<div class="page-title">Контрагенты</div>
+<div class="mt-2 mb-2">
+  <p-button class="mt-3" label="Добавить" icon="pi pi-plus" iconPos="left" (click)="openCounterpartyEditorDialog()"
+            severity="primary"></p-button>
+</div>
+<div class="grid">
+
+	<span class="nothing_found_text_counterparty" *ngIf="globalThis.stateLoadCounterparty == 'loaded' && counterparties.length == 0">Контрагенты не найдены</span>
+
+	<span class="loading_counterparty" *ngIf="globalThis.stateLoadCounterparty != 'loaded'"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span>
+
+  <ng-container *ngFor="let counterparty of counterparties">
+    <div class="col-4">
+      <p-panel (click)="openCounterpartyEditorDialog(counterparty)" class="h-full">
+        <ng-template pTemplate="header">
+          <div class="panel-header-container">
+            <b>
+              {{counterparty.fullname}}
+            </b>
+            <span class="transport-delete-dtn"
+                  (click)="delete($event, counterparty); $event.stopPropagation()"
+                  pTooltip="Удалить контрагента"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <p-confirmPopup></p-confirmPopup>
+          </div>
+        </ng-template>
+        <p>Актуальность: {{counterparty.is_confirmed === '' ? 'На рассмотрении' : 'Проверен'}}</p>
+        <div class="flex justify-content-between flex-wrap">
+          <div class="flex align-items-center justify-content-center" *ngIf="counterparty.inn">
+            <p>ИНН: <b>{{counterparty.inn}}</b></p>
+          </div>
+          <div class="flex align-items-center justify-content-center" *ngIf="counterparty.kpp">
+            <p>КПП: <b>{{counterparty.kpp}}</b></p>
+          </div>
+        </div>
+      </p-panel>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,140 @@
+<p-toast></p-toast>
+<p class="page-title">Черновики</p>
+<p-button class="mr-2" label="Добавить" icon="pi pi-plus" iconPos="left" severity="secondary"
+          [routerLink]="['/orders/edit']"></p-button>
+
+<p-divider></p-divider>
+<div class="grid">
+  <div class="col-2">
+  </div>
+</div>
+<div class="grid" [formGroup]="draftService.filterForm">
+  <div class="col-2">
+    <div>
+      <small>ДАТА ЗАКАЗА</small>
+    </div>
+    <p-calendar formControlName="orderDateRange"
+                selectionMode="range"
+                [dateFormat]="'dd.mm.yy'">
+    </p-calendar>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>ОТВЕТСТВЕННЫЙ</small>
+    </div>
+    <p-dropdown formControlName="responsible"
+                [options]="employees"
+                emptyMessage="Нет данных"
+                [showClear]="true"
+                optionLabel="fio2"
+                placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+  </div>
+  <div class="col-4">
+    <div>
+      <small style="color: white">-</small>
+    </div>
+    <p-button class="mr-2" label="Еще" icon="pi pi-sliders-v" iconPos="right" severity="secondary"
+              (click)="showFiltersDialog()"></p-button>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>СОРТИРОВАТЬ</small>
+    </div>
+    <p-dropdown formControlName="sort"
+                [options]="sortOrders"
+                emptyMessage="Нет данных"
+                optionLabel="label"
+                placeholder="Укажите сортировку"
+                [style]="{'width':'100%'}"></p-dropdown>
+  </div>
+  <div class="col">
+    <span class="green-link" (click)="resetFilters()">Очистить фильтр</span>
+  </div>
+</div>
+<p-table [value]="drafts"
+         [(selection)]="selectedDrafts"
+         dataKey="order_number"
+         [styleClass]="'p-datatable-sm'"
+         [tableStyle]="{'min-width': '50rem'}">
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 4rem">
+        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+      </th>
+      <th style="min-width:100px">Дата</th>
+      <th style="min-width:200px">Номер</th>
+      <th style="min-width:200px">Статус</th>
+      <th style="min-width:200px">Контрагент</th>
+      <th style="min-width:200px">Сумма, &#8381;</th>
+      <th style="min-width:200px">Оплата</th>
+      <th style="min-width:200px">Отгрузка (план)</th>
+      <th style="min-width:200px">Склад отгрузки</th>
+      <th style="min-width:200px">Sokrof</th>
+      <th style="min-width:200px">Клиент</th>
+    </tr>
+	
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDrafts == 'loaded' && drafts.length == 0">
+		<td colspan="10"><span class="nothing_found_text_drafts">Черновики не найдены, попробуйте изменить параметры фильтра</span></td>
+      </tr>
+
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDrafts != 'loaded'">
+		<td colspan="10"><span class="loading_drafts"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span></td>
+      </tr>
+	  
+  </ng-template>
+  <ng-template pTemplate="body" let-order>
+    <tr>
+      <td>
+        <p-tableCheckbox [value]="order"></p-tableCheckbox>
+      </td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.date }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.order_number }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ getOrderStatus(order.status) }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ getCounterpartyName(order.counterparty_name) }}
+      </td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.sum | number }}</td>
+      <td (click)="goToDraftDetails(order)"
+          class="cursor-pointer">{{ order.is_cash_payment === '1' ? 'Наличный расчет' : 'Безналичный расчет' }}
+      </td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.shipping_date }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.shipping_warehouse_name }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.responsible_sokrof }}</td>
+      <td (click)="goToDraftDetails(order)" class="cursor-pointer">{{ order.client_fio }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+<!--<div class="grid mt-2">-->
+<!--  <div class="col-3">-->
+<!--    <p-dropdown [options]="selectedDraftsActionList"-->
+<!--                [showClear]="true"-->
+<!--                [(ngModel)]="selectedDraftsAction"-->
+<!--                optionDisabled="disabled"-->
+<!--                emptyMessage="Нет данных"-->
+<!--                optionLabel="label"-->
+<!--                placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>-->
+<!--  </div>-->
+<!--  <div class="col-3">-->
+<!--    <p-button class="mr-2" label="Применить" severity="secondary"-->
+<!--              (click)="executeAction()"-->
+<!--              [disabled]="!selectedDraftsAction || selectedDrafts.length < 1"></p-button>-->
+<!--  </div>-->
+<!--</div>-->
+<div class="mt-2">
+  <p-button class="mr-2" label="Удалить" icon="pi pi-trash" iconPos="left" severity="danger"
+            [disabled]="selectedDrafts.length <1 "
+            (click)="deleteDrafts()"></p-button>
+  <p-button class="mr-2 ml-2" label="Копировать" icon="pi pi-copy" iconPos="left" severity="secondary"
+            [disabled]="selectedDrafts.length !== 1 || selectedDraftSum() == 0"
+            (click)="copyDrafts()"></p-button>
+</div>
+<div class="flex justify-content-center flex-wrap">
+  <div class="flex align-items-center justify-content-center">
+    <ng-container *ngIf="maxPage > 1">
+      <p-paginator
+        #paginator
+        (onPageChange)="onPageChange($event)"
+        [rows]="12"
+        [totalRecords]="maxPage*12"></p-paginator>
+    </ng-container>
+  </div>
+</div>

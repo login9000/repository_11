@@ -1,0 +1,38 @@
+[
+  {
+    "label": "На обработке",
+    "value": "in_processing"
+  },
+  {
+    "label": "Требует подтверждения",
+    "value": "needs_confirmation"
+  },
+  {
+    "label": "В работе",
+    "value": "in_work"
+  },
+  {
+    "label": "Готов к отгрузке",
+    "value": "ready_for_shipment"
+  },
+  {
+    "label": "В отгрузке",
+    "value": "in_shipment"
+  },
+  {
+    "label": "Отгружен",
+    "value": "shipped"
+  },
+  {
+    "label": "Отменен",
+    "value": "canceled"
+  },
+  {
+    "label": "Кроме завершенных",
+    "value": "except_completed"
+  },
+  {
+    "label": "Черновики",
+    "value": "draft"
+  }
+]

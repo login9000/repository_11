@@ -1,0 +1,120 @@
+<p-toast></p-toast>
+<form [formGroup]="deliveryAddressForm">
+
+  <div class="grid"  *ngIf="address">
+    <div class="col-12">
+      <div><small>Адрес доставки:</small></div>
+      <div>{{address.addressFullName}}</div>
+    </div>
+  </div>
+
+  <p class="gray-text">поля со <span style="color: red">*</span> обязательные для заполнения</p>
+  <div class="grid"  *ngIf="!address">
+    <div class="col-6">
+      <div><small>Регион<span style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="region"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('region')}"/>
+      </div>
+    </div>
+    <div class="col-6">
+      <div><small>Район</small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="area"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('region')}"/>
+      </div>
+    </div>
+    <div class="col-8">
+      <div><small>город или населенный пункт<span style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="city"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('city')}"/>
+      </div>
+    </div>
+    <div class="col-4">
+      <div><small>Индекс<span style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="index"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('index')}"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" *ngIf="!address">
+    <div class="col-12">
+      <div><small>Улица (указывайте правильно – улица/проспект/переулок/шоссе и т.п.)<span
+        style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="street"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('street')}"/>
+      </div>
+    </div>
+  </div>
+  <div class="grid" *ngIf="!address">
+    <div class="col-2">
+      <div><small>Дом<span style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="house"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('house')}"/>
+      </div>
+    </div>
+    <div class="col-2">
+      <div><small>Корпус</small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="frame"/>
+      </div>
+    </div>
+    <div class="col-2">
+      <div><small>Литер</small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="letters"/>
+      </div>
+    </div>
+    <div class="col-2">
+      <div><small>Склад</small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="stock"/>
+      </div>
+    </div>
+    <div class="col-2">
+      <div><small>Офис/Кв.</small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="apartment"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col-8">
+      <div><small>ФИО контактного лица<span style="color: red">*</span></small></div>
+      <div>
+        <input type="text" pInputText [style]="'width: 100%'" formControlName="fio"
+               [ngClass]="{'ng-invalid ng-dirty': isInvalid('fio')}"/>
+      </div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="col-12">
+      <div><small>Телефон контактного лица</small></div>
+      <div>
+        <p-inputMask
+          formControlName="phone"
+          class="w-full"
+          mask="+9 999 999 99 99"
+          placeholder="+7"
+          [autoClear]="false"
+          [ngClass]="{'ng-invalid ng-dirty': isInvalid('phone')}"
+        ></p-inputMask>
+      </div>
+    </div>
+  </div>
+</form>
+<div>
+  <p-messages [(value)]="errorMessages" [enableService]="false"></p-messages>
+</div>
+<div class="grid">
+  <div class="col-3">
+    <p-button class="mt-3" [label]="buttonLabel" [disabled]="!deliveryAddressForm.valid" (click)="onSave()"
+              severity="success"></p-button>
+  </div>
+</div>

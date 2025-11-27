@@ -1,0 +1,39 @@
+<div class="flex flex-column gap-2" [formGroup]="messageForm">
+  <div class="manager-card-content">
+    <div class="flex flex-row flex-wrap">
+      <div class="flex align-items-center justify-content-center font-bold mr-2 border-round">
+        <p-avatar
+          label="
+        {{(appService.sessionConfig?.manager_fio | fio: 'имя')[0]}}{{(appService.sessionConfig?.manager_fio | fio: 'фамилия')[0]}}"
+          size="xlarge" shape="circle"></p-avatar>
+      </div>
+      <div class="flex align-items-center justify-content-center font-bold border-round">
+        <span>{{appService.sessionConfig?.manager_fio | fio: 'имя'}}
+          <br> {{appService.sessionConfig?.manager_fio | fio: 'фамилия'}}</span>
+      </div>
+    </div>
+    <p class="green-link">{{appService.sessionConfig?.manager_email}}</p>
+  </div>
+  <small htmlFor="username">Тема запроса</small>
+  <input pInputText aria-describedby="username-help" formControlName="subject"/>
+  <small htmlFor="username">Текст обращения</small>
+  <textarea pInputTextarea cols="150" rows="10" aria-describedby="username-help" formControlName="mess"></textarea>
+  <div class="custom-file-input">
+    <div style="display: inline-block; margin-right: 15px;">
+      <i class="pi pi-paperclip" style="font-size: 1.5rem"></i>
+    </div>
+    <div style="display: inline-block">
+      <label for="fileInput" class="green-link">прикрепить файл</label><br>
+      <span
+        style="font-size: 11px; color: rgb(170, 170, 170)">до {{appService.sessionConfig.max_file_size_for_manager}}
+        Мб, архив или документ</span>
+    </div>
+    <!--    <span class="green-link"></span>-->
+    <input type="file" id="fileInput" (change)="onFileSelected($event)" style="display: none;">
+    <div *ngIf="selectedFile" class="file-info" style="font-size: 11px; color: rgb(170, 170, 170)">
+      <p>Расширение файла: {{ getFileExtension(selectedFile.name) }}</p>
+      <p>Размер файла (Кб): {{ selectedFile.size / 1024 | number: '.0-2'}}</p>
+    </div>
+  </div>
+  <p-button label="Отправить запрос" icon="{{ blockSubmitButton ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" severity="secondary" (click)="uploadFileAndSendMessage()" [disabled]="blockSubmitButton"></p-button>
+</div>

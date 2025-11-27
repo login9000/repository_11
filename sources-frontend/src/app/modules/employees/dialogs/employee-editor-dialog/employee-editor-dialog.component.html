@@ -1,0 +1,83 @@
+<p>Поля со * обязательные для заполнения</p>
+<div class="grid" [formGroup]="employeeForm">
+  <div class="col-6">
+    <div>
+      <small>Фамилия<span style="color: red">*</span></small>
+    </div>
+    <div>
+      <input pInputText formControlName="secondName" class="w-full" />
+    </div>
+    <div>
+      <small>Имя<span style="color: red">*</span></small>
+    </div>
+    <div>
+      <input pInputText formControlName="firstName" class="w-full" />
+    </div>
+    <div>
+      <small>Отчество<span style="color: red">*</span></small>
+    </div>
+    <div>
+      <input pInputText formControlName="patronymic" class="w-full" />
+    </div>
+  </div>
+  <div class="col-6">
+    <div>
+      <small>Телефон (используется как логин)<span style="color: red">*</span></small>
+    </div>
+    <div>
+      <p-inputMask formControlName="phone" class="w-full" mask="+9 999 999 99 99" placeholder="+7"
+        [autoClear]="false"></p-inputMask>
+    </div>
+    <div>
+      <small>Новый пароль</small>
+    </div>
+    <div>
+      <span class="p-input-icon-right">
+        <i [ngClass]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" (click)="togglePasswordVisibility()"></i>
+        <input type="{{ showPassword ? 'text' : 'password' }}" pInputText formControlName="password" maxlength="10" />
+      </span>
+    </div>
+    <div>
+      <small>Повторить новый пароль</small>
+    </div>
+    <div>
+      <span class="p-input-icon-right">
+        <i [ngClass]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" (click)="togglePasswordVisibility()"></i>
+        <input type="{{ showPassword ? 'text' : 'password' }}" pInputText formControlName="confirmedPassword"
+          maxlength="10" />
+      </span>
+    </div>
+  </div>
+  <div class="col-6">
+    <div>
+      <small>Email для уведомлений<span style="color: red">*</span></small>
+    </div>
+    <div>
+      <input pInputText formControlName="email" class="w-full" />
+    </div>
+  </div>
+  <div class="col-6">
+    <div>
+      <small>Состояние</small>
+    </div>
+    <div class="mt-1">
+      <p-checkbox formControlName="isBanned" [binary]="true" label="Заблокировать"></p-checkbox>
+    </div>
+  </div>
+  <div class="col-6">
+    <div>
+      <small>Делегировать уведомления</small>
+    </div>
+    <div>
+      <select class="p-inputtext p-d-block" formControlName="delegation_user_myid" [style]="{'width':'100%'}">
+        <option value="">Не выбрано</option>
+        <ng-container *ngFor="let employee of employees">
+          <option *ngIf="employee.user_myid !== this.dialogConfig?.data?.employee?.user_myid" [value]="employee.user_myid">{{employee.fio}}</option>
+        </ng-container>
+      </select>
+    </div>
+  </div>
+</div>
+<p-messages [(value)]="messages" [enableService]="false"></p-messages>
+<p-button [label]="this.dialogConfig.data ? 'Сохранить' : 'Добавить'" severity="secondary"
+  [disabled]="!employeeForm.valid" (onClick)="onConfirm()"></p-button>

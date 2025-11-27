@@ -1,0 +1,173 @@
+<p-toast></p-toast>
+<p class="page-title">Новая отгрузка</p>
+<p class="page-title page-title-h2">Параметры отгрузки</p>
+<div class="card flex">
+  <div class="flex flex-wrap gap-3">
+    <div class="flex">
+      <p-radioButton value="Самовывоз" label="Самовывоз" [(ngModel)]="deliveryType"
+                     (ngModelChange)="onChangeMode()"></p-radioButton>
+    </div>
+    <div class="flex">
+      <p-radioButton value="Доставка" label="Доставка" [(ngModel)]="deliveryType"
+                     (ngModelChange)="onChangeMode()"></p-radioButton>
+    </div>
+  </div>
+</div>
+<ng-container *ngIf="isLoading">
+  <p>Загружаем данные...</p>
+  <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)"
+                     animationDuration=".5s"></p-progressSpinner>
+</ng-container>
+<ng-container *ngIf="deliveryType">
+  <p>
+    <i class="pi pi-info-circle" style="color: blue"></i> Ближайшая доступная дата отгрузки -
+<!--    <span *ngIf="deliveryType === 'Доставка'">доставки</span>-->
+<!--    <span *ngIf="deliveryType === 'Самовывоз'">самовывоза</span> - -->
+    <b *ngIf="deliveryType === 'Доставка'">{{expectedDeliveryDate | date:'dd MMMM yyyy' : 'ru'}}</b>
+    <b *ngIf="deliveryType === 'Самовывоз'">{{expectedPickupDate | date:'dd MMMM yyyy' : 'ru'}}</b>
+  </p>
+  <div class="grid">
+    <div class="col-3">
+      <div><small>Желаемая дата отгрузки/доставки</small></div>
+      <p-calendar [readonlyInput]="true"
+                  [minDate]="minShippingDate"
+                  [maxDate]="shippingCalendar[shippingCalendar.length-1]"
+                  [disabledDates]="missingDates"
+                  [(ngModel)]="expandedDeliveryDate"
+                  (ngModelChange)="getAllOrdersForShipment()"
+      >
+      </p-calendar>
+    </div>
+    <div class="col-5">
+      <div>
+        <div><small>Ориентировочное время отгрузки</small></div>
+        <p-dropdown [options]="intervals"
+                    [showClear]="true"
+                    emptyMessage="Нет данных" [(ngModel)]="selectedInterval" optionLabel="name"
+                    placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+      </div>
+      <div *ngIf="deliveryType === 'Самовывоз'">
+        <div><small>Транспорт</small></div>
+        <p-dropdown [options]="transports"
+                    emptyMessage="Нет данных"
+                    [showClear]="true"
+                    [(ngModel)]="selectedTransport" optionLabel="fullName"
+                    placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+        <p class="green-link cursor-pointer" (click)="showTransportEditorDialog()">Добавить новый</p>
+      </div>
+      <div *ngIf="deliveryType === 'Доставка'">
+        <div><small>Адрес доставки</small></div>
+        <p-dropdown [options]="addresses"
+                    [showClear]="true"
+                    emptyMessage="Нет данных"
+                    [(ngModel)]="selectedAddress" optionLabel="addressFullName"
+                    placeholder="Выберите" [style]="{'width':'100%'}"></p-dropdown>
+        <p class="green-link cursor-pointer" (click)="openAddressEditorDialog()">Добавить новый</p>
+      </div>
+    </div>
+  </div>
+  <!--  <div *ngIf="ordersForShipment?.length > 0 && deliveryType === 'Доставка'"-->
+  <!--       class="flex align-items-center gap-1 mt-1 mb-1">-->
+  <!--    <p-checkbox [(ngModel)]="ignoreNonUniqueAddresses" [binary]="true"></p-checkbox>-->
+  <!--    <label>Игнорировать разные адреса (доставка 1 машиной)</label>-->
+  <!--  </div>-->
+  <p></p>
+  <p-table *ngIf="ordersForShipment?.length > 0"
+           [value]="ordersForShipment"
+           [(selection)]="selectedOrders"
+           [paginator]="ordersForShipment?.length > 12"
+           [rows]="12"
+           dataKey="id"
+           [tableStyle]="{'min-width': '50rem'}"
+           [styleClass]="'p-datatable-sm'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 4rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th>Дата</th>
+        <th>Номер</th>
+<!--        <th *ngIf="deliveryType === 'Доставка'">Адрес доставки</th>-->
+        <th>Контрагент</th>
+        <th>Вес, кг</th>
+        <th>Сумма, ₽</th>
+        <th>Оплата</th>
+        <th>Отгрузка (план)</th>
+        <th>Новая дата готовности</th>
+        <th>Склад отгрузки</th>
+        <th>Sokrof</th>
+        <th>Клиент</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-ordersForShipment>
+      <tr>
+        <td>
+          <p-tableCheckbox [value]="ordersForShipment"></p-tableCheckbox>
+        </td>
+        <td>{{ordersForShipment.date}}</td>
+        <td>{{ordersForShipment.number}}</td>
+<!--        <td *ngIf="deliveryType === 'Доставка'">-->
+<!--          <ng-container *ngIf="!!ordersForShipment.deliveryAddress">-->
+<!--            <i class="pi pi-file-edit cursor-pointer mr-1" pTooltip="Изменить адрес доставки"-->
+<!--               (click)="changeDeliveryAddress(ordersForShipment)"></i>{{ordersForShipment.deliveryAddress}}-->
+<!--            &lt;!&ndash;          <br> <span style="font-size: 10px; color: brown"> id: {{ordersForShipment.deliveryAddressID}}</span>&ndash;&gt;-->
+<!--          </ng-container>-->
+<!--          <span *ngIf="!ordersForShipment.deliveryAddress" class="green-link"-->
+<!--                (click)="changeDeliveryAddress(ordersForShipment)">добавить</span>-->
+<!--        </td>-->
+        <td>{{ordersForShipment.counterpartyName | counterpartyFullname}}</td>
+        <td>{{ordersForShipment.weight | number}}</td>
+        <td>{{ordersForShipment.documentAmount | number}}</td>
+        <td>{{ordersForShipment.cashPayment ? 'Наличный расчет' : 'Безналичный расчет'}}</td>
+        <td>{{ordersForShipment.shipmentDate}}</td>
+        <td
+          [ngStyle]="ordersForShipment.transferDate ? {'background': '#ffcccc'} : {'background': 'white'}">{{ordersForShipment.transferDate}}</td>
+        <td>{{ordersForShipment.shipmentWarehouseName}}</td>
+        <td>{{ordersForShipment.responsible_sokrof}}</td>
+        <td>{{ordersForShipment.client_fio}}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div>
+    <p>Ориентировочный вес продукции: <span class="gray-text">{{getSummaryWeight() | number}}</span></p>
+    <p>Стоимость: <span class="gray-text">{{getSummaryPrice() | currencyRu}}</span></p>
+  </div>
+  <div class="mt-5">
+    <span class="p-float-label">
+      <textarea id="float-input" rows="5" cols="30" [(ngModel)]="comment" pInputTextarea
+                style="width: 100%;"></textarea>
+      <label for="float-input">Комментарий для менеджера</label>
+    </span>
+  </div>
+  <p-button class="mt-3" label="Отправить менеджеру" (click)="onSave()" icon="pi pi-save" iconPos="left"
+            severity="success">
+  </p-button>
+</ng-container>
+<p-dialog header="Внимание!" [(visible)]="selectCarsQuantityModalIsVisible" [modal]="true" [style]="{ width: '30vw' }"
+          [draggable]="false" [resizable]="false">
+  <p>
+    Выбраны заказы с разными адресами доставки.
+  </p>
+  <p class="mb-2">
+    Доставить заказы в одной машине?
+  </p>
+  <div>
+    <p-button class="mt-3" label="В одной машине" (click)="onSelectOneCarAndSendShipment()"
+              severity="primary">
+    </p-button>
+    <p-button class="mt-3 ml-3" label="Разными машинами" (click)="showWarningModal()"
+              severity="primary">
+    </p-button>
+  </div>
+</p-dialog>
+<p-dialog header="Внимание!" [(visible)]="warningOfDifferentCarsModalIsVisible" [modal]="true"
+          [style]="{ width: '30vw' }"
+          [draggable]="false" [resizable]="false">
+  <p class="m-0">
+    Для доставки на разные адреса разными машинами необходимо создавать разные отгрузки. Пожалуйста, выберите заказы с
+    одинаковыми адресами доставки
+  </p>
+  <p-button class="mt-3" label="Закрыть" (click)="onCloseWarningOfDifferentCarsModal()" severity="danger">
+  </p-button>
+</p-dialog>
+

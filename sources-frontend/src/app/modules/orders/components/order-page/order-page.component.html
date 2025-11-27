@@ -1,0 +1,150 @@
+<p-toast></p-toast>
+<div class="page-title">Детали заказа</div>
+<div class="mb-3">
+  <span class="green-link" [routerLink]="['/orders']">← К списку заказов</span>
+</div>
+<div class="grid">
+  <div class="col-8">
+    <div class="order-detail-container">
+      <div>
+        <b class="mr-3">№ {{ orderDetails?.number }}</b>
+        <p-tag severity="success" value="{{orderDetails?.statusID | orderStatus}}" [rounded]="true"></p-tag>
+      </div>
+      <p-button (click)="downloadOrderDetails()" class="print-button" label="Печать" size="small" icon="pi pi-print"
+        [loading]="downloadLoader" severity="secondary"></p-button>
+      <p [innerHTML]="orderDetails?.counterpartyName"></p>
+      <p><span *ngIf="orderDetails?.cashPayment; else withoutCash">Наличный расчет</span>
+        <ng-template #withoutCash>
+          <span>Безналичный расчет</span>
+        </ng-template>
+      </p>
+      <div class="grid">
+        <div class="col-4">Статус оплаты: <b>{{ orderDetails?.paymentStatus }}</b></div>
+        <div class="col-4" *ngIf="orderDetails?.shipmentDate !== ''">Дата готовности: <b>{{ orderDetails?.shipmentDate
+            }}</b></div>
+        <div class="col-4">Склад: <b>{{ orderDetails?.shipmentWarehouseName }}</b></div>
+      </div>
+      <div class="grid">
+
+
+        <div class="col-4" *ngIf="orderDetails?.delivery !== false">Доставка: <b>{{ orderDetails?.unloadDate }}</b>
+        </div>
+        <div class="col-4" *ngIf="orderDetails?.delivery == false">Доставка: <b>Нет</b></div>
+
+
+        <div class="col-4">{{ orderDetails?.deliveryAddress }}</div>
+      </div>
+    </div>
+    <!--    <div class="order-detail-container mt-2 p-4" *ngIf="orderDetails.statusID === 'ТребуетПодтверждения'">-->
+    <div class="order-detail-container mt-2 p-4" *ngIf="orderDetails?.statusID === 'ТребуетПодтверждения'">
+      <div class="grid">
+        <div class="col-1">
+          <i class="pi pi-info-circle" style="font-size: 2.5rem"></i>
+        </div>
+        <div class="col-9">
+          Менеджер обработал ваш заказ. Подтвердите запуск в производство
+        </div>
+        <div class="col-2">
+          <p-button label="Подтвердить" size="small" severity="secondary" (click)="confirmOrder()"></p-button>
+        </div>
+      </div>
+    </div>
+    <div class="order-detail-container mt-2 p-4" *ngIf="orderDetails?.statusID === 'ГотовКОтгрузке'">
+      <div class="grid">
+        <div class="col-1">
+          <i class="pi pi-info-circle" style="font-size: 2.5rem"></i>
+        </div>
+        <div class="col-9">
+          Заказ готов к отгрузке. Сформируйте документ на доставку или самовывоз
+        </div>
+        <div class="col-2">
+          <p-button label="Создать отгрузку" size="small" severity="secondary" (click)="createShipment()"></p-button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col-4 pl-3">
+    <div class="manager-card">
+      <div class="manager-card-header">
+        Ответственный от клиента
+      </div>
+      <!--      <app-sokrof-responsible-avatar-and-name></app-sokrof-responsible-avatar-and-name>-->
+      <ng-container *ngIf="orderDetails">
+        <app-employee-card [personName]="orderDetails['ОтветственныйОтКлиента']"></app-employee-card>
+      </ng-container>
+      <div class="manager-card-header">
+        Ответственный Sokrof
+      </div>
+      <!--      <app-manager-avatar-and-name></app-manager-avatar-and-name>-->
+      <ng-container *ngIf="orderDetails">
+        <app-employee-card [personName]="orderDetails['ОтветственныйSokrof']"></app-employee-card>
+      </ng-container>
+      <div class="green-link" (click)="sendMessageToManager()">Написать менеджеру</div>
+    </div>
+  </div>
+</div>
+<p-divider></p-divider>
+<div class="page-title page-title-h2">Товары в заказе</div>
+<div class="flex justify-content-between flex-wrap">
+  <div class="flex align-items-center justify-content-center">
+    <p-button class="mr-2" label="Копировать" size="small" severity="success" (click)="copyOrder()"></p-button>
+    <ng-container *ngIf="!(orderDetails?.statusID === 'Отменен' || orderDetails?.statusID === 'canceled') && (orderDetails?.statusID === 'НаОбработке')">
+      <p-button class="mr-2" label="Отменить" size="small" severity="danger" (click)="cancelOrder()"></p-button>
+    </ng-container>
+  </div>
+  <div class="flex align-items-center justify-content-center" *ngIf="orderDetails?.nonStandardElements?.length > 0 ">
+    <p-button class="mr-2" label="Заявка на нестандартную доборку" [text]="true"
+      (click)="onShowNonStandardProductViewer()" iconPos="left" severity="primary"></p-button>
+  </div>
+</div>
+<div class="mt-3">
+  <div class="flex justify-content-between flex-wrap">
+    <div class="flex align-items-center justify-content-center">
+      Ориентировочный вес продукции: {{ orderDetails?.weight | number }} кг
+    </div>
+    <div class="flex align-items-center justify-content-center">
+      Стоимость заказа: <b>{{ orderDetails?.documentAmount | currency: 'RUB' }}</b>
+    </div>
+  </div>
+</div>
+<div class="mt-3">
+  <p-table [value]="orderDetails?.inventory" [scrollable]="true" scrollHeight="400px"
+    [tableStyle]="{'min-width': '50rem'}">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>#</th>
+        <th>Номенклатура</th>
+        <th>Длина, м</th>
+        <th>Ед. изм.</th>
+        <th>Кол-во</th>
+        <th>Итого</th>
+        <th>Наличие</th>
+        <th>Резерв</th>
+        <th>Цена, ₽</th>
+        <th>Сумма, ₽</th>
+        <th *ngIf="showBonus()">Бонус, %</th>
+        <th *ngIf="showSales()">Скидка, %</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-inventoryItem>
+      <tr>
+        <td>{{ inventoryItem.lineNumber }}</td> <!--#-->
+        <td>{{ inventoryItem.nomenclatureName }}</td> <!--Номенклатура-->
+        <td>{{ inventoryItem.characteristic }}</td> <!--Длина, м-->
+        <td>{{ inventoryItem.unitOfMeasurementName }}</td> <!--Ед. изм.-->
+        <td>{{ inventoryItem.quantity | number:'1.0-0' }}</td> <!--Кол-во-->
+        <td>{{ inventoryItem.total | number:'1.3-3' }}</td> <!--Итого-->
+        <td>{{ inventoryItem.availability }}</td> <!--Наличие-->
+        <td>{{ inventoryItem.reserve }}</td> <!--Резерв-->
+        <td>{{ inventoryItem.price | number:'1.2-2' }}</td> <!--Цена, ₽-->
+        <td>{{ inventoryItem.amount | number:'1.2-2' }}</td> <!--Сумма, ₽--> 
+        <td *ngIf="showBonus()">{{ inventoryItem.bonusPercentage | number:'1.1-2' }}</td>
+        <!--Бонус, %-->
+        <td *ngIf="showSales()">{{ inventoryItem.discountMarkupPercentage | number:'1.1-2' }}</td>
+        <!--Скидка, %-->
+      </tr>
+    </ng-template>
+  </p-table>
+  <div *ngIf="orderDetails?.comment" class="order-detail-container mt-2" [innerHTML]="orderDetails?.comment"></div>
+</div>

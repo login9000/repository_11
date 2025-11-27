@@ -1,0 +1,12 @@
+<div class="flex flex-row flex-wrap">
+  <div class="flex align-items-center justify-content-center font-bold mr-2 border-round">
+    <p-avatar
+      label="
+        {{(personName | fio: 'фамилия')[0]}}{{(personName | fio: 'имя')[0]}}"
+      size="xlarge" shape="circle"></p-avatar>
+  </div>
+  <div class="flex align-items-center justify-content-center font-bold border-round">
+    <span>{{personName | fio: 'фамилия'}}
+      <br> {{personName | fio: 'имя'}}</span>
+  </div>
+</div>

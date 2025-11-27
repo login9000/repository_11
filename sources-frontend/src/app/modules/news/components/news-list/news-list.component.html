@@ -1,0 +1,62 @@
+<p-toast></p-toast>
+<div class="flex justify-content-between flex-wrap">
+    <div class="flex align-items-center justify-content-center">
+        <div class="flex mb-3">
+            <div class="flex-initial flex align-items-center justify-content-center font-boldborder-round mr-3 page-title">
+                <span>Новости</span>
+            </div>			
+			<ng-container *ngIf="!!news && news?.length > 0">
+				<div class="flex-initial flex align-items-center justify-content-center read-all-span" (click)="readAll()">
+					Отметить все прочитанными
+				</div>
+			</ng-container>
+        </div>
+    </div>
+    <div class="flex align-items-center justify-content-center"
+         *ngIf="appService.sessionConfig?.status === 'Администратор'">
+        <p-button label="Добавить новость" severity="secondary" (click)="openNewsEditor()"></p-button>
+    </div>
+</div>
+<div class="flex flex-row flex-wrap grid">
+
+	<span class="nothing_found_text_news" *ngIf="globalThis.stateLoadAllNews == 'loaded' && news.length == 0">Новости не найдены</span>
+
+	<span class="loading_news" *ngIf="globalThis.stateLoadAllNews != 'loaded'"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span>
+
+    <div class="flex col-10">
+	
+        <div class="news-wrapper">
+            <ng-container *ngFor="let theNews of news">
+                <div class="news-card"
+                     (click)="goToNews(theNews)"
+                     [ngClass]="{
+                                     'unread-news': theNews.is_unread !== '',
+                                     'read-news': theNews.is_unread === ''
+                                     }"
+                >
+                    <div class="news-card-header">
+                        <div>
+                            {{theNews?.header}}
+                        </div>
+                    </div>
+                    <div class="news-card-content" [innerHTML]="theNews?.text | shortText:50"></div>
+                    <div class="news-card-footer">
+                        {{theNews?.date}}
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>
+<div style="text-align: center">
+    <p-button [label]="'Показать еще ' + pageSize"
+              severity="secondary"
+              (click)="loadNews()"
+              [disabled]="currentPage === lastPage || globalThis.stateLoadAllNews != 'loaded'"
+              class="w-full"
+    ></p-button>
+</div>
+<div *ngIf="lastPage > 1">
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="pageSize"
+                 [totalRecords]="12*lastPage"></p-paginator>
+</div>

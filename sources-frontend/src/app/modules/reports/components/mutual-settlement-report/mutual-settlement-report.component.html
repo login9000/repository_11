@@ -1,0 +1,41 @@
+<p class="page-title">Взаиморасчеты</p>
+<p><span class="green-link" [routerLink]="['/reports']">← К списку отчетов</span></p>
+<div class="grid">
+  <div class="col-3">
+    <div>
+      <small>КОНТРАГЕНТ</small>
+    </div>
+    <p-dropdown [options]="counterparties"
+                [(ngModel)]="selectedCounterparty"
+                emptyMessage="Нет данных"
+                optionLabel="fullname"
+                placeholder="Любой" [style]="{'width':'100%'}">
+    </p-dropdown>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>ПЕРИОД</small>
+    </div>
+    <p-calendar selectionMode="range"
+                [(ngModel)]="period"
+                [dateFormat]="'dd.mm.yy'">
+    </p-calendar>
+  </div>
+  <div class="col-3">
+    <div>
+      <small>ФОРМАТ ФАЙЛА</small>
+    </div>
+    <p-dropdown [options]="formats"
+                [(ngModel)]="fileFormat"
+                emptyMessage="Нет данных"
+                optionLabel="name"
+                placeholder="Любой" [style]="{'width':'100%'}">
+    </p-dropdown>
+  </div>
+  <div class="col-3">
+    <div>
+      <small style="color: white">/</small>
+    </div>
+    <p-button label="Распечатать список" severity="secondary" (click)="buildReport()"></p-button>
+  </div>
+</div>

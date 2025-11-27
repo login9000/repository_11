@@ -1,0 +1,32 @@
+<p-toast></p-toast>
+<div class="page-title">Адреса доставки</div>
+<div class="mt-3 mb-3">
+  <p-button label="Добавить" icon="pi pi-plus" iconPos="left" (click)="openAddressEditorDialog()"
+            severity="primary"></p-button>
+</div>
+<div class="grid">
+
+	<span class="nothing_found_text_addresses" *ngIf="globalThis.stateLoadAddresses == 'loaded' && addresses.length == 0">Адреса не найдены</span>
+
+	<span class="loading_addresses" *ngIf="globalThis.stateLoadAddresses != 'loaded'"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span>
+
+  <ng-container *ngFor="let address of addresses">
+    <div class="col-4">
+      <p-panel (click)="openAddressEditorDialog(address)">
+        <ng-template pTemplate="header">
+          <div class="panel-header-container">
+            <b>{{address.city}}</b>
+            <span class="transport-delete-dtn"
+                  (click)="delete($event, address); $event.stopPropagation()"
+                  pTooltip="Удалить адрес"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <p-confirmPopup></p-confirmPopup>
+          </div>
+        </ng-template>
+        <p>{{address.addressFullName}}</p>
+      </p-panel>
+    </div>
+  </ng-container>
+</div>

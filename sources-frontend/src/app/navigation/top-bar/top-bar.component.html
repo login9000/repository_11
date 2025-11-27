@@ -1,0 +1,21 @@
+<p-toast></p-toast>
+<div class="menu-bar">
+  <div class="flex justify-content-between flex-wrap">
+    <div class="flex align-items-center justify-content-center">
+      <span class="mr-1" routerLink="/news">Новости <p-badge *ngIf="!!unreadNewsQuantity" [value]="unreadNewsQuantity?.toString()"></p-badge></span>
+      <span class="mr-1" (click)="onShowManagerMessageDialog()">Связаться с менеджером</span>
+      <span class="mr-1" routerLink="/reports/metal">Отчет по наличию металла</span>
+      <span class="price-list-btn-bg" (click)="!priceListLink ? getPriceListDownloadLink() : downloadPriceList()"><i [class]="priceDownloadIcon" class="mr-1"></i>{{priceDownloadLabel}}</span>
+    </div>
+    <div class="flex align-items-center justify-content-center">
+      <ng-container *ngIf="!!unreadNotifications && unreadNotifications > 0; else noNotifications">
+        <i class="pi pi-bell text-3xl cursor-pointer" pBadge value="{{unreadNotifications}}"
+           [routerLink]="['/notifications']"></i>
+      </ng-container>
+      <ng-template #noNotifications>
+        <i class="pi pi-bell text-3xl cursor-pointer mr-3" [routerLink]="['/notifications']"></i>
+      </ng-template>
+      <p-button label="Выход" [link]="true" (click)="logout()" icon="pi pi-fw pi-power-off"></p-button>
+    </div>
+  </div>
+</div>

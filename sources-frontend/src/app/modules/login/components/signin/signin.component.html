@@ -1,0 +1,73 @@
+<p-toast></p-toast>
+<div class="login-container">
+  
+  <div class="login-box">
+    <ng-container *ngIf="mode === Mode.signIn">
+      <img src="/assets/img/logo.svg" alt="">
+      <h2>Личный кабинет</h2>
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <div>
+          <small>Ваш логин (телефон)</small>
+        </div>
+        <div>
+		  <p-inputMask (keyup.enter)="login()" formControlName="username" class="w-full" mask="+9 999 999 99 99" placeholder="+7"></p-inputMask>
+        </div>
+        <div>
+          <small>Пароль</small>
+        </div>
+        <div>
+          <p-password (keyup.enter)="login()" formControlName="password" [toggleMask]="true" [feedback]="false"></p-password>
+        </div>
+        <div class="mt-1">
+          <span class="green-link" (click)="changeMode(Mode.passwordRecovery)">Забыли пароль?</span>
+        </div>
+        <div class="mt-2">
+            <p-button label="Продолжить"
+                      severity="secondary"
+                      [loading]="loading"
+                      [disabled]="!loginForm.valid"
+                      (click)="login()">
+            </p-button>
+        </div>
+      </form>
+    </ng-container>
+    <ng-container *ngIf="mode === Mode.passwordRecovery">
+      <div>
+        <span class="green-link" (click)="changeMode(Mode.signIn)">← Назад</span>
+      </div>
+      <h2>Забыли пароль?</h2>
+      <div class="mt-2 subtitle-text">
+        Пожалуйста, заполните форму, после чего на Ваш email будут отправлены регистрационные данные
+      </div>
+      <form [formGroup]="passwordRecoveryForm">
+        <div>
+          <small>Ваш логин (телефон)</small>
+        </div>
+        <div>
+		  <p-inputMask formControlName="phone" class="w-full" mask="+9 999 999 99 99" placeholder="+7"></p-inputMask>
+        </div>
+        <div>
+          <small>Ваши ФИО</small>
+        </div>
+        <div>
+          <input type="text" pInputText formControlName="fio" class="w-full"/>
+        </div>
+        <p-button class="mt-2 block"
+                  label="Отправить запрос на восстановление"
+                  severity="secondary"
+                  [disabled]="!passwordRecoveryForm.valid"
+                  (click)="recoveryPassword()">
+        </p-button>
+      </form>
+    </ng-container>
+    <ng-container *ngIf="mode === Mode.passwordRecoveryRequestReceived">
+      <h2>Запрос получен</h2>
+      <div class="mt-2 subtitle-text">
+        Регистрационные данные были успешно отправлены на email, проверьте Вашу почту
+      </div>
+      <div class="mt-7">
+        <span class="green-link" (click)="changeMode(Mode.signIn)">Вернуться к авторизации</span>
+      </div>
+    </ng-container>
+  </div>
+</div>

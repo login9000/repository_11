@@ -1,0 +1,112 @@
+<div>
+  <p-table [value]="products" [scrollable]="true" scrollHeight="35rem"
+           [tableStyle]="{ 'min-width': '50rem' }"
+           [styleClass]="'p-datatable-sm'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Номенклатура</th>
+        <th>Толщина</th>
+        <th>Цена</th>
+        <th>Ед. изм.</th>
+        <th>Заказ</th>
+        <th>Итого</th>
+        <th>Сумма, ₽</th>
+        <th>Действия</th>
+        <th>Копировать позиции<br>(кол-во строк)</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-product>
+      <tr *ngFor="let item of product.orderItems let idx = index">
+        <ng-container *ngIf="idx == 0; else notFirstRows">
+          <td>{{product.name}}</td>
+          <td>{{product?.properties?.thickness}}</td>
+          <td>
+            {{product.price}} руб/{{product.measureUnitName}}
+            <ng-container *ngIf="product.squareMeterConversionFactor > 0">
+              <br>
+              {{product.price * product.squareMeterConversionFactor | number: '1.0-0'}} руб/м<sup>2</sup>
+            </ng-container>
+          </td>
+          <td>
+            {{product.measureUnitName}}
+          </td>
+        </ng-container>
+        <ng-template #notFirstRows>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </ng-template>
+        <td>
+          <div class="grid">
+            <div class="col-6">
+              <div><small>Длина, мм</small></div>
+              <div>
+                <input type="text" class="p-inputtext-sm" [style]="{'width':'100%'}" pInputText
+                       [(ngModel)]="item.length"
+                       [disabled]="!product.fillCharacteristic"
+                       (keyup.enter)="confirm()"
+                       (focus)="onInputFocus($event)"/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div><small>Кол-во</small></div>
+              <div><input type="text" class="p-inputtext-sm" [style]="{'width':'100%'}" [(ngModel)]="item.amount"
+                          pInputText
+                          (keyup.enter)="confirm()"
+                          (focus)="onInputFocus($event)"/></div>
+            </div>
+          </div>
+        </td>
+        <td>
+          {{getQuantity(product, item) | number}}
+        </td>
+        <td>
+          {{getItemPrice(product, item) | number}}
+        </td>
+        <td>
+          <div *ngIf="idx == 0; else removeBtn">
+          </div>
+          <ng-template #removeBtn>
+            <div>
+              <p-button class="mt-3" label="Удалить" severity="danger" [text]="true" size="small"
+                        (click)="removeItemInOrder(product, idx)"></p-button>
+            </div>
+          </ng-template>
+        </td>
+        <td>
+          <p-button class="mt-3" label="Добавить строку" [text]="true" (click)="addOrderItem(product)" severity="info"
+                    size="small"></p-button>
+        </td>
+      </tr>
+      <tr *ngIf="product.orderItems?.length > 1">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><b>Итого: </b></td>
+        <td>
+          {{getSummaryPrice(product) | number}}
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-button class="mt-3" label="Подтвердить" (click)="confirm()" severity="success"
+          [disabled]="checkAmount()"
+></p-button>
+<p-button class="mt-3 ml-2" label="Отмена" (click)="closeDialog()" severity="danger"></p-button>
+<p-dialog header="Длина имеет некорректное значение" [(visible)]="lengthDialogVisible" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+  <p>Ниже представлен список возможных значений длины для <br>
+    <b>{{nomenclatureName}}</b>
+  </p>
+  <p class="m-0">
+    {{possibleValues}}
+  </p>
+</p-dialog>

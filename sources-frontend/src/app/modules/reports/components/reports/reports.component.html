@@ -1,0 +1,18 @@
+<div class="report-wrapper">
+  <ng-container *ngFor="let report of reports">
+    <ng-container *ngIf="!report.shippingWarehouses; else panelWithWarehouse">
+      <div class="block cursor-pointer" (click)="openReport(report)">
+        <h3>{{report.name}}</h3>
+      </div>
+    </ng-container>
+    <ng-template #panelWithWarehouse>
+      <div class="block">
+        <h3>{{report.name}}</h3>
+        <p>Склады</p>
+        <ng-container *ngFor="let warehouse of report.shippingWarehouses">
+          <span class="green-link mr-2"  (click)="openReport(report, warehouse)">{{warehouse['Наименование']}}</span>
+        </ng-container>
+      </div>
+    </ng-template>
+  </ng-container>
+</div>

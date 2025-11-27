@@ -1,0 +1,11 @@
+:host ::ng-deep .p-inputnumber {
+  width: 20px; /* Пример: установите нужную вам ширину */
+}
+
+:host ::ng-deep .p-chip {
+  cursor: pointer
+}
+
+.invalid-input {
+  border-color: red;
+}

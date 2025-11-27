@@ -1,0 +1,76 @@
+<p-toast></p-toast>
+<div class="page-title mb-4">Ваш профиль</div>
+<div class="grid">
+  <div class="col-3 wrapper">
+    <div class="avatar-container">
+	<i class="icon_delete_avatar" *ngIf="appService.sessionConfig?.photo" (click)="deleteAvatar()"></i>
+      <div class="circle" *ngIf="!appService.sessionConfig?.photo; else showAvatar">
+        {{(appService.sessionConfig?.fio | fio: 'имя')[0]}}{{(appService.sessionConfig?.fio | fio: 'фамилия')[0]}}
+      </div>
+      <ng-template #showAvatar>
+        <p-avatar [image]="appService.sessionConfig?.photo" styleClass="mr-2" size="xlarge" shape="circle"
+                  [style]="{'width': '190px', 'height': '190px'}"></p-avatar>
+      </ng-template>
+      <input #fileInput type="file" (change)="onFileChange($event)" style="display: none"/>
+      <p class="add-photo-text" (click)="openFileInput()">Добавить фото</p>
+    </div>
+  </div>
+  <div class="col-4">
+    <div>
+      <small>Фамилия</small>
+    </div>
+    <div>
+      <input disabled pInputText class="w-full mb-3" [value]="appService.sessionConfig?.fio | fio: 'фамилия'"/>
+    </div>
+    <div>
+      <small>Имя</small>
+    </div>
+    <div>
+      <input disabled pInputText class="w-full mb-3" [value]="appService.sessionConfig?.fio | fio: 'имя'"/>
+    </div>
+    <div>
+      <small>Отчество</small>
+    </div>
+    <div>
+      <input disabled pInputText class="w-full mb-3" [value]="appService.sessionConfig?.fio | fio: 'отчество'"/>
+    </div>
+  </div>
+  <div class="col-4">
+    <div>
+      <small>Ваш логин (телефон)</small>
+    </div>
+    <div>
+      <input disabled pInputText class="w-full mb-3" [value]="appService.sessionConfig?.phone"/>
+    </div>
+    <div>
+      <div class="flex justify-content-between flex-wrap">
+        <small class="flex align-items-center justify-content-center">E-mail для уведомлений</small>
+        <!-- <small class="flex align-items-center justify-content-center green-link" (click)="showEmailEditorDialog()">сменить</small> -->
+      </div>
+    </div>
+    <div>
+      <input disabled pInputText class="w-full mb-3" [value]="appService.sessionConfig?.email"/>
+    </div>
+  </div>
+</div>
+<p>Для изменения данных основного профиля, обратитесь к <span class="green-link" (click)="showManagerMessageDialog()">Вашему менеджеру</span>
+</p>
+<ng-container *ngIf="appService.sessionConfig?.status === 'Сотрудник'">
+  <div class="page-title page-title-h2 mt-4 mb-2">Делегировать уведомления</div>
+  <p-dropdown [options]="employees" [(ngModel)]="delegationTarget" optionLabel="fio2"
+              [filter]="true" filterBy="fio"
+              emptyMessage="Нет данных"
+              [showClear]="true" placeholder="Выберите сотрудника"></p-dropdown>
+  <button type="button" pButton icon="pi pi-save" class="p-button-success" (click)="delegateNotification()"></button>
+  <p style="width: 50%">Вы можете указать сотрудника, которому будут приходить уведомления по Вашим заказам, в случае
+    Вашего отсутствия</p>
+</ng-container>
+<ng-container *ngIf="appService.sessionConfig?.status !== 'Сотрудник'">
+  <div class="page-title page-title-h2 mt-4 mb-2">Сотрудники</div>
+  <div class="mb-2">
+    <p-button class="mb-3" label="Добавить" icon="pi pi-plus" severity="primary" (onClick)="createEmployee()"></p-button>
+  </div>
+  <div>
+    <app-employees-list></app-employees-list>
+  </div>
+</ng-container>

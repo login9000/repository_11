@@ -1,0 +1,36 @@
+.manager-card {
+  border-width: 0;
+  left: 0;
+  top: 0;
+  background: inherit;
+  background-color: rgba(242, 242, 242, 1);
+  border-radius: 7px;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  padding: 1rem;
+}
+.manager-card-header {
+  color: rgb(127, 127, 127);
+  display: inline;
+  font-family: "Montserrat SemiBold", "Montserrat Regular", Montserrat, sans-serif;
+  font-kerning: normal;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.manager-card-content span {
+  font-family: 'Montserrat SemiBold', 'Montserrat Regular', 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 17px;
+}

@@ -1,0 +1,27 @@
+.order-detail-container {
+  font-family: Montserrat, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  background-color: rgba(242, 242, 242, 1);
+  border-radius: 7px;
+  position: relative;
+  padding: 15px;
+}
+
+.print-button {
+  position: absolute;
+  top:15px;
+  right: 15px;
+}
+
+p.link-style {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+p.link-style:hover {
+  color: #000000;
+}

@@ -1,0 +1,10 @@
+<div class="manager-card">
+  <div class="manager-card-header">
+    Ваш менеджер
+  </div>
+  <app-manager-avatar-and-name></app-manager-avatar-and-name>
+  <p class="green-link">{{appService.sessionConfig?.manager_email}}</p>
+  <div class="manager-card-footer" *ngIf="showMessageButton">
+    <p-button label="Написать" severity="secondary" (onClick)="onShowManagerMessageDialog()"></p-button>
+  </div>
+</div>

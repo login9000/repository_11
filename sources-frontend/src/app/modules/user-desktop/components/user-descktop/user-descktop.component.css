@@ -1,0 +1,39 @@
+.news-title {
+  color: rgb(127, 127, 127);
+  display: inline;
+  font-family: "Montserrat SemiBold", "Montserrat Regular", Montserrat, sans-serif;
+  font-feature-settings: "kern";
+  font-kerning: normal;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  margin-bottom: 1rem;
+  margin-right: 2rem;
+}
+
+.all-news-link {
+  color: rgb(0, 128, 128);
+  cursor: pointer;
+  display: inline;
+  font-family: Montserrat, sans-serif;
+  font-feature-settings: "kern";
+  font-kerning: normal;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  height: auto;
+  letter-spacing: normal;
+  line-height: normal;
+  text-align: left;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space-collapse: collapse;
+  margin-bottom: 1rem;
+}

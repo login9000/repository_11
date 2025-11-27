@@ -1,0 +1,51 @@
+<div>
+  <small>Контрагент</small>
+</div>
+<form [formGroup]="filterForm">
+  <p-dropdown [options]="counterparties" optionLabel="fullname"
+              formControlName="counterparty"
+              emptyMessage="Нет данных"
+              placeholder="Любой"
+              appendTo="body"
+              [showClear]="true"
+              [style]="{'width':'100%'}"
+  ></p-dropdown>
+  <div class="mt-3">
+    <small>Оплата</small>
+  </div>
+  <p-dropdown [options]="paymentTypes" optionLabel="label"
+              formControlName="paymentType"
+              placeholder="Любая"
+              emptyMessage="Нет данных"
+              appendTo="body"
+              [showClear]="true"
+              [style]="{'width':'100%'}"
+  ></p-dropdown>
+  <div class="mt-3">
+    <small>Склад отгрузки</small>
+  </div>
+  <p-dropdown [options]="shipmentWarehouses" optionLabel="Наименование"
+              formControlName="shipmentWarehouse"
+              placeholder="Любой"
+              emptyMessage="Нет данных"
+              appendTo="body"
+              [showClear]="true"
+              [style]="{'width':'100%'}"
+  ></p-dropdown>
+  <div class="mt-3">
+    <small>Ответственный Sokrof</small>
+  </div>
+  <p-dropdown [options]="responders" optionLabel="label"
+              formControlName="sokrofResponsible"
+              placeholder="Любой"
+              emptyMessage="Нет данных"
+              appendTo="body"
+              [showClear]="true"
+              [style]="{'width':'100%'}"
+  ></p-dropdown>
+  <div class="mt-2">
+    <p-button label="Применить" severity="secondary" (click)="onConfirm()"></p-button>
+  </div>
+</form>
+
+

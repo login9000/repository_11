@@ -1,0 +1,79 @@
+[
+  {
+    "date": "2023-11-10T12:30:00.000Z",
+    "number": "INV001",
+    "amount": 1500.50,
+    "weight": 200.75,
+    "delivery": "express",
+    "counterparty": "ABC Company",
+    "shippingWarehouse": "Warehouse A",
+    "sokrof": "SOK123",
+    "client": "John Doe"
+  },
+  {
+    "date": "2023-11-09T14:45:00.000Z",
+    "number": "INV002",
+    "amount": 2200.75,
+    "weight": 350.25,
+    "delivery": "standard",
+    "counterparty": "XYZ Corp",
+    "shippingWarehouse": "Warehouse B",
+    "sokrof": "SOK456",
+    "client": "Jane Smith"
+  },
+  {
+    "date": "2023-11-08T10:15:00.000Z",
+    "number": "INV003",
+    "amount": 1800.30,
+    "weight": 280.50,
+    "delivery": "express",
+    "counterparty": "DEF Ltd",
+    "shippingWarehouse": "Warehouse C",
+    "sokrof": "SOK789",
+    "client": "Bob Johnson"
+  },{
+  "date": "2023-11-07T08:00:00.000Z",
+  "number": "INV004",
+  "amount": 1200.20,
+  "weight": 180.90,
+  "delivery": "standard",
+  "counterparty": "GHI Corporation",
+  "shippingWarehouse": "Warehouse D",
+  "sokrof": "SOK101",
+  "client": "Alice Johnson"
+},
+  {
+    "date": "2023-11-06T16:20:00.000Z",
+    "number": "INV005",
+    "amount": 2800.90,
+    "weight": 420.30,
+    "delivery": "express",
+    "counterparty": "JKL Industries",
+    "shippingWarehouse": "Warehouse E",
+    "sokrof": "SOK202",
+    "client": "Charlie Brown"
+  },
+  {
+    "date": "2023-11-05T11:45:00.000Z",
+    "number": "INV006",
+    "amount": 1600.60,
+    "weight": 250.75,
+    "delivery": "standard",
+    "counterparty": "MNO Enterprises",
+    "shippingWarehouse": "Warehouse F",
+    "sokrof": "SOK303",
+    "client": "Eva Green"
+  },
+  {
+    "date": "2023-11-04T13:10:00.000Z",
+    "number": "INV007",
+    "amount": 2000.40,
+    "weight": 300.10,
+    "delivery": "express",
+    "counterparty": "PQR Limited",
+    "shippingWarehouse": "Warehouse G",
+    "sokrof": "SOK404",
+    "client": "David White"
+  }
+]
+

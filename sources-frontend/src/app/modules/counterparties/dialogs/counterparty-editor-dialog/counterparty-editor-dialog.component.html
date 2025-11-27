@@ -1,0 +1,120 @@
+<p-toast></p-toast>
+<p class="gray-text">поля со <span style="color: red">*</span> обязательные для заполнения</p>
+<div class="grid" [formGroup]="counterpartyForm">
+  <div class="col-6">
+    <div class="page-title page-title-h2">
+      Информация о контрагенте
+    </div>
+    <div class="grid">
+      <div class="col-12">
+        <div>
+          <small>Наименование и организационно-правовая форма полностью<span style="color: red">*</span></small>
+        </div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="fullname"
+            [ngClass]="{'ng-invalid ng-dirty': isInvalid('fullname')}" />
+        </div>
+      </div>
+      <div class="col-4">
+        <div><small>ИНН <span style="color: red">*</span></small></div>
+        <div>
+          <input type="text" maxlength="12" pInputText [style]="'width: 100%'" formControlName="inn"
+            [ngClass]="{'ng-invalid ng-dirty': isInvalid('inn')}" (keydown)="restrictNumbers($event,'inn')"
+            (keyup)="checkInn($event,'inn')" />
+        </div>
+      </div>
+      <div class="col-4">
+        <div><small>ОГРН(ИП)</small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="ogrn" />
+        </div>
+      </div>
+      <div class="col-4">
+
+        <div><small>КПП</small></div>
+        <div>
+          <input type="text" maxlength="9" pInputText [style]="'width: 100%'" formControlName="kpp"
+            [ngClass]="{'ng-invalid ng-dirty': isInvalid('kpp')}" (keydown)="restrictNumbers($event,'kpp')" />
+        </div>
+      </div>
+      <div class="col-12">
+
+        <div><small>Юридический адрес <span style="color: red">*</span></small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="legal_address"
+            [ngClass]="{'ng-invalid ng-dirty': isInvalid('legal_address')}" />
+        </div>
+      </div>
+      <div class="col-12">
+        <div><small>Фактический адрес <span style="color: red">*</span></small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="actual_address" />
+        </div>
+        <div class="mt-1">
+          <p-checkbox [(ngModel)]="isActualEqualLegalAddress" (ngModelChange)="onToggle($event)"
+            [ngModelOptions]="{standalone: true}" [binary]="true" label="Совпадает с юридическим"></p-checkbox>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="page-title page-title-h2">
+      Платежная информация
+    </div>
+    <div class="grid">
+      <div class="col-12">
+        <div><small>Наименование банка</small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="bank_name" />
+        </div>
+      </div>
+      <div class="col-6">
+        <div><small>БИК</small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="bank_bik" />
+        </div>
+      </div>
+      <div class="col-4">
+      </div>
+      <div class="col-12">
+        <div><small>Корр. счет банка</small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="corr_account" />
+        </div>
+      </div>
+      <div class="col-12">
+        <div><small>Расчетный счет</small></div>
+        <div>
+          <input type="text" pInputText [style]="'width: 100%'" formControlName="checking_account" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="page-title page-title-h2">Основной адрес доставки</div>
+    <p *ngIf="!!counterparty">
+
+      <span *ngIf="deliveryIdAddressString">{{deliveryIdAddressString}}</span>
+      <span *ngIf="!deliveryIdAddressString">Нет</span>
+
+    </p>
+    <div class="custom-select-container">
+      <select *ngIf="!counterparty" id="mySelect" class="p-inputtext p-d-block" formControlName="id_delivery_addresses"
+        [style]="{'width':'100%'}">
+        <ng-container *ngFor="let address of addresses">
+          <option [value]="address.id">{{address.addressFullName}}</option>
+        </ng-container>
+      </select>
+      <div class="reset-button" (click)="resetSelect()">
+        <i class="pi pi-times"></i>
+      </div>
+    </div>
+    <p *ngIf="!counterparty" class="green-link" (click)="addNewAddress()">добавить новый</p>
+  </div>
+</div>
+<div class="grid">
+  <div class="col-3" *ngIf="!counterparty">
+    <p-button class="mt-3" [label]="buttonLabel" icon="{{isSent ? 'pi pi-spin pi-spinner': '' }} " [disabled]="!counterpartyForm.valid" (click)="onSave()"
+      severity="success"></p-button>
+  </div>
+</div>

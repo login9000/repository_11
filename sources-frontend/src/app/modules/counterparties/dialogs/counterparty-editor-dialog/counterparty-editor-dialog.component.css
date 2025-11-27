@@ -1,0 +1,15 @@
+.custom-select-container {
+  position: relative;
+}
+
+.reset-button {
+  position: absolute;
+  right: 15px; /* Может потребоваться настроить положение крестика по горизонтали */
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: none;
+}
+.custom-select-container:hover .reset-button {
+  display: block;
+}

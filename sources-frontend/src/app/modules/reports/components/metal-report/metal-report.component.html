@@ -1,0 +1,27 @@
+<p class="page-title">Отчет по наличию металла {{warehouseTitle}}</p>
+<p><span class="green-link" [routerLink]="['/reports']">← К списку отчетов</span> Актуальность: <b>{{reportDate}}</b></p>
+<div class="table-container">
+  <table class="table">
+    <tr>
+      <ng-container *ngFor="let header of headers; let idx = index">
+        <th *ngIf="idx !== 1">
+          {{header}}
+        </th>
+      </ng-container>
+    </tr>
+    <tr *ngFor="let row of tableData">
+      <ng-container *ngFor="let item of row; let colIdx = index">
+        <td  *ngIf="colIdx !== 1">
+          <ng-container *ngIf="colIdx === 0; else notFirstColumn">
+            <div class="p-1"
+                 [ngStyle]="{ 'background-color': getBackgroundColor(row[1]), 'color': getTextColor(row[1]) }">{{item}}</div>
+          </ng-container>
+          <ng-template #notFirstColumn>
+            {{item}}
+          </ng-template>
+        </td>
+      </ng-container>
+    </tr>
+  </table>
+</div>
+

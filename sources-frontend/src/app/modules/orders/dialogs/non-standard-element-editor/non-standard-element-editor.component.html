@@ -1,0 +1,82 @@
+<div [formGroup]="orderService.nonStandardElementsForm">
+  <div class="grid" *ngIf="nonStandardElements.controls?.length > 0">
+    <ng-container>
+      <div class="col-9"><label for="description">Описание:</label></div>
+      <div class="col-2"><label for="quantity">Количество:</label></div>
+    </ng-container>
+    <ng-container formArrayName="nonStandardElements">
+      <ng-container *ngFor="let element of nonStandardElements.controls; let i = index">
+        <ng-container [formGroupName]="i">
+          <div class="col-9">
+            <textarea id="description" rows="1" cols="30" pInputTextarea style="width: 100%;"
+                      formControlName="description"
+                      [ngClass]="{'invalid-input': orderService.nonStandardElementsForm.get('nonStandardElements.' + i + '.description')?.invalid && orderService.nonStandardElementsForm.get('nonStandardElements.' + i + '.description').touched}"></textarea>
+          </div>
+          <div class="col-2">
+            <input id="quantity" pKeyFilter="num" type="text" pInputText formControlName="quantity"
+                   style="width: 100%;"
+                   [ngClass]="{'invalid-input': orderService.nonStandardElementsForm.get('nonStandardElements.' + i + '.quantity')?.invalid && orderService.nonStandardElementsForm.get('nonStandardElements.' + i + '.quantity').touched}"/>
+          </div>
+          <div class="col-1">
+            <p-button icon="pi pi-trash" severity="danger" [disabled]="nonStandardElements.controls?.length < 2" (click)="removeNonStandardElement(i)"></p-button>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+  <p-divider *ngIf="nonStandardElements.controls?.length > 0"></p-divider>
+  <div formArrayName="nonStandardElementPhotos">
+    <ng-container *ngFor="let photo of nonStandardElementPhotos.controls; let i = index">
+      <ng-container [formGroupName]="i">
+        <div class="mt-1">
+          <p-chip (click)="openFileInNewTab(i)" label="{{photo.value['file_name']}}" [removable]="true" (onRemove)="removePhoto(i, $event)">
+          </p-chip>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  <div>
+    <p-messages [(value)]="errorMessages" [enableService]="false"></p-messages>
+  </div>
+  <div class="custom-file-input mt-3" *ngIf="nonStandardElementPhotos.controls.length <= 5">
+    <div style="display: inline-block">
+      <i class="pi pi-paperclip" style="font-size: 1.5rem; margin-right: 15px;"></i>
+    </div>
+    <div style="display:  inline-block">
+      <label for="fileInput" class="green-link">прикрепить файл</label><br>
+      <span
+        style="font-size: 11px; color: rgb(170, 170, 170)">до {{appService.sessionConfig.max_file_size_for_non_standard_addition}}
+        Кб</span>
+    </div>
+    <input type="file" id="fileInput" (change)="onFileSelected($event)" style="display: none;">
+  </div>
+</div>
+<div class="mt-3">
+  <p-messages [(value)]="messages" [enableService]="false"></p-messages>
+  <p-button class="mr-2"
+            *ngIf="elements.length == 0"
+            label="В заказ"
+            (click)="addToOrder()"
+            iconPos="left"
+            severity="success"
+            [disabled]="orderService.nonStandardElementsForm.invalid || nonStandardElements?.controls?.length < 1"
+  ></p-button>
+  <p-button class="mr-2"
+            label="Сохранить"
+            *ngIf="elements.length > 0"
+            (click)="saveChanges()"
+            iconPos="left"
+            severity="success"
+            [disabled]="orderService.nonStandardElementsForm.invalid || nonStandardElements?.controls?.length < 1"
+  ></p-button>
+  <p-button class="mr-2"
+            label="Добавить строку"
+            (click)="addNonStandardElement()"
+            iconPos="left"
+            severity="secondary"></p-button>
+  <!--<p-button-->
+  <!--  label="Очистить форму"-->
+  <!--  (click)="clearForm()"-->
+  <!--  severity="danger">-->
+  <!--</p-button>-->
+</div>

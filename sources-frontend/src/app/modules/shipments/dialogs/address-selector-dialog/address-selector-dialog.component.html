@@ -1,0 +1,9 @@
+<p-dropdown [options]="addresses"
+            emptyMessage="Нет данных"
+            appendTo="body"
+            [(ngModel)]="selectedAddress"
+            optionLabel="addressFullName"
+            placeholder="Выберите адрес"
+            [style]="{'width':'100%'}"></p-dropdown>
+<p (click)="openAddressEditorDialog()" class="green-link">Добавить адрес</p>
+<p-button label="Применить" (click)="confirm()"></p-button>

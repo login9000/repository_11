@@ -1,0 +1,10 @@
+[
+  {
+    "label": "Наличный расчет",
+    "value": "cash_on_delivery"
+  },
+  {
+    "label": "Безналичный расчет",
+    "value": "prepayment"
+  }
+]

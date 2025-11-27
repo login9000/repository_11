@@ -1,0 +1,42 @@
+<div class="pt-2">
+  <p-table [value]="desktopService.data?.response?.shipments?.data" [scrollable]="true" scrollHeight="400px" [styleClass]="'p-datatable-sm'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width:200px">Дата отгрузки (план)</th>
+        <th style="min-width:200px">Номер</th>
+        <th style="min-width:200px">Статус</th>
+        <th style="min-width:200px">Доставка/Самовывоз</th>
+        <th style="min-width:200px">Склад отгрузки</th>
+        <th style="min-width:300px">Контрагент</th>
+        <th style="min-width:200px">Сумма, ₽</th>
+        <th style="min-width:200px">Вес, кг</th>
+        <th style="min-width:300px">Sokrof</th>
+        <th style="min-width:200px">Клиент</th>
+      </tr>
+	  
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDataForUserDesktop == 'loaded' && desktopService.data?.response?.shipments?.data.length == 0">
+		<td colspan="10"><span class="nothing_found_text_orders">Отгрузки не найдены</span></td>
+      </tr>
+
+      <tr style="background-color: #fff;" *ngIf="globalThis.stateLoadDataForUserDesktop != 'loaded'">
+		<td colspan="10"><span class="loading_shipments"><span data-pc-section="icon" class="pi pi-spin pi-spinner p-button-icon p-button-icon-left ng-star-inserted"></span>&nbsp;&nbsp;&nbsp;loading ...</span></td>
+      </tr>
+
+    </ng-template>		
+    <ng-template pTemplate="body" let-shipment>
+      <tr (click)="goToShipmentPage(shipment)" style="cursor: pointer">
+        <td>{{shipment.shipping_date}}</td>
+        <td>{{shipment.shipment_number}}</td>
+        <td>{{shipment.status | shipmentStatus}}</td>
+        <td><span [innerHTML]="shipment.delivery_address_name"></span></td>
+        <td><span [innerHTML]="shipment.shipping_warehouse_name"></span></td>
+        <td><span  [innerHTML]="shipment.counterparty_name"></span></td>
+        <td>{{shipment.sum | number: '2.0-2'}}</td>
+        <td>{{shipment.weight| number: '2.0-2'}}</td>
+        <td>{{shipment.responsible_sokrof}}</td>
+        <td>{{shipment.client_fio}}</td>
+      </tr>
+    </ng-template>
+  </p-table>  
+</div>
+

@@ -1,0 +1,26 @@
+<p-toast></p-toast>
+<div class="grid">
+  <div class="col-9">
+    <div class="mb-3">
+      <span class="news-title">Новости</span>
+      <span class="all-news-link" [routerLink]="['/news']">Все новости →</span>
+    </div>
+    <app-news-preview></app-news-preview>
+  </div>
+  <div class="col-3">
+    <app-manager-card [showMessageButton]="true" [messageService]="messageService"></app-manager-card>
+  </div>
+</div>
+<h2>Последние заказы</h2>
+<div class="flex flex-row flex-wrap">
+  <p-button class="mr-2" severity="secondary" label="Все заказы" [routerLink]="['/orders']"></p-button>
+  <p-button class="mr-2" label="Создать новый" icon="pi pi-plus" iconPos="left" [routerLink]="['/orders/edit']"></p-button>
+</div>
+<p></p>
+<app-order-table></app-order-table>
+<h2>Отгрузки</h2>
+<div class="mb-2">
+  <p-button class="mr-2" severity="secondary" label="Все отгрузки" [routerLink]="['/shipments']"></p-button>
+  <p-button class="mr-2" label="Создать новую" icon="pi pi-plus" iconPos="left" [routerLink]="['/shipments/edit']"></p-button>
+</div>
+<app-shipment-table></app-shipment-table>
