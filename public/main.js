@@ -17655,6 +17655,9 @@ __webpack_require__.r(__webpack_exports__);
 class FileService {
   constructor() {}
   downloadFile(url, fileName) {
+    //###
+    console.log('downloadFile()');
+    //###
     var rnd = String(Math.random()).replace('.', '');
     const link = document.createElement('a');
     link.href = url + '?' + rnd;
