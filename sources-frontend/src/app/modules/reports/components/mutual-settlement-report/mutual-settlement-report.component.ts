@@ -64,7 +64,7 @@ export class MutualSettlementReportComponent {
       next: (response) => {
         let url = response.response.link;
         const filename = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, filename, this.messageService);
+        this.fileService.downloadFile(url, filename);
       }
     })
   }

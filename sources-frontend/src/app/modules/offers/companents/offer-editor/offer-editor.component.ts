@@ -131,7 +131,7 @@ export class OfferEditorComponent {
           })
           let url = response.response.link;
           const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-          this.fileService.downloadFile(url, fileName, this.messageService);
+          this.fileService.downloadFile(url, fileName);
           setTimeout(() => {
             this.animationSubmitButton1 = false;
             this.blockSubmitButton1 = false;

@@ -120,7 +120,7 @@ export class WaybillListComponent implements OnInit {
       next: (response) => {
         const url = response.response.link
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-        this.fileService.downloadFile(url, fileName, this.messageService)
+        this.fileService.downloadFile(url, fileName)
       },
       error: (error) => {
         this.messageService.add({
@@ -143,7 +143,7 @@ export class WaybillListComponent implements OnInit {
         next: (response) => {
           const url = response.response.link
           const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-          this.fileService.downloadFile(url, fileName, this.messageService)
+          this.fileService.downloadFile(url, fileName)
         },
         error: (error) => {
           this.messageService.add({

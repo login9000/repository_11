@@ -76,7 +76,7 @@ export class OrderPageComponent implements OnInit, OnDestroy {
           this.downloadLoader = false;
           const url = response.response.link;
           const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-          this.fileService.downloadFile(url, fileName, this.messageService)
+          this.fileService.downloadFile(url, fileName)
         },
         error: error => {
           this.downloadLoader = false;

@@ -89,9 +89,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
   downloadPriceList() {
     this.clicked = false
     const file_name = this.priceListLink.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
-    this.fileService.downloadFile(this.priceListLink, file_name, this.messageService)
+    this.fileService.downloadFile(this.priceListLink, file_name)
     this.priceListLink = undefined
-
   }
 
   getPriceListDownloadLink() {
