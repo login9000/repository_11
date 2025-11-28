@@ -29,7 +29,8 @@ export class DraftPageComponent {
   ref: DynamicDialogRef | undefined;
   draftId: string | undefined;
   downloadLoader: boolean = false;
-  blockSubmitButton: boolean = false;
+  blockSubmitButton1: boolean = false;
+  commercial_offers_ids: any = {};
 
   constructor(
     public dialogService: DialogService,
@@ -46,6 +47,11 @@ export class DraftPageComponent {
         .subscribe({
           next: (draft) => {
             this.draft = draft;
+            if(this.draft.response.commercial_offers.data != undefined){
+              for(var item of this.draft.response.commercial_offers.data){
+                this.commercial_offers_ids[item.commercial_offer_id] = false;
+              }
+            }
           },
           error: (error) => {
             this.messageService.add({
@@ -160,13 +166,22 @@ export class DraftPageComponent {
   }
 
   printOffer(commercial_offer_id: any) {
+    if(this.commercial_offers_ids[commercial_offer_id] !== undefined){
+      this.commercial_offers_ids[commercial_offer_id] = true;
+    }
     this.offerService.downloadOffer(commercial_offer_id).subscribe({
       next: (response) => {
+        if(this.commercial_offers_ids[commercial_offer_id] !== undefined){
+          this.commercial_offers_ids[commercial_offer_id] = false;
+        }
         let url = response.response.link;
         const fileName = url.replace(/.*?\/([^\/]+\.(pdf|xlsx?))/, '$1');
         this.fileService.downloadFile(url, fileName)
       },
       error: error => {
+        if(this.commercial_offers_ids[commercial_offer_id] !== undefined){
+          this.commercial_offers_ids[commercial_offer_id] = false;
+        }
         this.messageService.add({
           severity: 'error',
           summary: 'Ошибка',
@@ -218,8 +233,8 @@ export class DraftPageComponent {
   }
 
   sendDraftToManager() {
-    if (!this.blockSubmitButton) {
-      this.blockSubmitButton = true;
+    if (!this.blockSubmitButton1) {
+      this.blockSubmitButton1 = true;
       this.draftService.sendDraftToManager(this.draftId).subscribe({
         next: () => {
           this.messageService.add({
@@ -228,11 +243,12 @@ export class DraftPageComponent {
             detail: 'Заказ отправлен',
           })
           setTimeout(() => {
+			      this.blockSubmitButton1 = false;
             this.router.navigate(['/drafts']).then();
           }, 2000);
         },
         error: (error) => {
-          this.blockSubmitButton = false;
+          this.blockSubmitButton1 = false;
           if (error.error.error === 'THIS_COUNTERPARTY_IS_NOT_CONFIRMED') {
             this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: 'Контрагент не подтвержден', })
           } else if (error.error.error === 'NO_EXISTS_COUNTERPARTY_ID') {
@@ -244,7 +260,12 @@ export class DraftPageComponent {
           } else if (error.error.error === 'NO_EXISTS_SHIPPING_WAREHOUSE_ID') {
             this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: 'Некорректный ID склада', })
           } else {
-            this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: error.error.error, life: 10000 })
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Ошибка', 
+              detail: ErrorTranslator.translate(ErrorTranslator.prepare(error)), 
+              life: 10000 
+            })
           }
         }
       })

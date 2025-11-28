@@ -111,11 +111,11 @@
   </form>
   <div class="mt-2">
   
-    <p-button icon="{{ blockSubmitButton1 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" iconPos="left" class="mr-2" label="Изменить и отправить менеджеру" severity="success"
+    <p-button icon="{{ animationSubmitButton1 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" iconPos="left" class="mr-2" label="Изменить и отправить менеджеру" severity="success"
     [disabled]="blockSubmitButton1"
       (click)="sendToManager()"></p-button>
 
-    <p-button class="mr-2" icon="{{ blockSubmitButton2 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" label="Изменить и сохранить" severity="success" [disabled]="blockSubmitButton2" (click)="saveAndGoToDrafts()"></p-button>
+    <p-button class="mr-2" icon="{{ animationSubmitButton2 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" label="Изменить и сохранить" severity="success" [disabled]="blockSubmitButton2" (click)="saveAndGoToDrafts()"></p-button>
 	
   </div>
 

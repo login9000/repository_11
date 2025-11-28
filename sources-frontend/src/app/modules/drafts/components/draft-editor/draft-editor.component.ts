@@ -63,6 +63,8 @@ export class DraftEditorComponent implements OnInit {
   copyMode: boolean = false
   blockSubmitButton1: boolean = false;
   blockSubmitButton2: boolean = false;
+  animationSubmitButton1: boolean = false;
+  animationSubmitButton2: boolean = false;
   nonStandardElementDialogRef: DynamicDialogRef
   showNonstandardElements: boolean = false;
   isBasedOnCart: boolean = false
@@ -293,10 +295,10 @@ export class DraftEditorComponent implements OnInit {
   }
 
   saveAndGoToDrafts() {
-
-    if (!this.blockSubmitButton2) {
-
+    if (!this.blockSubmitButton2 && !this.blockSubmitButton1) {
       this.blockSubmitButton2 = true;
+      this.blockSubmitButton1 = true;
+      this.animationSubmitButton2 = true;
       let value = this.draftForm.value;
       const request: OrderOutput = {
         draft_id: this.draftId,
@@ -319,10 +321,16 @@ export class DraftEditorComponent implements OnInit {
           next: (response) => {
             this.messageService.add({ severity: 'success', summary: 'Успешно', detail: 'Заказ сохранен в черновике' });
             setTimeout(() => {
+              this.blockSubmitButton1 = false;
+              this.blockSubmitButton2 = false;
+              this.animationSubmitButton2 = false;
               this.router.navigate(['/drafts']);
             }, 3000);
           },
           error: (err) => {
+            this.blockSubmitButton1 = false;
+            this.blockSubmitButton2 = false;
+            this.animationSubmitButton2 = false;
             this.messageService.add({
               severity: 'error',
               summary: 'Ошибка',
@@ -334,9 +342,10 @@ export class DraftEditorComponent implements OnInit {
   }
 
   sendToManager() {
-
-    if (!this.blockSubmitButton1) {
+    if (!this.blockSubmitButton1 && !this.blockSubmitButton2) {
       this.blockSubmitButton1 = true;
+      this.blockSubmitButton2 = true;
+      this.animationSubmitButton1 = true;
       let value = this.draftForm.value;
       const request: OrderOutput = {
         draft_id: this.draftId,
@@ -359,12 +368,16 @@ export class DraftEditorComponent implements OnInit {
           next: (response) => {
             this.messageService.add({ severity: 'success', summary: 'Успешно', detail: 'Заказ создан' });
             setTimeout(() => {
+              this.blockSubmitButton1 = false;
+              this.blockSubmitButton2 = false;
+              this.animationSubmitButton1 = false;
               this.router.navigate(['/drafts']);
             }, 3000);
           },
           error: (err) => {
             this.blockSubmitButton1 = false;
             this.blockSubmitButton2 = false;
+            this.animationSubmitButton1 = false;
             this.messageService.add({
               severity: 'error',
               summary: 'Ошибка',

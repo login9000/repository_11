@@ -74,8 +74,8 @@
         <td>{{offer.extra_charge}}</td>
         <td>{{offer.cp_amount | currencyRu}}</td>
         <td>
-          <p-button size="small" icon="pi pi-print" class="mr-2" severity="secondary"
-                    (click)="printOffer(offer.commercial_offer_id)"></p-button>
+          <p-button size="small" icon="{{ commercial_offers_ids[offer.commercial_offer_id] ? 'pi pi-print pi-spin pi-spinner':'pi pi-print'}}" class="bt_print_offer_{{rowIndex}} mr-2" severity="secondary"
+                     [disabled]="commercial_offers_ids[offer.commercial_offer_id]" (click)="printOffer(offer.commercial_offer_id)"></p-button>
           <p-button size="small" icon="pi pi-ellipsis-h" severity="secondary" (click)="op.toggle($event)"></p-button>
           <p-overlayPanel #op>
             <p class="link-style" (click)="changeOffer(offer.commercial_offer_id)">Изменить</p>
@@ -96,7 +96,7 @@
     <div class="flex align-items-center justify-content-center">
       <p-button size="small" class="mr-2" severity="info" label="Изменить" (click)="changeDraft()"
                 [disabled]="draft?.response.draft_details.data.reserves?.length < 1"></p-button>
-      <p-button size="small" class="mr-2" severity="secondary" label="Отправить менеджеру"
+      <p-button size="small" icon="{{ blockSubmitButton1 ? 'pi pi-spin pi-spinner':'pi pi-spin'}}" [disabled]="blockSubmitButton1" class="mr-2" severity="secondary" label="Отправить менеджеру"
                 (click)="sendDraftToManager()"></p-button>
       <p-button size="small" class="mr-2" severity="success" label="Создать КП" (click)="createOffer()"
                 [disabled]="draft?.response.draft_details.data.reserves?.length < 1"></p-button>

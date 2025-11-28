@@ -141,6 +141,7 @@ export class ShipmentEditorComponent implements OnInit {
           detail: 'Отгрузка создана',
         })
         setTimeout(() => {
+			this.blockSubmitButton = false;
           this.router.navigate(['/shipments']).then();
         }, 2000);
       },
