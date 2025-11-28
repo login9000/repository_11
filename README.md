@@ -173,7 +173,7 @@ ng serve -o --host x.x.x.x
 
 Выполните:
 ```
-ng build --watch --configuration development
+ng build --output-hashing=all --configuration=production
 ```
 в итоге собранный проект (скомпилированный билд) будет находится в /root/sources-frontend/dist/frontend нужно будет просто скопировать все это содержимое и поместить в /var/www/default/public и затем открыть http://x.x.x.x:8080/ чтобы увидеть что получилось в собранном виде.
 где: x.x.x.x - ip вашего сервера, если вы устанавливаете проект на своем локальном компуктере то вместо x.x.x.x - это скорее всего нужно вписать "127.0.0.1" 🤔 🤔 🤔
