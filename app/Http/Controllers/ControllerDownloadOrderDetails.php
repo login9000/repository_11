@@ -84,7 +84,7 @@ class ControllerDownloadOrderDetails extends Common{
 			parent::prepare_response(['error'=>'NO_ORDERS_FOUND']);
 		}
 		
-		$link = '/user_files/'.$user_myid.'/order_details/order_details_'.$order_number.'.pdf';
+		$link = '/user_files/'.$user_myid.'/order_details/order_details_'.$order_number.'_'.($this->time).'.pdf';
 		
 		if($orders_status == 'draft'){
 
