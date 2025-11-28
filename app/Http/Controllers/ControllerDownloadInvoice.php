@@ -73,7 +73,7 @@ class ControllerDownloadInvoice extends Common{
 			mkdir($this->document_root.'/user_files/'.$user_myid.'/invoices', 0774);
 		}
 		
-		$link = '/user_files/'.$user_myid.'/invoices/invoice_'.$number_invoice.'.pdf';
+		$link = '/user_files/'.$user_myid.'/invoices/invoice_'.$number_invoice.'_'.($this->time).'.pdf';
 		$file_path = $this->document_root . $link;
 		
 		$f = fopen($file_path, 'w+');

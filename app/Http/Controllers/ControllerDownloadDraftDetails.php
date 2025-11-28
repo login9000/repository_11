@@ -81,7 +81,7 @@ class ControllerDownloadDraftDetails extends Common{
 			parent::prepare_response(['error'=>'NO_DRAFT_FOUND']);
 		}
 		
-		$link = '/user_files/'.$user_myid.'/draft_details/draft_details_'.$draft_number.'.pdf';
+		$link = '/user_files/'.$user_myid.'/draft_details/draft_details_'.$draft_number.'_'.($this->time).'.pdf';
 		
 		list($draft_details, $commercial_offers, $err) = parent::prepare_result_draft_details($main_counterparty_id, $user_myid, $draft_id, $token, $result);
 		

@@ -112,7 +112,7 @@ class ControllerDownloadSubstandard extends Common{
 					
 		if($file_format == 'pdf'){
 			
-			$link = '/user_files/'.$user_myid.'/substandard/substandard_'.str_replace(':', '.', $actual_date).'.pdf';
+			$link = '/user_files/'.$user_myid.'/substandard/substandard_'.str_replace(':', '.', $actual_date).'_'.($this->time).'.pdf';
 			
 			list($result, $err) = parent::pdf_creator_service('substandard', $data, $link);
 			if($err){
@@ -123,7 +123,7 @@ class ControllerDownloadSubstandard extends Common{
 		
 		if($file_format == 'xlsx'){
 			
-			$link = '/user_files/'.$user_myid.'/substandard/substandard_'.str_replace(':', '.', $actual_date).'.xlsx';
+			$link = '/user_files/'.$user_myid.'/substandard/substandard_'.str_replace(':', '.', $actual_date).'_'.($this->time).'.xlsx';
 			
 			list($result, $err) = parent::xlsx_creator_service('substandard', $data, $link);
 			if($err){

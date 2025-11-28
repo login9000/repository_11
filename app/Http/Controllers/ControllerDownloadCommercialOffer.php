@@ -183,7 +183,7 @@ class ControllerDownloadCommercialOffer extends Common{
 			mkdir($this->document_root.'/user_files/'.$user_myid.'/commercial_offers', 0774);
 		}
 
-		$link = '/user_files/'.$user_myid.'/commercial_offers/commercial_offer_'.$order_number.'_'.time().'.pdf';
+		$link = '/user_files/'.$user_myid.'/commercial_offers/commercial_offer_'.$order_number.'_'.($this->time).'.pdf';
 		$goods2 = [];
 		$i = 1;
 		

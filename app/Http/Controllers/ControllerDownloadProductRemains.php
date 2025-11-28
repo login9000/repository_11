@@ -112,7 +112,7 @@ class ControllerDownloadProductRemains extends Common{
 		
 		if($file_format == 'pdf'){
 			
-			$link = '/user_files/'.$user_myid.'/product_remains/product_remains_'.str_replace(':', '.', $actual_date).'.pdf';
+			$link = '/user_files/'.$user_myid.'/product_remains/product_remains_'.str_replace(':', '.', $actual_date).'_'.($this->time).'.pdf';
 			
 			list($result, $err) = parent::pdf_creator_service('product_remains', $data, $link);
 			if($err){
@@ -123,7 +123,7 @@ class ControllerDownloadProductRemains extends Common{
 		
 		if($file_format == 'xlsx'){
 			
-			$link = '/user_files/'.$user_myid.'/product_remains/product_remains_'.str_replace(':', '.', $actual_date).'.xlsx';
+			$link = '/user_files/'.$user_myid.'/product_remains/product_remains_'.str_replace(':', '.', $actual_date).'_'.($this->time).'.xlsx';
 			
 			list($result, $err) = parent::xlsx_creator_service('product_remains', $data, $link);
 			if($err){

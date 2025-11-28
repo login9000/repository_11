@@ -46,7 +46,7 @@ class ControllerDownloadPriceList extends Common{
 			parent::prepare_response(['error'=>$err]);
 		}
 		
-		$link = '/user_files/'.$user_myid.'/price_list/price_list.pdf';
+		$link = '/user_files/'.$user_myid.'/price_list/price_list_'.($this->time).'.pdf';
 		$file_path = $this->document_root . $link;
 		
 		if(file_exists($file_path)){

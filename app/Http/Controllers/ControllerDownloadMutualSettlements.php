@@ -97,7 +97,7 @@ class ControllerDownloadMutualSettlements extends Common{
 			mkdir($this->document_root.'/user_files/'.$user_myid.'/mutual_settlements', 0774);
 		} 
 		
-		$link = '/user_files/'.$user_myid.'/mutual_settlements/mutual_settlements_'.str_replace(':', '.', $period_date1).'__'.str_replace(':', '.', $period_date2).'.'.$result['ФорматФайла'];
+		$link = '/user_files/'.$user_myid.'/mutual_settlements/mutual_settlements_'.str_replace(':', '.', $period_date1).'__'.str_replace(':', '.', $period_date2).'_'.($this->time).'.'.$result['ФорматФайла'];
 		
 		$f = fopen($this->document_root . $link, 'w+');
 		fwrite($f, base64_decode($result['Данные']));

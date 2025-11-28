@@ -121,7 +121,7 @@ class ControllerDownloadListOfInvoices extends Common{
 			mkdir($this->document_root.'/user_files/'.$user_myid.'/list_of_invoices', 0774);
 		} 
 		
-		$link = '/user_files/'.$user_myid.'/list_of_invoices/list_of_invoices_'.str_replace(':', '.', $invoices_date1).'__'.str_replace(':', '.', $invoices_date2).'.pdf';
+		$link = '/user_files/'.$user_myid.'/list_of_invoices/list_of_invoices_'.str_replace(':', '.', $invoices_date1).'__'.str_replace(':', '.', $invoices_date2).'_'.($this->time).'.pdf';
 		
 		list($result, $err) = parent::pdf_creator_service('list_of_invoices', $invoices_data, $link);
 		if($err){
