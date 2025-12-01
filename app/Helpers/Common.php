@@ -310,14 +310,14 @@ window.onerror = function(message, source, lineno){
 			
 			case 'auth':
 			
-				$path = '/unf/hs/Shop/Authentication';
+				$path = '/hs/Shop/Authentication';
 				$payload = json_encode(['Логин' => $data['login'], 'Пароль' => $data['pass']]);
 				
 				break;
 				
 			case 'user_info':
 			
-				$path = '/unf/hs/Shop/Users';
+				$path = '/hs/Shop/Users';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьИнформациюОПользователе', 'ПользовательИД' => $data['user_myid']]);
 				
@@ -325,14 +325,14 @@ window.onerror = function(message, source, lineno){
 				
 			case 'recovery_pass':
 			
-				$path = '/unf/hs/Shop/PasswordRecovery';
+				$path = '/hs/Shop/PasswordRecovery';
 				$payload = json_encode(['Логин' => $data['login'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2']]);
 				
 				break;
 				
 			case 'update_email':
 			
-				$path = '/unf/hs/Shop/Users';
+				$path = '/hs/Shop/Users';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ОбновитьАдресЭлектроннойПочты', 'NewEmail' => $data['email']]);
 				
@@ -340,7 +340,7 @@ window.onerror = function(message, source, lineno){
 							
 			case 'add_new_employee':
 			
-				$path = '/unf/hs/Shop/Users';
+				$path = '/hs/Shop/Users';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'СоздатьПользователя', 'Логин' => $data['phone'], 'Пароль' => $data['pass'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2'], 'Email' => $data['email'], 'Роль' => $data['status'], 'Заблокирован' => false]);
 				
@@ -348,7 +348,7 @@ window.onerror = function(message, source, lineno){
 							
 			case 'edit_employee':
 			
-				$path = '/unf/hs/Shop/Users';
+				$path = '/hs/Shop/Users';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ИзменитьИнформациюОПользователе', 'ПользовательИД' => $data['user_myid_employee'], 'НовыйЛогин' => $data['new_phone'], 'НовыйПароль' => $data['new_pass'], 'Фамилия' => $data['surname'], 'Имя' => $data['name'], 'Отчество' => $data['surname2'], 'Заблокирован' => $data['is_banned'], 'Email' => $data['email']]);
 				
@@ -356,7 +356,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'get_delivery_addresses':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьАдресаДоставки']);
 				
@@ -364,7 +364,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'add_new_delivery_addresses':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ДобавитьАдресДоставки', 'АдресДоставки' => $data['address_str'],  'Регион' => $data['region'], 'Район' => $data['area'], 'Индекс' => $data['index'],  'Город' => $data['city'],  'Улица' => $data['street'],  'Дом' => $data['house'],  'Корпус' => $data['frame'],  'Литер' => $data['letters'],  'Склад' => $data['stock'],  'Офис' => $data['apartment'],  'КонтактноеЛицоФИО' => $data['fio'],  'КонтактноеЛицоНомерТелефона' => $data['phone']]);
 				
@@ -372,7 +372,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'edit_delivery_addresses':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ИзменитьАдресДоставки', 'АдресДоставкиИД' => $data['id'], 'АдресДоставки' => $data['address_str'], 'Регион' => $data['region'], 'Район' => $data['area'], 'Индекс' => $data['index'],  'Город' => $data['city'],  'Улица' => $data['street'],  'Дом' => $data['house'],  'Корпус' => $data['frame'],  'Литер' => $data['letters'],  'Склад' => $data['stock'],  'Офис' => $data['apartment'],  'КонтактноеЛицоФИО' => $data['fio'],  'КонтактноеЛицоНомерТелефона' => $data['phone']]);
 				
@@ -380,7 +380,7 @@ window.onerror = function(message, source, lineno){
 							
 			case 'delete_delivery_addresses':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'УдалитьАдресДоставки', 'АдресДоставкиИД' => $data['id']]);
 				
@@ -388,7 +388,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_counterparties':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьСписокКонтрагентов']);
 				
@@ -396,7 +396,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'add_new_counterparty':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'СоздатьКонтрагента', 'НаименованиеПолное' => $data['fullname'], 'ИНН' => $data['inn'], 'КПП' => $data['kpp'], 'ОГРН' => $data['ogrn'], 'ОсновнойАдресДоставкиИД' => $data['id_delivery_addresses'], 'ЮрАдресКонтрагента' => $data['legal_address'], 'ФактАдресКонтрагента' => $data['actual_address'], 'КоррСчет' => $data['corr_account'], 'БикБанка' => $data['bank_bik'], 'НаименованиеБанка' => $data['bank_name'], 'РасчетныйСчет' => $data['checking_account'], 'ФактическийАдресСовпадаетСЮридическим' => $data['addresses_match']]);
 				
@@ -404,7 +404,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'delete_counterparty':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'УдалитьЗаявкуНаСозданияКонтрагента', 'ЗаявкаИД' => $data['id']]);
 				
@@ -412,7 +412,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'get_transport':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьСписокТранспортыхСредств']);
 				
@@ -420,7 +420,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'add_new_transport':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ДобавитьТранспортноеСредство', 'Марка' => $data['brand'], 'Номер' => $data['license_plate'], 'ТипТранспортногоСредства' => $data['vehicle_type']]);
 				
@@ -428,7 +428,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'edit_transport':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ИзменитьТранспортноеСредство', 'ТранспортноеСредствоИД' => $data['id'], 'Марка' => $data['brand'], 'Номер' => $data['license_plate'], 'ТипТранспортногоСредства' => $data['vehicle_type']]);
 				
@@ -436,7 +436,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'delete_transport':
 			
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'УдалитьТранспортноеСредство', 'ТранспортноеСредствоИД' => $data['id']]);
 				
@@ -444,7 +444,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'weight_calculation':
 			
-				$path = '/unf/hs/Shop/Service';
+				$path = '/hs/Shop/Service';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'РассчитатьВес', 'Данные' => $data['data']]);
 				
@@ -452,7 +452,7 @@ window.onerror = function(message, source, lineno){
 
 			case 'post_mess_for_manager':
 				
-				$path = '/unf/hs/Shop/Users';
+				$path = '/hs/Shop/Users';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ОтправитьСообщение', 'ТемаСообщения' => $data['subject'], 'ТекстСообщения' => $data['mess'], 'ПрикрепленныйФайл' => $data['atach']]);
 				
@@ -460,7 +460,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'order_creation':
 				
-				$path = '/unf/hs/Shop/Orders';
+				$path = '/hs/Shop/Orders';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'СоздатьЗаказПокупателя', 'ЗаказЛКИД' => $data['id'], 'КонтрагентИД' => $data['counterparty_id'], 'НаличнаяОплата' => $data['is_cash_payment'], 'ДатаОтгрузки' => $data['shipping_date'], 'СкладОтгрузкиИД' => $data['shipping_warehouse_id'], 'Доставка' => $data['is_shipping'], 'АдресДоставки' => $data['delivery_address'], 'АдресДоставкиИД' => $data['delivery_address_id'], 'Комментарий' => $data['comment'], 'Запасы' => $data['goods'], 'НестандартнаяДоборка' => $data['goods_non_standard_addition'], 'НестандартнаяДоборкаПрикрепленныеФайлы' => $data['files_non_standard_addition'], 'НаОснованииОтчета' => $data['based_on_cart']]);				
 				
@@ -468,7 +468,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'download_price_list':
 				
-				$path = '/unf/hs/Shop/Directory';
+				$path = '/hs/Shop/Directory';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьПрайсЛист']);
 				
@@ -476,7 +476,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'order_confirm':
 				
-				$path = '/unf/hs/Shop/Orders';
+				$path = '/hs/Shop/Orders';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПодтвердитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
 				
@@ -484,7 +484,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'order_cancel':
 				
-				$path = '/unf/hs/Shop/Orders';
+				$path = '/hs/Shop/Orders';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ОтменитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
 				
@@ -492,7 +492,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_nearest_available_delivery_date':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьДоступнуюДатуДляДоставки']);
 				
@@ -500,7 +500,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'get_nearest_available_pick_up_date':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьДоступнуюДатуДляСамовывоза']);
 				
@@ -508,7 +508,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'get_shipping_calendar':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьКалендарьОтгрузок']);
 				
@@ -516,7 +516,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'get_pickup_intervals':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьИнтервалыСамовывоз']);
 				
@@ -524,7 +524,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'get_delivery_intervals':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьИнтервалыДоставка']);
 				
@@ -532,7 +532,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_orders_for_shipment':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьЗаказыПокупателяКОтгрузке', 'ДатаОтгрузки' => $data['shipping_date']]);
 				
@@ -540,7 +540,7 @@ window.onerror = function(message, source, lineno){
 			
 			case 'shipment_creation':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'СоздатьЗаявкуНаОтгрузку', 'ДатаОтгрузки' => $data['delivery_shipping_date'], 'Доставка' => $data['is_delivery'], 'ИнтервалИД' => $data['interval_id'], 'ТранспортноеСредствоИД' => $data['vehicle_id'], 'Комментарий' => $data['comment'], 'ПользовательИД' => $data['user_myid'], 'Заказы' => $data['orders']]);
 				
@@ -548,7 +548,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_shipment_details':
 				
-				$path = '/unf/hs/Shop/Shipment';
+				$path = '/hs/Shop/Shipment';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьЗаявкуНаОтгрузку', 'ЗаявкаНаОтгрузкуИД' => $data['shipment_id']]);
 				
@@ -556,7 +556,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_order_details':
 				
-				$path = '/unf/hs/Shop/Orders';
+				$path = '/hs/Shop/Orders';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьЗаказПокупателя', 'ЗаказПокупателяИД' => $data['order_id']]);
 				
@@ -564,7 +564,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'download_order_details':
 				
-				$path = '/unf/hs/Shop/Orders';
+				$path = '/hs/Shop/Orders';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьПечатнуюФормуСчетНаОплату', 'ЗаказПокупателяИД' => $data['order_id']]);
 				
@@ -572,7 +572,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'get_invoices':
 				
-				$path = '/unf/hs/Shop/Invoices';
+				$path = '/hs/Shop/Invoices';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьСписокРасходныхНакладных', 'ДатаНачала' => $data['invoices_date1'], 'ДатаОкончания' => $data['invoices_date2']]);
 				
@@ -580,7 +580,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'download_invoice':
 				
-				$path = '/unf/hs/Shop/Invoices';
+				$path = '/hs/Shop/Invoices';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьПечатнуюФормуУПД', 'РасходнаяНакладнаяИД' => $data['invoice_id']]);
 				
@@ -588,7 +588,7 @@ window.onerror = function(message, source, lineno){
 				
 			case 'download_mutual_settlements':
 				
-				$path = '/unf/hs/Shop/Counteragents';
+				$path = '/hs/Shop/Counteragents';
 				$headers[] = 'access_token: '.$data['token'];
 				$payload = json_encode(['Метод' => 'ПолучитьВзаиморасчеты', 'КонтрагентИД' => $data['counterparty_id'], 'ДатаНачала' => $data['period_date1'], 'ДатаОкончания' => $data['period_date2'], 'ФорматФайла' => $data['file_format']]);
 				
