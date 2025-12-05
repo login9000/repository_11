@@ -2,24 +2,22 @@ const fs = require('fs');
 const aes = require('./crypto-js-aes.js');
 const readline = require('readline');
 const net = require('net');
-const dotenv = require('dotenv'); // npm install dotenv
 const { console_log_pass, console_log_fail, console_log_warn } = require('./colorfull_console_log');
-const axios = require('axios'); // npm install axios
 const Validator = require('jsonschema').Validator; // npm i jsonschema
 
 var document_root = __dirname,
 		js_eol = (process.platform == 'linux' ? '\r\n' : '\n'),
-		app_version = '9.4',
+		app_version = '9.5',
 		count_lines_log_err_aes_crypto = 0,
 		config_app = {};
 		
-async function log_err_aes_crypto(mes){
+async function log_err_aes_crypto(mess){
 	try{
-		var file_name = document_root+'/logs/errors_aes_crypto_service(js).log';
+		var file_name = document_root+'/storage/logs/errors_aes_crypto_service(js).log';
 		var dt = new Date();
 		var timestamp = dt / 1000;
 		var date = String(dt) + ' ' + timestamp + ' ';
-		mes = date+' '+mes + js_eol+'----------------------------------------------------------------------------------------' + js_eol
+		mess = date+' '+mess + js_eol+'----------------------------------------------------------------------------------------' + js_eol
 		if(count_lines_log_err_aes_crypto > 100000){
 			await new Promise(async (resolve, reject) => {
 				try{
@@ -47,9 +45,9 @@ async function log_err_aes_crypto(mes){
 		}
 		await new Promise((resolve, reject) => {
 			try{
-				fs.appendFile(file_name, mes, 'utf8', (err) => { 
+				fs.appendFile(file_name, mess, 'utf8', (err) => { 
 					date = null, 
-					mes = null, 
+					mess = null, 
 					matches = null; 
 					if (err) { reject(err); return; }; 
 					resolve(); 
@@ -59,26 +57,6 @@ async function log_err_aes_crypto(mes){
 			}
 		});
 		count_lines_log_err_aes_crypto++;
-	}catch (err) {
-		console_log_fail('E: '+err.stack ? String(err.stack) : err);
-	}
-}
-
-async function report_errors_to_tg(source, error){
-	try{
-		new Promise(async (resolve, reject) => {
-			try{
-				axios.post('http://127.0.0.1:'+config_app['report_errors_to_tg_service_port']+'/api/v5/log', {
-					'source': source,
-					'error': error.replace(/\r?\n/g, ' ')
-				}, { 'timeout':5000 })
-				.then((res) => {})
-				.catch((err) => {console_log_fail('E: '+err)});
-				resolve();
-			}catch (err) {
-				reject(err)
-			}
-		});
 	}catch (err) {
 		console_log_fail('E: '+err.stack ? String(err.stack) : err);
 	}
@@ -128,34 +106,38 @@ async function file_to_array(filepath){
 	}
 }
 
-function parse_env(){
-	config_app['aes_crypto_service_port'] = process.env.AES_CRYPTO_SERVICE_PORT;
-	config_app['aes_crypto_service_socket'] = process.env.AES_CRYPTO_SERVICE_SOCKET;
-	config_app['report_errors_to_tg_service_port'] = process.env.REPORT_ERRORS_TO_TG_SERVICE_PORT;
-	config_app['default_host_for_microservices'] = process.env.DEFAULT_HOST_FOR_MICROSERVICES;
-	if(config_app['aes_crypto_service_port'] == undefined){
-		return 'aes_crypto_service_port is enpty or not set. See '+document_root+'/../.env file';
+async function parse_config_project(){
+	var file_name = document_root + '/config/project.php';
+	if(!await file_exists(file_name)){
+		return 'file '+file_name+' no exists';
 	}
-	if(isNaN(+config_app['aes_crypto_service_port'])){
-		return 'aes_crypto_service_port is incorrect, a number between 1025 and 65535 is required.';
+	var lines = await file_to_array(file_name);
+	if(lines.length == 0){
+		return 'failed is parse '+file_name;
 	}
-	if(+config_app['aes_crypto_service_port'] < 1025 || +config_app['aes_crypto_service_port'] > 65535){
-		return 'aes_crypto_service_port is incorrect, a number between 1025 and 65535 is required.';
+	for(var item of lines){
+		var matches = item.match('\'aes_crypto_service_socket\' *=> *\'([^\']+)\'');
+		if(matches){
+			if(matches[1] !== ''){
+				config_app['aes_crypto_service_socket'] = matches[1];
+			}
+		}
+		var matches = item.match('\'aes_crypto_service_port\' *=> *([0-9]+)');
+		if(matches){
+			if(matches[1] !== ''){
+				config_app['aes_crypto_service_port'] = +matches[1];
+				if(config_app['aes_crypto_service_port'] < 80 || config_app['aes_crypto_service_port'] > 65535){
+					return 'aes_crypto_service_port is incorrect, a number between 80 and 65535 is required. See '+file_name;
+				}
+			}
+		}
 	}
-	if(config_app['aes_crypto_service_socket'] == undefined){
-		return 'aes_crypto_service_socket is enpty or not set. See '+document_root+'/../.env file';
+	matches = null;
+	if( config_app['aes_crypto_service_socket'] == undefined){
+		return 'failed is parse '+file_name;
 	}
-	if(config_app['report_errors_to_tg_service_port'] == undefined){
-		return 'report_errors_to_tg_service_port is enpty or not set. See '+document_root+'/../.env file';
-	}
-	if(isNaN(+config_app['report_errors_to_tg_service_port'])){
-		return 'report_errors_to_tg_service_port is incorrect, a number between 1025 and 65535 is required.';
-	}
-	if(+config_app['report_errors_to_tg_service_port'] < 1025 || +config_app['report_errors_to_tg_service_port'] > 65535){
-		return 'report_errors_to_tg_service_port is incorrect, a number between 1025 and 65535 is required.';
-	}
-	if(config_app['default_host_for_microservices'] == undefined){
-		return 'default_host_for_microservices is enpty or not set. See '+document_root+'/../.env file';
+	if( config_app['aes_crypto_service_port'] == undefined){
+		return 'failed is parse '+file_name;
 	}
 }
 
@@ -200,14 +182,12 @@ async function handler(socket, body){
 		var result = validate_fields(body);
 		if(result && result['error']){
 			log_err_aes_crypto(result['error']);
-			report_errors_to_tg('aes_crypto', result['error']);
 			socket.write(JSON.stringify({"error":result['error']})+'\r\n');
 			return;
 		}
 		var result = await aes_crypto(body);
 		if(result['error']){
 			log_err_aes_crypto(result['error']);
-			report_errors_to_tg('aes_crypto', result['error']);
 			socket.write(JSON.stringify({"error":result['error'].replace(/\r?\n/g, ' ')})+'\r\n');
 			return;
 		}
@@ -215,7 +195,6 @@ async function handler(socket, body){
 	}catch(err){
 		var err = (err.stack ? String(err.stack) : err);
 		log_err_aes_crypto(err);
-		report_errors_to_tg('aes_crypto', err);
 		socket.write(JSON.stringify({"error":err.replace(/\r?\n/g, ' ')})+'\r\n');
 	}
 }
@@ -223,13 +202,12 @@ async function handler(socket, body){
 (async () => {
 	document_root += '/..'
 	try{
-		dotenv.config({path: document_root+'/.env'});
-		var file_name = document_root+'/logs/errors_aes_crypto_service(js).log';
+		var file_name = document_root+'/storage/logs/errors_aes_crypto_service(js).log';
 		if(await file_exists(file_name)){
 			var lines = await file_to_array(file_name);
 			count_lines_log_err_aes_crypto = lines.length;
 		}
-		var err = parse_env();
+		var err = await parse_config_project();
 		if(err){
 			console_log_fail('E: '+err);
 			log_err_aes_crypto(err);
@@ -270,7 +248,6 @@ async function handler(socket, body){
 	}catch(err){
 		var err = (err.stack ? String(err.stack) : err);
 		log_err_aes_crypto(err);
-		report_errors_to_tg('aes_crypto', err);
 		console_log_fail('E: '+err);
 	}
 })();
