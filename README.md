@@ -26,7 +26,6 @@ pip3 install fastapi --break-system-packages
 pip3 install "uvicorn[standard]" --break-system-packages
 pip3 install fpdf2 --break-system-packages
 pip3 install rsa --break-system-packages
-pip3 install jsonschema --break-system-packages
 pip3 install xlsxwriter --break-system-packages
 ```
 
@@ -93,7 +92,7 @@ port_1с
 ```
 если нужно впишите данные для подключения к удаленному серверу с 1С системой (можно оставить как есть).
 
-Откройте файл конфига для nginx и добавьте в блок "server" вот это:
+Если собираетесь тестировать все это а не сразу закидывать на продакшен то откройте файл конфига для nginx и добавьте в блок "server" вот это чтобы не было броблем с CORS:
 ```
 add_header Access-Control-Allow-Origin  "http://x.x.x.x:4200" always;
 add_header Access-Control-Allow-Credentials "true" always;
@@ -143,7 +142,7 @@ systemctl status xlsx_creator
 
 # Использование
 
-Зайдите в папку куда мы переместили исходники фронтенда , которые на Angular , предпологается что это папка /root/sources-frontend выполните 
+Если собираетесь тестировать все это а не сразу закидывать на продакшен то зайдите в папку куда мы переместили исходники фронтенда , которые на Angular , предпологается что это папка /root/sources-frontend выполните 
 ```
 npm install
 ```
@@ -174,7 +173,8 @@ ng serve -o --host x.x.x.x
 "8080" - порт на котором будет запущен nginx, если он у вас будет запущен на другом порту то укажите другой порт, вместо "8080".
 
 ### Сборка проекта 
-Перед сборкой незабудьте в файле /root/sources-frontend/src/app/core/constants/api-url.ts разкомментировать первую строчку и закомментировать вторую.
+
+Если собираетесь тестировать все это а не сразу закидывать на продакшен то перед сборкой незабудьте в файле /root/sources-frontend/src/app/core/constants/api-url.ts разкомментировать первую строчку и закомментировать вторую.
 
 Выполните:
 ```
