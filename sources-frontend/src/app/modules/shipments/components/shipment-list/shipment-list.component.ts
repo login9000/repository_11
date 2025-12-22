@@ -170,6 +170,9 @@ export class ShipmentListComponent implements OnInit {
   }
 
   private _findAllByFilter(page: number) {
+    if(this.shipmentService.filterForm.value.plannedShipmentDate[1] == null){
+      return;
+    }
     globalThis.stateLoadShipments = '';
     this.shipmentService.findAllByFilter(page).subscribe({
       next: (response) => {

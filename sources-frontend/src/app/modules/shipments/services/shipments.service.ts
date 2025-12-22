@@ -100,7 +100,7 @@ export class ShipmentsService {
   }
 
   findAllByFilter(page: number): any {
-    const filter = this.filterForm.value
+    const filter = this.filterForm.value;
     localStorage.setItem('shipments_list_filters', JSON.stringify(this.filterForm.value));
     return this.http.get<any>(API_URL + 'get_all_shipments?client_rsa_pubkey='+encodeURIComponent(globalThis.client_rsa_pubkey), {
       params: {

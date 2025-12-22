@@ -10,7 +10,7 @@ import { ProductCatalogResponseMapper } from "./shared/mappers/ProductCatalogRes
 import {AuthenticationService} from "./core/security/authentication.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppService {
 
@@ -56,21 +56,25 @@ export class AppService {
     }
   }
 
-  getSessionConfig(): void {
+  getSessionConfig(errorCallback: any): void {
     setTimeout(() => {
       this.http.get<SessionConfigResponse>(API_URL + 'get_other_variables?client_rsa_pubkey=' + encodeURIComponent(globalThis.client_rsa_pubkey), {"withCredentials": true})
-        .subscribe(data => {
-          data = globalThis.decryptResponse(data);
-          this.sessionConfig = data.response;
-          globalThis.csrfToken = data.response.csrf_token;
-          globalThis.server_rsa_pubkey = data.response.server_rsa_pubkey;
-          this.getProductCatalog(data.response.product_catalog_time_modify)
-        }
-      )
+        .subscribe({
+          next: (data) => {
+            data = globalThis.decryptResponse(data);
+            this.sessionConfig = data.response;
+            globalThis.csrfToken = data.response.csrf_token;
+            globalThis.server_rsa_pubkey = data.response.server_rsa_pubkey;
+            this.getProductCatalog(data.response.product_catalog_time_modify);
+          },
+          error: (err) => {
+            errorCallback(err.error.error);
+          }
+        })
     }, 100);
   }
 
-  getUpdates(): void {
+  getUpdates(errorCallback: any): void {
     this.http.get<any>(API_URL + 'get_other_data', {
       params: {
         query: `baa7a52965`
@@ -89,9 +93,10 @@ export class AppService {
               this.getProductCatalog(this.fakeSocketData$.value.product_catalog_time_modify)
             }
           }
-          this.checkPasswordChangedFrom1c(this.fakeSocketData$.value.is_password_changed_from_1c)
+          this.checkPasswordChangedFrom1c(this.fakeSocketData$.value.is_password_changed_from_1c);
         },
-        error: (error) => {
+        error: (err) => {
+          errorCallback(err.error.error);
         }
       })
   }

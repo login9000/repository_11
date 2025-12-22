@@ -68,6 +68,7 @@ export class DraftEditorComponent implements OnInit {
   nonStandardElementDialogRef: DynamicDialogRef
   showNonstandardElements: boolean = false;
   isBasedOnCart: boolean = false
+  animationIconAnimateCalculateWeight: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -250,14 +251,14 @@ export class DraftEditorComponent implements OnInit {
           summary: 'Успешно',
           detail: 'Адрес добавлен'
         })
+        this.draftService.getDataForDraftEditor(this.draftId)
+          .subscribe((data) => {
+            this.addresses = data?.response.delivery_addresses.data
+          })
+        this.draftForm.patchValue({
+          delivery_address: response.uniq_id
+        });
       }
-      this.draftService.getDataForDraftEditor(this.draftId)
-        .subscribe((data) => {
-          this.addresses = data?.response.delivery_addresses.data
-        })
-      this.draftForm.patchValue({
-        delivery_address: response.uniq_id
-      })
     });
   }
 
@@ -270,13 +271,16 @@ export class DraftEditorComponent implements OnInit {
   }
 
   calculateWeight() {
+    this.animationIconAnimateCalculateWeight = true;
     this.productService.calculateWeight()
       .subscribe({
         next: (res) => {
-          this.summaryWeight = res.response
+          this.summaryWeight = res.response;
+          this.animationIconAnimateCalculateWeight = false;
         },
         error: (err) => {
-          this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.error.error, life: 10000 })
+          this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.error.error, life: 10000 });
+          this.animationIconAnimateCalculateWeight = false;
         }
       })
   }

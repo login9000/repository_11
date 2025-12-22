@@ -84,7 +84,16 @@ export class ProfileComponent {
         });
 
         this.ref.onClose.subscribe((response: any) => {
-            this.appService.getSessionConfig()
+            this.appService.getSessionConfig((error: string) => {
+                if(error){
+                    this.messageService.add({
+                    severity: 'error',
+                    summary: 'Ошибка',
+                    detail: error,
+                    life: 10000
+                    });
+                }
+            });
         })
     }
 

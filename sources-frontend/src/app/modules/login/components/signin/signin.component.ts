@@ -81,7 +81,16 @@ export class SigninComponent {
           } else if (data) {
             this.cookieService.set(COOKIE_KEYS.uid, data.uid);
             this.cookieService.set(COOKIE_KEYS.user_myid, data.user_myid);
-            this.appService.getSessionConfig()
+            this.appService.getSessionConfig((error: string) => {
+              if(error){
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Ошибка',
+                  detail: error,
+                  life: 10000
+                });
+              }
+            });
             this.messageService.add({
               severity: 'success',
               summary: 'Успешно',

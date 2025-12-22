@@ -33,6 +33,7 @@ export class OfferEditorComponent {
   blockSubmitButton2: boolean = false;
   animationSubmitButton1: boolean = false;
   animationSubmitButton2: boolean = false;
+  animationIconAnimateCalculateWeight: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -257,6 +258,7 @@ export class OfferEditorComponent {
   }
 
   calculateWeight() {
+    this.animationIconAnimateCalculateWeight = true;
     const request = this.reserves.map(reserve => {
       return {
         id: reserve.nomenclatureID,
@@ -266,7 +268,8 @@ export class OfferEditorComponent {
     });
     this.offerService.calculateWeight(request).subscribe({
       next: (response) => {
-        this.offer.weight = response.response
+        this.offer.weight = response.response;
+        this.animationIconAnimateCalculateWeight = false;
       },
       error: error => {
         this.messageService.add({
@@ -274,6 +277,7 @@ export class OfferEditorComponent {
           summary: 'Ошибка',
           detail: ErrorTranslator.translate(ErrorTranslator.prepare(error)), life: 10000
         });
+        this.animationIconAnimateCalculateWeight = false;
       }
     })
   }

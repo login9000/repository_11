@@ -32,7 +32,7 @@
     <div class="flex justify-content-between flex-wrap">
       <div class="flex align-items-center justify-content-center">
         Ориентировочный вес продукции: {{offer?.weight | number: '1.1-2'}} кг <i
-        class="pi pi-refresh ml-2 cursor-pointer"
+        class="{{ animationIconAnimateCalculateWeight ? 'icon_animate_calculate_weight' : ''}} pi pi-refresh ml-2 cursor-pointer"
         (click)="calculateWeight() "></i>
       </div>
       <div class="flex align-items-center justify-content-center">

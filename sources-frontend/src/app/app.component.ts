@@ -6,12 +6,13 @@ import {AuthenticationService} from "./core/security/authentication.service";
 import {MailEditorDialogComponent} from "./modules/employees/dialogs/mail-editor-dialog/mail-editor-dialog.component";
 import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import {interval, Subscription} from "rxjs";
+import { MessageService } from "primeng/api";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [DialogService],
+  providers: [DialogService, MessageService],
 })
 export class AppComponent implements OnDestroy {
   ref: DynamicDialogRef | undefined;
@@ -21,7 +22,8 @@ export class AppComponent implements OnDestroy {
     public appService: AppService,
     public dialogService: DialogService,
     private cookieService: CookieService,
-    public authenticationService: AuthenticationService
+    public authenticationService: AuthenticationService,
+    public messageService: MessageService,
   ) {
     this.subscription = interval(10000).subscribe({
       next: () => {
@@ -31,7 +33,16 @@ export class AppComponent implements OnDestroy {
       }
     });
     
-    this.appService.getSessionConfig()
+    this.appService.getSessionConfig((error: string) => {
+      if(error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: error,
+          life: 10000
+        });
+      }
+    });
 
     if (this.checkAuth()) {
       this.getUpdates()
@@ -50,7 +61,16 @@ export class AppComponent implements OnDestroy {
   }
 
   private getUpdates() {
-    this.appService.getUpdates()
+    this.appService.getUpdates((error: string) => {
+      if(error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: error,
+          life: 10000
+        });
+      }
+    });
   }
 }
 

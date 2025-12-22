@@ -77,9 +77,7 @@ export class DraftService {
         }
       }
     }
-
     localStorage.setItem('drafts_list_filters', JSON.stringify(this.filterForm.value));
-
     return this.http.get(API_URL + 'get_all_orders?client_rsa_pubkey=' + encodeURIComponent(globalThis.client_rsa_pubkey), {
       params: {
         page: !!draftFilter ? this.draftListPageNumber : this.orderListPageNumber,

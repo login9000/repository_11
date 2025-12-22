@@ -1,3 +1,16 @@
 .based-on-report {
   color: #456481
 }
+
+i.icon_animate_calculate_weight {
+  animation: rotate-animation 2s linear infinite;
+}
+
+@keyframes rotate-animation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

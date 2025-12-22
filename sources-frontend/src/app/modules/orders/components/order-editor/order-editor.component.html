@@ -120,7 +120,7 @@
     <div class="flex align-items-center justify-content-center">
       <p>
         Ориентировочный вес продукции: <b>{{summaryWeight  | number}} кг</b> <i
-        class="pi pi-refresh ml-2 cursor-pointer"
+        class="{{ animationIconAnimateCalculateWeight ? 'icon_animate_calculate_weight' : ''}} pi pi-refresh ml-2 cursor-pointer"
         (click)="calculateWeight() "></i>
       </p>
     </div>

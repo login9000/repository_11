@@ -179,8 +179,8 @@ export class DraftListComponent implements OnInit {
   }
 
   getDraftsByFilters() {
-    globalThis.stateLoadDrafts = '';
     if (!!this.draftService.filterForm.value.orderDateRange?.[1]) {
+       globalThis.stateLoadDrafts = '';
       this.draftService.getAllOrdersByFilter(true, this.draftService.filterForm.value)
         .subscribe({
           next: (response) => {

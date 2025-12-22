@@ -61,6 +61,7 @@ export class OrderEditorComponent implements OnInit {
   blockSubmitButton2: boolean = false;
   animationSubmitButton1: boolean = false;
   animationSubmitButton2: boolean = false;
+  animationIconAnimateCalculateWeight: boolean = false;
   disableSubmitButton: boolean = false;
   interval_1: any = null;
 
@@ -320,6 +321,7 @@ export class OrderEditorComponent implements OnInit {
   }
 
   calculateWeight() {
+    this.animationIconAnimateCalculateWeight = true;
     let weightObservable$: Observable<any> = new Observable<any>()
     if (this.isBasedOnCart) {
       weightObservable$ = this.productService.calculateCartItemWeight(this.orderService.cartItems);
@@ -329,10 +331,12 @@ export class OrderEditorComponent implements OnInit {
     }
     weightObservable$.subscribe({
       next: (res) => {
-        this.summaryWeight = res.response
+        this.summaryWeight = res.response;
+        this.animationIconAnimateCalculateWeight = false;
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.error.error })
+        this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.error.error, life:10000 });
+        this.animationIconAnimateCalculateWeight = false;
       }
     })
   }
@@ -507,15 +511,15 @@ export class OrderEditorComponent implements OnInit {
           summary: 'Успешно',
           detail: 'Адрес добавлен'
         })
+        const newAddress: __DeliveryAddress = {
+          АдресДоставкиИД: response.response.delivery_addresses_id,
+          АдресДоставки: response.response.full_delivery_addresses
+        }
+        this.addresses.unshift(newAddress);
+        this.orderForm.patchValue({
+          delivery_address: this.addresses[0]
+        })
       }
-      const newAddress: __DeliveryAddress = {
-        АдресДоставкиИД: response.response.delivery_addresses_id,
-        АдресДоставки: response.response.full_delivery_addresses
-      }
-      this.addresses.unshift(newAddress);
-      this.orderForm.patchValue({
-        delivery_address: this.addresses[0]
-      })
     });
   }
 

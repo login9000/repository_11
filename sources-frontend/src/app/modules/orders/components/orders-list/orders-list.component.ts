@@ -225,8 +225,8 @@ export class OrdersListComponent implements OnInit {
 
 
   getOrdersByFilter() {
-    globalThis.stateLoadOrders = '';
     if (!!this.orderService.filterForm.value.orderDateRange?.[1]) {
+      globalThis.stateLoadOrders = '';
       this.orderService.getAllOrdersByFilter(false).subscribe({
           next: (response) => {
             globalThis.stateLoadOrders = 'loaded';
