@@ -124,6 +124,7 @@ Route::any('/api/v1/download_draft_details', 'ControllerDownloadDraftDetails');
 Route::any('/api/v1/copy_order', 'ControllerCopyOrder');
 Route::any('/api/v1/clear_cart', 'ControllerClearCart');
 Route::any('/api/v1/delete_avatar', 'ControllerDeleteAvatar');
+Route::any('/update_product_catalog_json', 'ControllerUpdateProductCatalogJson');
 
 Route::any('/test_mysql', 'ControllerTestMysql');
 // Route::any('/api/v1/test_post_request', 'ControllerTestPostRequest');
