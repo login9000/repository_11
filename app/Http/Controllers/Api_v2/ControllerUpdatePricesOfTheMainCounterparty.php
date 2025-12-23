@@ -36,9 +36,7 @@ class ControllerUpdatePricesOfTheMainCounterparty extends Common{
 		if(!$mysqli->query('CREATE TABLE `prices_main_counterparty_'.$main_counterparty_id.'` (`id` tinyint NOT NULL DEFAULT 0, `data` longtext NOT NULL DEFAULT \'\') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')){
 			$err = $mysqli->error;
 			if(strpos($err, 'already exists') === false){
-			//###
-			return '1...';
-			//###
+
 				try{
 					DB::update('UPDATE `prices_main_counterparty_'.$main_counterparty_id.'` SET `data` = :data WHERE `id` = 1 LIMIT 1', ['data' => $data]);
 				} catch (QueryException $e) {
@@ -46,11 +44,11 @@ class ControllerUpdatePricesOfTheMainCounterparty extends Common{
 					parent::log_er_mysql($err);
 					return json_encode(array('Ошибка'=>preg_replace('/\r?\n/', ' ', $err)));
 				}			
-				
+				//###
+				return '1...';
+				//###
 			}else{
-			//###
-			return '2...';
-			//###
+
 				try{
 					DB::insert('INSERT INTO `prices_main_counterparty_'.$main_counterparty_id.'` (`id`, `data`) values (:id, :data)', ['id' => 1, 'data' => $data]);
 				} catch (QueryException $e) {
@@ -58,7 +56,9 @@ class ControllerUpdatePricesOfTheMainCounterparty extends Common{
 					parent::log_er_mysql($err);
 					return json_encode(array('Ошибка'=>preg_replace('/\r?\n/', ' ', $err)));
 				}
-				
+				//###
+				return '2...';
+				//###
 			}
 		}else{
 			//###
