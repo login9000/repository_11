@@ -15,17 +15,30 @@ class ControllerTestMysql extends Common{
 			return '<br>exit!!!!!!!!!!!!';
 		
 		
+			$data = '';
+			$result = DB::select('SELECT `data` FROM `product_catalog` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			
+			foreach ($result as $row) {
+				$data =$row->data;
+			}
+			
+			$f = fopen($this->document_root.'/../public/product_catalog.json','a+');
+			ftruncate($f, 0);
+			stream_set_write_buffer($f, 0); 
+			fwrite($f, $data);
+			fflush($f);
+			fclose($f);
 		
 		 exit('Done.');
 		 
 		 
 		 
 		 
-		 $commercial_offer_id = 'c1fcc173-901d-45c8-b19f-06d0cfb6c3e9';
+		 // $commercial_offer_id = 'c1fcc173-901d-45c8-b19f-06d0cfb6c3e9';
 		 
-		 $result = DB::select('SELECT `draft_id`, CONVERT(AES_DECRYPT(`recipient_of_the_commercial_offer`, :aes_key) USING utf8mb4) AS `recipient_of_the_commercial_offer`, `commercial_offer_amount`, `goods`, CONVERT(AES_DECRYPT(`comment`, :aes_key2) USING utf8mb4) AS `comment` FROM `commercial_offers_'.$user_myid.'` WHERE `commercial_offer_id` = :commercial_offer_id LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'commercial_offer_id' => $commercial_offer_id]);
+		 // $result = DB::select('SELECT `draft_id`, CONVERT(AES_DECRYPT(`recipient_of_the_commercial_offer`, :aes_key) USING utf8mb4) AS `recipient_of_the_commercial_offer`, `commercial_offer_amount`, `goods`, CONVERT(AES_DECRYPT(`comment`, :aes_key2) USING utf8mb4) AS `comment` FROM `commercial_offers_'.$user_myid.'` WHERE `commercial_offer_id` = :commercial_offer_id LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'commercial_offer_id' => $commercial_offer_id]);
 		 
-		 var_dump($result);
+		 // var_dump($result);
 	
 	
 		//$main_counterparty_id = '00022222-2a0c-11e5-89e1-40167e7a5fac';
