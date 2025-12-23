@@ -97,7 +97,6 @@ export class SigninComponent {
               summary: 'Успешно',
               detail: 'Добро пожаловать'
             }); 
-            globalThis.isAuth = true;
             setTimeout(() => {
               //this.authenticationService.isAuthenticated = true;
               document.location.reload();

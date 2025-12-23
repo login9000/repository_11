@@ -75,7 +75,7 @@ export class AppService {
   }
 
   getUpdates(errorCallback: any): void {
-    if(!globalThis.isAuth){
+    if(this.cookieService.get(COOKIE_KEYS.user_myid) == ''){
       return;
     }
     this.http.get<any>(API_URL + 'get_other_data', {
