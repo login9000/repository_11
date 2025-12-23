@@ -95,7 +95,7 @@ class _7a5d225581 extends Common {
 		
 		if($based_on_cart == ''){
 			$product_catalog_data = parent::get_product_catalog();
-			$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+			$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 			$available_specifications_data = parent::get_available_specifications();
 		}else{
 			list($shipping_warehouse_name, $cart_contents, $err) = parent::prepare_cart_contents($user_myid, $based_on_cart, $shipping_warehouse_id);

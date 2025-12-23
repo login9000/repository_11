@@ -16,18 +16,12 @@ class ControllerGetProductAvailability extends Common{
 
 		$shipping_warehouse_id = trim(preg_replace('/[^a-f0-9\-]/', '', mb_substr($_GET['shipping_warehouse_id'] ?? '', 0, 36)));
 		$id_nomenclature = trim(preg_replace('/[^a-f0-9\-]/', '', mb_substr($_GET['id_nomenclature'] ?? '', 0, 36)));
-		//$draft_id = trim(preg_replace('/[^a-f0-9\-]/', '', mb_substr($_GET['draft_id'] ?? '', 0, 36)));
-		//$quantity = trim(preg_replace('/[^0-9]/', '', mb_substr($_GET['quantity'] ?? '', 0, 25)));
 		
-		// $user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
-		// $err = parent::check_valid_cookies();
-		// if($err){
-			// parent::prepare_response(['error'=>$err]);
-		// }//
-		
-		###
-		$user_myid = 'b7287255-0de6-11f0-814d-000c29ac4925';
-		###
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$err = parent::check_valid_cookies();
+		if($err){
+		 parent::prepare_response(['error'=>$err]);
+		}
 		
 		if($shipping_warehouse_id == ''){
 			parent::prepare_response(['error'=>'SHIPPING_WAREHOUSE_NOT_SPECIFIED']);
@@ -37,25 +31,9 @@ class ControllerGetProductAvailability extends Common{
 			parent::prepare_response(['error'=>'ID_NOMENCLATURE_IS_EMPTY_OR_INCORRECT']);
 		}
 		
-		// if($draft_id == ''){
-			// parent::prepare_response(['error'=>'DRAFT_ID_IS_EMPTY_OR_INCORRECT']);
-		// }
-		
-		// if($quantity == ''){
-			// parent::prepare_response(['error'=>'QUANTITY_IS_EMPTY_OR_INCORRECT']);
-		// }
-		// if(!is_numeric($quantity)){
-			// parent::prepare_response(['error'=>'QUANTITY_MUST_BE_A_NUMBER']);
-		// }
-		// if($quantity < 1){
-			// parent::prepare_response(['error'=>'QUANTITY_MUST_BE_GREATER_THAN_ZERO']);
-		// }
-		// if($quantity > 10000000000){
-			// parent::prepare_response(['error'=>'QUANTITY_SHOULD_NOT_BE_MORE_THAN_1_BILLION']);
-		// }
-		// $quantity = (int) $quantity;
+		$main_counterparty_id = '';
 				
-		/* try{
+		try{
 
 			$result = DB::select('SELECT `expires_token`, `main_counterparty_id` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
 			
@@ -77,32 +55,6 @@ class ControllerGetProductAvailability extends Common{
 			parent::log_er_mysql($err);
 			parent::prepare_response(['error'=>$err]);
 		}
-
-		try{
-			
-			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
-				parent::prepare_response(['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')']);
-				//
-			}
-			
-			$result = DB::select('SELECT `goods` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` = :draft_id AND `status` = \'draft\' LIMIT 1', ['draft_id' => $draft_id]);
-			
-			if(sizeof($result) == 0){
-				parent::prepare_response(['error'=>'DRAFT_NOT_FOUND']);
-			}
-			
-			foreach ($result as $row) {
-				$goods = json_decode($row->goods, true);
-			}
-			
-		} catch (QueryException $e) {
-			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
-			if(strpos($err, 'Base table or view not found') === false){
-				parent::log_er_mysql($err);
-				parent::prepare_response(['error'=>$err]);
-			}
-		} */
 		
 		$product_catalog_data = parent::get_product_catalog();
 
@@ -126,7 +78,7 @@ class ControllerGetProductAvailability extends Common{
 			}
 		}
 
-		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			parent::prepare_response(['error'=>$prices_product_catalog_data['error']]);
@@ -233,40 +185,6 @@ class ControllerGetProductAvailability extends Common{
 			}
 			
 		}
-		
-		// $length = '';	
-		// $bonus_percentage = 0;
-		
-		// foreach ($goods as $c) {
-			// if($id_nomenclature == $c['НоменклатураИД']){
-				// $length = $c['Характеристика'];
-				// $bonus_percentage = $c['ПроцентБонуса'];
-				// break;
-			// }
-		// }
-		
-		// if($total == 0){
-			
-			// if($is_fill_in_the_characteristics){
-				// if($length == ''){
-					// $total = $quantity * 1 * $quantity_conversion_factor / 1000;
-				// }else{
-					// $total = $quantity * $length * $quantity_conversion_factor / 1000;
-				// }
-			// }else if($sold_in_sets){
-				// $total = $quantity * $number_of_pieces_in_a_set;
-			// }else{
-				// $total = $quantity;
-			// }
-			// $total = round($total, 3);
-		
-			// if($price > -1){
-				// $sum = round($total * $price * (1 - (($bonus_percentage + $percentage_discount_markup) / 100)), 2);
-			// }
-		
-		// }
-		
-		// parent::prepare_response(['response' => ['id_nomenclature' => $id_nomenclature, 'availability' => $availability, 'total' => $total, 'sum' => $sum]], true);
 		
 		parent::prepare_response(['response' => ['id_nomenclature' => $id_nomenclature, 'availability' => $availability]], true);
 		

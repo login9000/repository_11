@@ -37,10 +37,11 @@ class ControllerDownloadFinishedProducts extends Common{
 		
 		$link = '';
 		$file_size = 0;
+		$main_counterparty_id = '';
 		
 		try{
 
-			$result = DB::select('SELECT `expires_token` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+			$result = DB::select('SELECT `expires_token`, `main_counterparty_id` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
 			
 			if(sizeof($result) == 0){
 				parent::prepare_response(['error'=>'NO_EXISTS_ACCOUNT']);
@@ -51,6 +52,7 @@ class ControllerDownloadFinishedProducts extends Common{
 				if($this->time - $row->expires_token >= 0){
 					parent::prepare_response(['error'=>'EXPIRES_TOKEN']);
 				}
+				$main_counterparty_id = $row->main_counterparty_id;
 				
 			}
 
@@ -60,7 +62,7 @@ class ControllerDownloadFinishedProducts extends Common{
 			parent::prepare_response(['error'=>$err]);
 		}
 		
-		list($result, $err) = parent::prepare_result_finished_products($shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);		
+		list($result, $err) = parent::prepare_result_finished_products($main_counterparty_id, $shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);		
 		if($err){
 			parent::prepare_response(['error'=>$err], true);
 		}

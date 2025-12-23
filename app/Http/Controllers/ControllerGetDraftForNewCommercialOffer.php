@@ -77,7 +77,7 @@ class ControllerGetDraftForNewCommercialOffer extends Common{
 			parent::prepare_response(['error'=>'NO_DRAFT_FOUND']);
 		}
 		
-		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			parent::prepare_response(['error'=>$prices_product_catalog_data['error']]);

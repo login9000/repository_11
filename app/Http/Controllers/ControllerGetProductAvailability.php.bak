@@ -19,14 +19,14 @@ class ControllerGetProductAvailability extends Common{
 		//$draft_id = trim(preg_replace('/[^a-f0-9\-]/', '', mb_substr($_GET['draft_id'] ?? '', 0, 36)));
 		//$quantity = trim(preg_replace('/[^0-9]/', '', mb_substr($_GET['quantity'] ?? '', 0, 25)));
 		
-		// $user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
-		// $err = parent::check_valid_cookies();
-		// if($err){
-			// parent::prepare_response(['error'=>$err]);
-		// }//
+		$user_myid = preg_replace('/[^a-f0-9\-]/', '', $_COOKIE['user_myid'] ?? '');
+		$err = parent::check_valid_cookies();
+		if($err){
+		 parent::prepare_response(['error'=>$err]);
+		}
 		
 		###
-		$user_myid = 'b7287255-0de6-11f0-814d-000c29ac4925';
+		//$user_myid = 'b7287255-0de6-11f0-814d-000c29ac4925';
 		###
 		
 		if($shipping_warehouse_id == ''){
@@ -54,6 +54,7 @@ class ControllerGetProductAvailability extends Common{
 			// parent::prepare_response(['error'=>'QUANTITY_SHOULD_NOT_BE_MORE_THAN_1_BILLION']);
 		// }
 		// $quantity = (int) $quantity;
+		$main_counterparty_id = '';
 				
 		try{
 
@@ -78,7 +79,7 @@ class ControllerGetProductAvailability extends Common{
 			parent::prepare_response(['error'=>$err]);
 		}
 
-		try{
+		/* try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
 				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
@@ -102,7 +103,7 @@ class ControllerGetProductAvailability extends Common{
 				parent::log_er_mysql($err);
 				parent::prepare_response(['error'=>$err]);
 			}
-		}
+		} */
 		
 		$product_catalog_data = parent::get_product_catalog();
 
@@ -126,7 +127,7 @@ class ControllerGetProductAvailability extends Common{
 			}
 		}
 
-		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			parent::prepare_response(['error'=>$prices_product_catalog_data['error']]);

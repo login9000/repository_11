@@ -150,6 +150,7 @@ npm install
 
 
 ### Запуск проекта из исходников чтобы сразу же видеть все изменения
+
 Если вы собираетесь запустить сейчас проект из исходников на своем локальном компуктере то перед запуском незабудьте в файле /root/sources-frontend/src/app/core/constants/api-url.ts разкомментировать вторую строчку и закомментировать первую.
 
 Затем откройте /var/www/default/app/Http/Middleware/VerifyCsrfToken.php и разкомментируйте все что закомментровано внутри массива в переменной $except
@@ -186,7 +187,7 @@ ng build --output-hashing=all --configuration=production
 ```
 в итоге собранный проект (скомпилированный билд) будет находится в /root/sources-frontend/dist/frontend нужно будет просто скопировать все это содержимое и поместить в /var/www/default/public
 
-Ну и последнее, после сборки прокта скопируйте содержимое /var/www/default/public/index.html и вставте в /var/www/default/resources/views/home.blade.php
+Ну и последнее, после сборки прокта и скопирования содержимого из /root/sources-frontend/dist/frontend в /var/www/default/public скопируйте содержимое /var/www/default/public/index.html и вставте в /var/www/default/resources/views/home.blade.php
 
 и затем откройте уже http://x.x.x.x:8080/ чтобы увидеть что получилось в собранном виде.
 где: x.x.x.x - ip вашего сервера, если вы устанавливаете проект на своем локальном компуктере то вместо x.x.x.x - это скорее всего нужно вписать "127.0.0.1" 🤔 🤔 🤔

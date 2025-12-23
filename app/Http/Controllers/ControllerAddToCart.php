@@ -75,10 +75,11 @@ class ControllerAddToCart extends Common{
 			parent::prepare_response(['error'=>'QUANTITY_SHOULD_NOT_BE_MORE_THAN_1_BILLION']);
 		}
 		$quantity = (float) $quantity;
+		$main_counterparty_id = '';
 		
 		try{
 
-			$result = DB::select('SELECT `expires_token` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+			$result = DB::select('SELECT `expires_token`, `main_counterparty_id` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
 			
 			if(sizeof($result) == 0){
 				parent::prepare_response(['error'=>'NO_EXISTS_ACCOUNT']);
@@ -89,6 +90,7 @@ class ControllerAddToCart extends Common{
 				if($this->time - $row->expires_token >= 0){
 					parent::prepare_response(['error'=>'EXPIRES_TOKEN']);
 				}
+				$main_counterparty_id = $row->main_counterparty_id;
 				
 			}	
 			
@@ -98,7 +100,7 @@ class ControllerAddToCart extends Common{
 			parent::prepare_response(['error'=>$err]);
 		}
 		
-		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			parent::prepare_response(['error'=>$prices_product_catalog_data['error']]);
 		}
@@ -112,13 +114,13 @@ class ControllerAddToCart extends Common{
 		
 		switch($target){
 			case 'product_remains':
-				list($data_, $err) = parent::prepare_result_product_remains($shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
+				list($data_, $err) = parent::prepare_result_product_remains($main_counterparty_id, $shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
 				break;
 			case 'substandard':
-				list($data_, $err) = parent::prepare_result_substandard_catalog($shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
+				list($data_, $err) = parent::prepare_result_substandard_catalog($main_counterparty_id, $shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
 				break;
 			case 'finished_products':
-				list($data_, $err) = parent::prepare_result_finished_products($shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
+				list($data_, $err) = parent::prepare_result_finished_products($main_counterparty_id, $shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
 				break;
 		}
 		

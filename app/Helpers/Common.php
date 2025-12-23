@@ -1642,13 +1642,17 @@ window.onerror = function(message, source, lineno){
 		
 	}
 
-	protected function get_prices_of_the_main_counterparty() : array {
+	protected function get_prices_of_the_main_counterparty($main_counterparty_id) : array {
 		
 		$prices_of_the_main_counterparty = [];
 		
 		try{
 			
-			$result = DB::select('SELECT SQL_CACHE `data` FROM `prices_of_the_main_counterparty` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
+			if(!Schema::hasTable('prices_main_counterparty_'.$main_counterparty_id)){
+				return ['error'=> 'Цены головного контрагента '.$main_counterparty_id.' не найдены'];
+			}
+			
+			$result = DB::select('SELECT SQL_CACHE `data` FROM `prices_main_counterparty_'.$main_counterparty_id.'` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
 			
 			foreach ($result as $row) {
 				$prices_of_the_main_counterparty = json_decode($row->data, true);
@@ -2890,7 +2894,7 @@ window.onerror = function(message, source, lineno){
 		
 	}
 	
-	protected function prepare_result_product_remains(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+	protected function prepare_result_product_remains(string $main_counterparty_id, string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
 		
 		try{
 			
@@ -2906,7 +2910,7 @@ window.onerror = function(message, source, lineno){
 			return ['', $err];
 		}
 		
-		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			return ['', $prices_product_catalog_data['error']];
@@ -3068,7 +3072,7 @@ window.onerror = function(message, source, lineno){
 		
 	}
 	
-	protected function prepare_result_substandard_catalog(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+	protected function prepare_result_substandard_catalog(string $main_counterparty_id, string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
 		
 		try{
 			
@@ -3084,7 +3088,7 @@ window.onerror = function(message, source, lineno){
 			return ['', $err];
 		}
 			
-		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			return ['', $prices_product_catalog_data['error']];
@@ -3242,7 +3246,7 @@ window.onerror = function(message, source, lineno){
 		
 	}
 	
-	protected function prepare_result_finished_products(string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
+	protected function prepare_result_finished_products(string $main_counterparty_id, string $shipping_warehouse_id, string $products, string $profile, string $thickness, string $coating, string $color) : array {
 		
 		try{
 			
@@ -3258,7 +3262,7 @@ window.onerror = function(message, source, lineno){
 			return ['', $err];
 		}
 			
-		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			return ['', $prices_product_catalog_data['error']];
@@ -3636,7 +3640,7 @@ window.onerror = function(message, source, lineno){
 			$arr_shipment_warehouses_id_name[$c['СкладИД']] = $c['Наименование'];
 		}
 			
-		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = $this->get_prices_of_the_main_counterparty($main_counterparty_id);
 
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			return ['', '', $prices_product_catalog_data['error']];

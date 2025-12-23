@@ -29,10 +29,11 @@ class ControllerGetProductRemains extends Common{
 		if($shipping_warehouse_id == ''){
 			parent::prepare_response(['error'=>'SHIPPING_WAREHOUSE_NOT_SELECTED']);
 		}
+		$main_counterparty_id = '';
 		
 		try{
 
-			$result = DB::select('SELECT  `expires_token` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
+			$result = DB::select('SELECT  `expires_token`, `main_counterparty_id` FROM `users` WHERE `user_myid` = :user_myid LIMIT 1', ['user_myid' => $user_myid]);
 			
 			if(sizeof($result) == 0){
 				parent::prepare_response(['error'=>'NO_EXISTS_ACCOUNT']);
@@ -43,6 +44,7 @@ class ControllerGetProductRemains extends Common{
 				if($this->time - $row->expires_token >= 0){
 					parent::prepare_response(['error'=>'EXPIRES_TOKEN']);
 				}
+				$main_counterparty_id = $row->main_counterparty_id;
 				
 			}
 
@@ -52,7 +54,7 @@ class ControllerGetProductRemains extends Common{
 			parent::prepare_response(['error'=>$err]);
 		}
 		
-		list($product_remains, $err) = parent::prepare_result_product_remains($shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
+		list($product_remains, $err) = parent::prepare_result_product_remains($main_counterparty_id, $shipping_warehouse_id, $products, $profile, $thickness, $coating, $color);
 		if($err){
 			parent::prepare_response(['error'=>$err], true);
 		}

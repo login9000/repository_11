@@ -154,7 +154,7 @@ class _2b1d87eb63 extends Common {
 			}
 		}
 		
-		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty();
+		$prices_product_catalog_data = parent::get_prices_of_the_main_counterparty($main_counterparty_id);
 		
 		if(array_key_exists('error', $prices_product_catalog_data)){
 			$this->result_ = [['error'=>$prices_product_catalog_data['error']], false];

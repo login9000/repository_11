@@ -202,6 +202,10 @@ class ControllerAuth extends Common{
 		$manager_id = substr($result['Менеджер']['МенеджерИД'], 0, 36);
 		$main_counterparty_id = substr($result['ГоловнойКонтрагентИД'], 0, 36);
 		
+		if($main_counterparty_id == ''){
+			parent::prepare_response(['error'=>'Головной контрагент не назначен для вас, авторизация невозможна']);
+		}
+		
 		if($status == 'Сотрудник' && sizeof($result_) == 0){
 			parent::prepare_response(['error'=>'IT_LOOKS_LIKE_THIS_EMPLOYEE_IS_NOT_IN_THE_DATABASE']);
 		}

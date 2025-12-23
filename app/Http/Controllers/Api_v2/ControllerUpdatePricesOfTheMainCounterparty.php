@@ -18,19 +18,37 @@ class ControllerUpdatePricesOfTheMainCounterparty extends Common{
 		if($data === ''){
 			return parent::escape_unicode_decode(json_encode(array('Ошибка'=>'Поле "Данные" пустое')));
 		}
-				
+		
+		$main_counterparty_id = $data[0]['КонтрагентИД'];
 		$data = json_encode($data, JSON_UNESCAPED_UNICODE);
 		
 		if(!$data){
 			return parent::escape_unicode_decode(json_encode(array('Ошибка'=>'Содержимое поля "Данные" не похоже на корректную json структуру')));
 		}
-		
-		try{
-			DB::update('UPDATE `prices_of_the_main_counterparty` SET `data` = :data WHERE `id` = 1 LIMIT 1', ['data' => $data]);
-		} catch (QueryException $e) {
-			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
-			parent::log_er_mysql($err);
-			return json_encode(array('Ошибка'=>preg_replace('/\r?\n/', ' ', $err)));
+
+		if(!$mysqli->query('CREATE TABLE `prices_main_counterparty_'.$main_counterparty_id.'` (`id` tinyint NOT NULL DEFAULT 0, `data` longtext NOT NULL DEFAULT \'\') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')){
+			$err = $mysqli->error;
+			if(strpos($err, 'already exists') === false){
+				
+				try{
+					DB::update('UPDATE `prices_main_counterparty_'.$main_counterparty_id.'` SET `data` = :data WHERE `id` = 1 LIMIT 1', ['data' => $data]);
+				} catch (QueryException $e) {
+					$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+					parent::log_er_mysql($err);
+					return json_encode(array('Ошибка'=>preg_replace('/\r?\n/', ' ', $err)));
+				}			
+				
+			}else{
+				
+				try{
+					DB::insert('INSERT INTO `prices_main_counterparty_'.$main_counterparty_id.'` (`data`) values (:data)', ['data' => $data]);
+				} catch (QueryException $e) {
+					$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
+					parent::log_er_mysql($err);
+					return json_encode(array('Ошибка'=>preg_replace('/\r?\n/', ' ', $err)));
+				}
+				
+			}
 		}
 		
 		return parent::escape_unicode_decode(json_encode(array('Сообщение'=>'Загрузка завершилась успешно')));
