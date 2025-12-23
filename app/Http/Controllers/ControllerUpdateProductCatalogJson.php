@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\Common;
 
-class ControllerUpdateProductCatalogJson {
+class ControllerUpdateProductCatalogJson extends Common {
 	
 	public function __invoke(){
 		
