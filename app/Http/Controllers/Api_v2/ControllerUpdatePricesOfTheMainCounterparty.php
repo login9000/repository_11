@@ -26,6 +26,13 @@ class ControllerUpdatePricesOfTheMainCounterparty extends Common{
 			return parent::escape_unicode_decode(json_encode(array('Ошибка'=>'Содержимое поля "Данные" не похоже на корректную json структуру')));
 		}
 
+		$mysqli = @new \mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));		
+		if($mysqli->connect_error) {
+			$err = $mysqli->connect_error;
+			parent::log_er_mysql($err);
+			parent::prepare_response(['error'=>$err]);
+		}
+			
 		if(!$mysqli->query('CREATE TABLE `prices_main_counterparty_'.$main_counterparty_id.'` (`id` tinyint NOT NULL DEFAULT 0, `data` longtext NOT NULL DEFAULT \'\') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')){
 			$err = $mysqli->error;
 			if(strpos($err, 'already exists') === false){

@@ -189,6 +189,12 @@ ng build --output-hashing=all --configuration=production
 
 Ну и последнее, после сборки прокта и скопирования содержимого из /root/sources-frontend/dist/frontend в /var/www/default/public скопируйте содержимое /var/www/default/public/index.html и вставте в /var/www/default/resources/views/home.blade.php
 
+Выполните так же:
+```
+chown vasya:www-data -R /var/www/default
+```
+(замените "vasya" на имя того пользователя которого есть в системе и  от имени которого работает бекенд этого проекта)
+
 Откройте http://x.x.x.x:8080/update_product_catalog_json чтобы обновился product_catalog.json который находится в корне, так как когда вы будете копировать все содержимое из /root/sources-frontend/dist/frontend в /var/www/default/public то  он автоматически будет заменен и поэтому его нужно обновить, просто перейтя на http://x.x.x.x:8080/update_product_catalog_json 
 где: x.x.x.x - ip вашего сервера, если вы устанавливаете проект на своем локальном компуктере то вместо x.x.x.x - это скорее всего нужно вписать "127.0.0.1" 🤔 🤔 🤔
 "8080" - порт на котором будет запущен nginx, если он у вас будет запущен на другом порту то укажите другой порт, вместо "8080".
