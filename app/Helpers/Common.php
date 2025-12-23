@@ -956,6 +956,10 @@ window.onerror = function(message, source, lineno){
 			$this->log_er_post_request_to_api_1c($err);
 		}
 		
+		if(array_key_exists('Ошибка', $result)){
+			$result['Ошибка'] .= ' ('.$act.')';
+		}
+		
 		return [$result, $err];
 			
 	}
