@@ -27,6 +27,7 @@
 			  "src/js/sha256.js",
 			  "src/js/aes.js",		
 			  "src/css/primeflex.css",
+			  "src/product_catalog.json",
               "src/assets"
             ],
             "styles": [

@@ -89,17 +89,19 @@ export class SigninComponent {
                   detail: error,
                   life: 10000
                 });
+                return;
               }
             });
             this.messageService.add({
               severity: 'success',
               summary: 'Успешно',
               detail: 'Добро пожаловать'
-            });  
+            }); 
+            globalThis.isAuth = true;
             setTimeout(() => {
               //this.authenticationService.isAuthenticated = true;
               document.location.reload();
-            }, 1000);
+            }, 500);
           }
         },
         error: (error) => {

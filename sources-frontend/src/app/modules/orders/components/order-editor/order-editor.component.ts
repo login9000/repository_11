@@ -216,7 +216,8 @@ export class OrderEditorComponent implements OnInit {
     dataForOrderEditor.subscribe((data) => {
       this.data = data;
       //###
-      console.log('data:', data);
+      //console.log('1...');
+      //console.log('data:', data);
       //###
       if(this.data?.response?.available_specifications?.error){
         this.messageService.add({

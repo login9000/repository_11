@@ -57,6 +57,7 @@ globalThis.stateLoadCounterparty = '';
 globalThis.stateLoadAddresses = '';
 globalThis.stateLoadTransports = '';
 globalThis.csrfToken = '';
+globalThis.isAuth = false;
 
 globalThis.generate_rsa_keys = function(){
 	globalThis.JSEncrypt.getKey();

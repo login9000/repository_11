@@ -19,30 +19,32 @@ export class UserDescktopComponent implements OnInit, OnDestroy {
     private appService: AppService
   ) {
     globalThis.stateLoadDataForUserDesktop = '';
-    this.userDesktopService.getDataForUserDesktop().subscribe({
-      next: (res) => {
-        globalThis.stateLoadDataForUserDesktop = 'loaded';
-        this.userDesktopService.data = globalThis.decryptResponse(res);
-        if(this.userDesktopService.data.response.news.error){
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Ошибка',
-            detail: String(this.userDesktopService.data.response.news.error),
-            life: 15000
-          });
-          return;
-        }
-        this.userDesktopService.data.response.news.data.map(news => news.text = NewsUtils.replaceNewlinesWithBr(news.text))
-      },
-      error: (error) => {
-        globalThis.stateLoadDataForUserDesktop = 'error';
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Ошибка',
-          detail: ErrorTranslator.translate(ErrorTranslator.prepare(error)), life: 30000
-        });        
+      if(globalThis.isAuth){
+        this.userDesktopService.getDataForUserDesktop().subscribe({
+          next: (res) => {
+            globalThis.stateLoadDataForUserDesktop = 'loaded';
+            this.userDesktopService.data = globalThis.decryptResponse(res);
+            if(this.userDesktopService.data.response.news.error){
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Ошибка',
+                detail: String(this.userDesktopService.data.response.news.error),
+                life: 15000
+              });
+              return;
+            }
+            this.userDesktopService.data.response.news.data.map(news => news.text = NewsUtils.replaceNewlinesWithBr(news.text))
+          },
+          error: (error) => {
+            globalThis.stateLoadDataForUserDesktop = 'error';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: ErrorTranslator.translate(ErrorTranslator.prepare(error)), life: 30000
+            });        
+          }
+        });
       }
-    })
   }
 
   ngOnInit(): void {
