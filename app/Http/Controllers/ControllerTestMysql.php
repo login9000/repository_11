@@ -12,7 +12,7 @@ class ControllerTestMysql extends Common{
 	
 	public function __invoke(){
 		
-			return '<br>exit!!!!!!!!!!!!';
+			//return '<br>exit!!!!!!!!!!!!';
 		
 		
 			$data = '';
