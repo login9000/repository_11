@@ -62,7 +62,25 @@ export class WaybillListComponent implements OnInit {
     this.waybillsService.getDataForWaybillsList()
       .subscribe({
         next: data => {
-          data = globalThis.decryptResponse(data)
+          data = globalThis.decryptResponse(data);
+          if(data.response.counterparties.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(data.response.counterparties.error), 
+              life: 10000
+            });
+            return;
+          }
+          if(data.response.shipment_warehouses.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(data.response.shipment_warehouses.error), 
+              life: 10000
+            });
+            return;
+          }
           this.counterparties = data.response.counterparties.data
             .filter(c => c.is_confirmed === '1')
             .map(

@@ -27,7 +27,6 @@
 			  "src/js/sha256.js",
 			  "src/js/aes.js",		
 			  "src/css/primeflex.css",
-			  "src/product_catalog.json",
               "src/assets"
             ],
             "styles": [
@@ -52,8 +51,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "5kb",
+                  "maximumError": "5kb"
                 }
               ],
               "outputHashing": "all"

@@ -131,6 +131,42 @@ export class OrdersListComponent implements OnInit {
       next: (data) => {
           globalThis.stateLoadOrders = 'loaded';
           this.data = data;
+          if(this.data.response.popular_statuses.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(this.data.response.popular_statuses.error), life: 30000
+            });
+            globalThis.stateLoadOrders = 'error';
+            return;
+          }
+          if(this.data.response.employees.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(this.data.response.employees.error), life: 30000
+            });
+            globalThis.stateLoadOrders = 'error';
+            return;
+          }
+          if(this.data.response.counterparties.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(this.data.response.counterparties.error), life: 30000
+            });
+            globalThis.stateLoadOrders = 'error';
+            return;
+          }
+          if(this.data.response.shipment_warehouses.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(this.data.response.shipment_warehouses.error), life: 30000
+            });
+            globalThis.stateLoadOrders = 'error';
+            return;
+          }
           this.data.response.counterparties.data = this.data.response.counterparties.data
             .filter(c => c.is_confirmed === '1')
             .map(

@@ -108,9 +108,7 @@ export class DraftService {
   }
 
   getDataForDraftEditor(id: string): Observable<any> {
-
     // return this.getDetailsById(id);
-
     return this.http.get<DraftEditorInput>(API_URL + 'get_other_data', {
       params: {
         query: '2b1d87eb63',

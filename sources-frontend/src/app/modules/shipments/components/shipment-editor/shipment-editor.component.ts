@@ -74,6 +74,42 @@ export class ShipmentEditorComponent implements OnInit {
     this.shipmentsService.getDataForEditor()
       .subscribe({
         next: (response) => {
+          if(response.response.nearest_available_dates.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(response.response.nearest_available_dates.error), 
+              life: 10000
+            });
+            return;
+          }
+          if(response.response.transport.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(response.response.transport.error), 
+              life: 10000
+            });
+            return;
+          }
+          if(response.response.shipping_calendar.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(response.response.shipping_calendar.error), 
+              life: 10000
+            });
+            return;
+          }
+          if(response.response.shipping_intervals.error){
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Ошибка',
+              detail: String(response.response.shipping_intervals.error), 
+              life: 10000
+            });
+            return;
+          }
           this.transports = response.response.transport.data.map(item => this.transportMapper.mapRuToEng(item))
           this.expectedDeliveryDate = new Date(response.response?.nearest_available_dates?.data.delivery_date)
           this.expectedPickupDate = new Date(response.response?.nearest_available_dates?.data["pick-up_date"])

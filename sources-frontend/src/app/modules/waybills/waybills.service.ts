@@ -13,9 +13,11 @@ export interface WaybillsInput {
     data_crypt?: string;
     symmetric_key_crypt?: string;
     counterparties: {
+      error: any;
       data: Counterparty[]
     },
     shipment_warehouses: {
+      error(error: any): string;
       data: {
         СкладИД: string,
         Наименование: string,

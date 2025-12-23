@@ -85,7 +85,27 @@ export class AppService {
         map(response => response.response)
       ).subscribe({
         next: (data: FakeSocketData) => {
-          this.fakeSocketData$.next(data)
+          this.fakeSocketData$.next(data);
+          if(this.fakeSocketData$.value.news.error){
+            errorCallback(this.fakeSocketData$.value.news.error);
+            return;
+          }
+          if(this.fakeSocketData$.value.popular_statuses.error){
+            errorCallback(this.fakeSocketData$.value.popular_statuses.error);
+            return;
+          }
+          if(this.fakeSocketData$.value.update_orders.error){
+            errorCallback(this.fakeSocketData$.value.update_orders.error);
+            return;
+          }
+          if(this.fakeSocketData$.value.update_shipments.error){
+            errorCallback(this.fakeSocketData$.value.update_shipments.error);
+            return;
+          }
+          if(this.fakeSocketData$.value.update_counterparties.error){
+            errorCallback(this.fakeSocketData$.value.update_counterparties.error);
+            return;
+          }
           var _product_catalog_time_modify = localStorage.getItem('product_catalog_time_modify');
           if(_product_catalog_time_modify !== null){
             if(+_product_catalog_time_modify != this.fakeSocketData$.value.product_catalog_time_modify){

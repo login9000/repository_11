@@ -214,11 +214,68 @@ export class OrderEditorComponent implements OnInit {
       dataForOrderEditor = this.orderService.getDataForOrderEditor();
     }
     dataForOrderEditor.subscribe((data) => {
-      this.data = data
+      this.data = data;
+      //###
+      console.log('data:', data);
+      //###
+      if(this.data?.response?.available_specifications?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.available_specifications?.error),
+          life: 15000
+        });
+        return;
+      }
+      if(this.data?.response?.counterparties?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.counterparties?.error),
+          life: 15000
+        });
+        return;
+      }
+      if(this.data?.response?.prices_product_catalog?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.prices_product_catalog?.error),
+          life: 15000
+        });
+        return;
+      }
+      if(this.data?.response?.shipment_warehouses?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.shipment_warehouses?.error),
+          life: 15000
+        });
+        return;
+      }
+      if(this.data?.response?.delivery_addresses?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.delivery_addresses?.error),
+          life: 15000
+        });
+        return;
+      }
+      if(this.data?.response?.available_specifications?.error){
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: String(this.data?.response?.available_specifications?.error),
+          life: 15000
+        });
+        return;
+      }
       this.productService.availableSpecifications = this.data?.response?.available_specifications.data.map(item => {
         const mapper = new SpecificationMapper()
         return mapper.mapRuToEng(item)
-      })
+      });
       this.productService.prices = this.data?.response?.prices_product_catalog?.data.map(item => {
         const mapper = new PriceInputMapper()
         return mapper.mapRuToEng(item)

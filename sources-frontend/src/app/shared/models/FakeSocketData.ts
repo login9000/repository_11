@@ -2,6 +2,7 @@ import {Notification} from "../../modules/notifications/models/Notification";
 
 export interface FakeSocketData {
     news: {
+      error: any;
       number_unread: number
       data: {
         id: number
@@ -12,6 +13,7 @@ export interface FakeSocketData {
       }[]
     }
     popular_statuses: {
+      error: any;
       data:{
           ready_for_shipment: number
           with_shipments: number
@@ -20,12 +22,14 @@ export interface FakeSocketData {
         }
     }
     update_orders: {
+      error: any;
       data: {
         order_id: string
         status: string
       }[]
     }
     update_shipments: {
+      error: any;
       total_shipments: number
       data: {
         shipment_id: string
@@ -37,6 +41,7 @@ export interface FakeSocketData {
       data: Notification[]
     }
     update_counterparties: {
+      error: any;
       data: {
         counterparty_id: string
       }[]

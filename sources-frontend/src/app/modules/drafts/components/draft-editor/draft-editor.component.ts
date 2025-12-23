@@ -93,11 +93,16 @@ export class DraftEditorComponent implements OnInit {
       this.draftService.getDataForDraftEditor(this.draftId)
         .subscribe({
           next: (data) => {
-
             this.data = data;
-            /**
-             * Методы для обработки массива продуктов
-             */
+            if(this.data?.response?.available_specifications.error){
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Ошибка',
+                detail: String(this.data?.response?.available_specifications.error),
+                life: 10000
+              });
+              return;
+            }
             this.productService.availableSpecifications = this.data?.response?.available_specifications.data.map(item => {
               const mapper = new SpecificationMapper()
               return mapper.mapRuToEng(item)
@@ -117,11 +122,7 @@ export class DraftEditorComponent implements OnInit {
                   product.step = specification.step;
                 }
               })
-            })
-
-            /***
-             * Конец методов для обработки массива продуктов
-             */
+            });
             this.draft = DraftDetailsMapper.mapToEnglish(data?.response.draft_details);
             this.isDeliveryNeeded = this.draft.isDeliveryNeeded
             this.addresses = data?.response.delivery_addresses.data

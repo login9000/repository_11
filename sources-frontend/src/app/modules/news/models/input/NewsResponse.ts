@@ -1,6 +1,7 @@
 import {ErrorResponse} from "../../../../shared/models/ErrorResponse";
 
 export interface NewsResponse {
+  error: any;
   data?: NewsItem[];
   pagination_max_page?: number;
 }

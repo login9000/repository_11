@@ -23,6 +23,15 @@ export class UserDescktopComponent implements OnInit, OnDestroy {
       next: (res) => {
         globalThis.stateLoadDataForUserDesktop = 'loaded';
         this.userDesktopService.data = globalThis.decryptResponse(res);
+        if(this.userDesktopService.data.response.news.error){
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Ошибка',
+            detail: String(this.userDesktopService.data.response.news.error),
+            life: 15000
+          });
+          return;
+        }
         this.userDesktopService.data.response.news.data.map(news => news.text = NewsUtils.replaceNewlinesWithBr(news.text))
       },
       error: (error) => {
