@@ -68,9 +68,7 @@ class ControllerDeleteDraft extends Common{
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
-				parent::prepare_response(['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')']);
-				//
+				parent::prepare_response(['response' => 'ok']);
 			}
 			
 			DB::beginTransaction();

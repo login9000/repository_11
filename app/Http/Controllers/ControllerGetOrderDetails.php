@@ -68,9 +68,7 @@ class ControllerGetOrderDetails extends Common {
 		try {
 
 			if (!Schema::hasTable('orders_' . $main_counterparty_id)) {
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
-				parent::prepare_response(['error' => 'Не удалось найти таблицу с данными заказов (' . $main_counterparty_id . ')']);
-				//
+				parent::prepare_response(['error' => 'NO_ORDERS_FOUND']);
 			}
 
 			$result2 = DB::select('SELECT `delivery_address_id`, `goods`, CONVERT(AES_DECRYPT(`goods_non_standard_addition`, :aes_key) USING utf8mb4) AS `goods_non_standard_addition`, CONVERT(AES_DECRYPT(`files_non_standard_addition`, :aes_key2) USING utf8mb4) AS `files_non_standard_addition`, `client_id`, CONVERT(AES_DECRYPT(`comment`, :aes_key3) USING utf8mb4) AS `comment` FROM `orders_' . $main_counterparty_id . '` WHERE `order_id` = :order_id LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'aes_key3' => $this->aes_key[0], 'order_id' => $order_id]);

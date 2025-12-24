@@ -160,9 +160,7 @@ class ControllerSaveNonStandardAddition extends Common{
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
-				parent::prepare_response(['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')']);
-				//
+				parent::prepare_response(['error'=>'NOT_FOUND_DRAFT']);
 			}
 			
 			$result = DB::select('SELECT `id` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` = :draft_id AND `status` = \'draft\' LIMIT 1', ['draft_id' => $draft_id]);

@@ -71,10 +71,7 @@ class _2b1d87eb63 extends Common {
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница				
-				$this->result_ = [['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'], false];
-				return;
-				//
+				$this->result_ = [['error'=>'NO_DRAFT_FOUND'], false];
 			}
 			
 			$result = DB::select('SELECT `order_number`, `counterparty_id`, `shipping_warehouse_id`, `shipping_date`, `is_cash_payment`, `delivery_address_id`, `is_shipping`, `goods`, CONVERT(AES_DECRYPT(`goods_non_standard_addition`, :aes_key) USING utf8mb4) AS `goods_non_standard_addition`, CONVERT(AES_DECRYPT(`files_non_standard_addition`, :aes_key2) USING utf8mb4) AS `files_non_standard_addition`, CONVERT(AES_DECRYPT(`comment`, :aes_key3) USING utf8mb4) AS `comment` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` = :draft_id AND `status` = \'draft\' LIMIT 1', ['aes_key' => $this->aes_key[0], 'aes_key2' => $this->aes_key[0], 'aes_key3' => $this->aes_key[0], 'draft_id' => $draft_id]);

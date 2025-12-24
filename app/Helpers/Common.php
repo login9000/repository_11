@@ -1250,9 +1250,7 @@ window.onerror = function(message, source, lineno){
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
-				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
-				//
+				return array('data' => $arr_orders, 'pagination_max_page' => $pagination_max_page);
 			}
 			
 			switch($sort){
@@ -1768,9 +1766,7 @@ window.onerror = function(message, source, lineno){
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
-				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
-				//
+				return array('data' => json_decode($popular_statuses, true));
 			}
 			
 			$result = DB::select('SELECT `popular_statuses` FROM `orders_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
@@ -1798,9 +1794,7 @@ window.onerror = function(message, source, lineno){
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
-				return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
-				//
+				return array('data' => $update_orders);
 			}
 			
 			$result = DB::select('SELECT `ids_row_update` FROM `orders_'.$main_counterparty_id.'` WHERE `id` = 1 LIMIT 1');
@@ -2598,9 +2592,7 @@ window.onerror = function(message, source, lineno){
 			try{
 			
 				if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-					// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница
-					return ['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')'];
-					//
+					return array('data' => $orders);
 				}
 			
 				$result = DB::select('SELECT `date`, `order_id`, `order_number`, `status`, `sum`, `shipping_date`, `delivery_address_id` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` IN ('.$orders_ids_.')');

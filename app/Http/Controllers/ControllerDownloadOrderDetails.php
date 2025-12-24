@@ -58,9 +58,7 @@ class ControllerDownloadOrderDetails extends Common{
 		try{
 			
 			if(!Schema::hasTable('orders_'.$main_counterparty_id)){
-				// вот этот говнокод пришлось написать потому что наш фронтендер - ленивая задница	
-				parent::prepare_response(['error'=>'Не удалось найти таблицу с данными заказов ('.$main_counterparty_id.')']);
-				//
+				parent::prepare_response(['error'=>'NO_ORDERS_FOUND']);
 			}
 			
 			$result = DB::select('SELECT `status`, `order_number` FROM `orders_'.$main_counterparty_id.'` WHERE `order_id` = :order_id', ['order_id' => $order_id]);
