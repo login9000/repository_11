@@ -27,7 +27,7 @@ return [
 	'allow_file_for_non_standard_addition' => ['doc', 'rar', 'zip', '7z', 'pdf', 'xlsx', 'xls', 'jpg', 'png', 'jpeg', 'gif', 'DOC', 'RAR', 'ZIP', '7Z', 'PDF', 'XLSX', 'XLS', 'JPG', 'PNG', 'JPEG', 'GIF'],
 	'allow_file_for_manager' => ['docx', 'doc', 'rar', 'zip', '7z', 'pdf', 'xlsx', 'xls', 'jpg', 'jpeg', 'DOCX', 'DOC', 'RAR', 'ZIP', '7Z', 'PDF', 'XLSX', 'XLS', 'JPG', 'JPEG'],
 	'url_1с' => 'sokrof.com',
-	'path_1с' => '/unf', // "/unf" - рабочий, "/unf_sitec" - тестовый
+	'path_1с' => '/unf_sitec', // "/unf" - рабочий, "/unf_sitec" - тестовый
 	'port_1с' => 81,	
 	'orders_statuses' => [
 		'ТребуетПодтверждения' => 'needs_confirmation',
