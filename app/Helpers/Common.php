@@ -1569,11 +1569,48 @@ window.onerror = function(message, source, lineno){
 		return array('data' => $warehouses);
 		
 	}
+	
+	protected function transformation_product_catalog(array $product_catalog, bool $include_unavailable = false) : array {
+		
+		$arr = [];
+		
+		foreach($product_catalog as $c){
+			if(!$include_unavailable) {
 
-	protected function get_product_catalog($include_unavailable = false) : array {
+				$products = [];
+
+				if(!empty($c['Данные']))
+				{
+					foreach($c["Данные"] as $item) {
+						if(array_key_exists('НедоступноДляВыбора',$item) && !$item['НедоступноДляВыбора'])
+						{
+							$products[] = $item;
+						}
+					}
+				}
+
+				if(!empty($products))
+				{
+					$c['Данные'] = $products;
+					$arr[] = $c;
+				}
+
+			} else {
+				$arr[] = $c;
+			}
+		}
+		if(sizeof($arr) > 0){
+			$product_catalog = $arr;
+			$arr = [];
+		}
+		
+		return $product_catalog;
+		
+	}
+
+	protected function get_product_catalog(bool $include_unavailable = false) : array {
 		
 		$product_catalog = [];
-		$arr = [];
 		
 		try{
 			
@@ -1582,36 +1619,9 @@ window.onerror = function(message, source, lineno){
 			foreach ($result as $row) {
 				$product_catalog = json_decode($row->data, true);
 			}
-			foreach($product_catalog as $c){
-				if(!$include_unavailable) {
-
-					$products = [];
-
-					if(!empty($c['Данные']))
-					{
-						foreach($c["Данные"] as $item) {
-							if(array_key_exists('НедоступноДляВыбора',$item) && !$item['НедоступноДляВыбора'])
-							{
-								$products[] = $item;
-							}
-						}
-					}
-
-					if(!empty($products))
-					{
-						$c['Данные'] = $products;
-						$arr[] = $c;
-					}
-
-				} else {
-					$arr[] = $c;
-				}
-			}
-			if(sizeof($arr) > 0){
-				$product_catalog = $arr;
-				$arr = [];
-			}
 			
+			$product_catalog = $this->transformation_product_catalog($product_catalog, $include_unavailable);
+						
 		} catch (QueryException $e) {
 			$err = mb_convert_encoding($e->getMessage(), 'ASCII', 'UTF-8');
 			$this->log_er_mysql($err);
