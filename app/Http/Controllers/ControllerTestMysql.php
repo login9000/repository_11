@@ -12,7 +12,7 @@ class ControllerTestMysql extends Common{
 	
 	public function __invoke(){
 		
-			//return '<br>exit!!!!!!!!!!!!';
+			return '<br>exit!!!!!!!!!!!!';
 			
 			// json_encode() - из массива в строку
 			// json_decode() - из строки в массив
@@ -22,7 +22,7 @@ class ControllerTestMysql extends Common{
 			//exit;
 			
 			
-			$data = '';
+			/* $data = '';
 			$result = DB::select('SELECT `data` FROM `product_catalog` WHERE `id` = 1 AND `data` != \'\' LIMIT 1');
 			
 			foreach ($result as $row) {
@@ -36,7 +36,7 @@ class ControllerTestMysql extends Common{
 			stream_set_write_buffer($f, 0); 
 			fwrite($f, json_encode($product_catalog, JSON_UNESCAPED_UNICODE));
 			fflush($f);
-			fclose($f);
+			fclose($f); */
 		
 		 exit('Done.');
 		 

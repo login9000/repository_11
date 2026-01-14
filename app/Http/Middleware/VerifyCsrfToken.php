@@ -12,7 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-			/*  '/api/v1/js_error',
+			'/api/v1/js_error',
 			'/api/v1/auth',
 			'/api/v1/check_password_change',
 			'/api/v1/recovery_pass',
@@ -91,6 +91,6 @@ class VerifyCsrfToken extends Middleware
 			'/api/v1/get_product_availability',
 			'/api/v1/download_draft_details',
 			'/api/v1/copy_order',
-			'/api/v1/clear_cart' */
+			'/api/v1/clear_cart'
     ];
 }
