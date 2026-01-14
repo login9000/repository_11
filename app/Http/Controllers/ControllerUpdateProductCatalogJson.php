@@ -15,10 +15,12 @@ class ControllerUpdateProductCatalogJson extends Common {
 			$data =$row->data;
 		}
 
+		$product_catalog = parent::transformation_product_catalog(json_decode($data, true));
+		
 		$f = fopen($this->document_root.'/../public/product_catalog.json','a+');
 		ftruncate($f, 0);
 		stream_set_write_buffer($f, 0); 
-		fwrite($f, $data);
+		fwrite($f,json_encode($product_catalog, JSON_UNESCAPED_UNICODE));
 		fflush($f);
 		fclose($f);
 
